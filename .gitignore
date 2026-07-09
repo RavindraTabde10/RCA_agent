@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 wheels/
+venv/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -216,3 +217,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Secrets and API keys
+util/jira/log_details.txt
+**/log_details.txt
+**/*secrets*.txt
+**/*credentials*.txt
+**/*token*.txt

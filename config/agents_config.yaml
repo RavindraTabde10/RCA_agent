@@ -1,0 +1,73 @@
+# AI Agents Configuration
+
+# Log Agent - Analyzes application logs
+log_agent:
+  name: "Log Analysis Agent"
+  description: "Specialized agent for analyzing logs and traces"
+  capabilities:
+    - error_detection
+    - pattern_recognition
+    - anomaly_detection
+    - timeline_analysis
+  
+  config:
+    max_log_entries: 10000
+    error_patterns:
+      - "ERROR"
+      - "FATAL"
+      - "CRITICAL"
+      - "Exception"
+    
+    warning_patterns:
+      - "WARN"
+      - "WARNING"
+    
+    ignore_patterns:
+      - "DEBUG"
+
+# Code Agent - Analyzes source code
+code_agent:
+  name: "Code Analysis Agent"
+  description: "Specialized agent for source code analysis"
+  capabilities:
+    - static_analysis
+    - dependency_analysis
+    - change_analysis
+    - complexity_calculation
+  
+  config:
+    supported_languages:
+      - python
+      - javascript
+      - typescript
+      - java
+      - cpp
+    
+    analysis_depth: "medium"  # shallow, medium, deep
+    include_dependencies: true
+    check_recent_changes: true
+    recent_changes_days: 7
+
+# Pattern Agent - Recognizes defect patterns
+pattern_agent:
+  name: "Pattern Recognition Agent"
+  description: "Specialized agent for identifying known patterns"
+  capabilities:
+    - pattern_matching
+    - similarity_detection
+    - historical_analysis
+    - trend_identification
+  
+  config:
+    similarity_threshold: 0.7
+    max_similar_defects: 5
+    use_embeddings: false
+    pattern_database_path: "data/patterns"
+
+# Agent Orchestration
+orchestration:
+  execution_mode: "parallel"  # parallel, sequential
+  timeout_per_agent: 60
+  retry_on_failure: true
+  max_retries: 2
+  aggregate_results: true

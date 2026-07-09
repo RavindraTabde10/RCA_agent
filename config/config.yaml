@@ -1,0 +1,94 @@
+# Application Configuration
+app:
+  name: "AI Agent for Root Cause Analysis"
+  version: "0.1.0"
+  log_level: "INFO"
+  log_file: "logs/rca_agent.log"
+
+# AI Agents Configuration
+agents:
+  log_agent:
+    enabled: true
+    priority: high
+  
+  code_agent:
+    enabled: true
+    priority: medium
+  
+  pattern_agent:
+    enabled: true
+    priority: high
+
+# LLM Configuration (Azure OpenAI)
+llm:
+  provider: "azure_openai"
+  azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
+  api_key: "${AZURE_OPENAI_API_KEY}"
+  api_version: "${AZURE_OPENAI_API_VERSION}"
+  deployment_name: "${AZURE_OPENAI_DEPLOYMENT_NAME}"
+  model: "${AZURE_OPENAI_MODEL}"
+  temperature: 0.7
+  max_tokens: 2000
+
+# Reasoning Configuration
+reasoning:
+  chain_of_thoughts:
+    enabled: true
+    max_steps: 10
+  
+  hypothesis_generation:
+    max_hypotheses: 5
+    confidence_threshold: 0.5
+
+# Knowledge Layer Configuration
+knowledge:
+  knowledge_base_path: "data/knowledge_base"
+  historical_defects_path: "data/historical_defects"
+  vector_store:
+    enabled: false
+    dimension: 1536
+    index_type: "hnsw"
+
+# Integration Configuration
+integrations:
+  jira:
+    enabled: false
+    url: ""
+    api_token: "${JIRA_API_TOKEN}"
+    project_key: ""
+  
+  git:
+    enabled: false
+    repo_path: ""
+  
+  slack:
+    enabled: false
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+  
+  email:
+    enabled: false
+    smtp_server: ""
+    smtp_port: 587
+
+# Output Configuration
+output:
+  default_format: "markdown"  # text, markdown, html, json
+  save_to_file: true
+  output_dir: "output/reports"
+  include_evidence: true
+  include_reasoning_trace: true
+
+# Team Assignment Configuration
+team_assignment:
+  enabled: true
+  confidence_threshold: 0.6
+  auto_assign: false
+  escalation_enabled: true
+
+# Performance Configuration
+performance:
+  max_workers: 3
+  timeout_seconds: 300
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+
