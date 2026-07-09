@@ -1,0 +1,17 @@
+ECU1 2026/06/11 10:00:00.000000 +0.000000 ECU1 COMM CAN0 LCAT 1 log info verbose 1 [CAN] CANGateway receiving climate message msg_id=0x3E5
+ECU1 2026/06/11 10:00:00.010000 +0.010000 ECU1 COMM CAN0 LCAT 2 log debug verbose 1 [CAN] Raw data: 16 A7 03 5A 00 00 7A FF
+ECU1 2026/06/11 10:00:00.020000 +0.010000 ECU1 COMM CAN0 LCAT 3 log info verbose 1 [CAN] CANParser parsing signal: driver_temp byte=1
+ECU1 2026/06/11 10:00:00.030000 +0.010000 ECU1 COMM CAN0 LCAT 4 log info verbose 1 [CAN] CANParser parsing signal: passenger_temp byte=2
+ECU1 2026/06/11 10:00:00.040000 +0.010000 ECU1 COMM CAN0 LCAT 5 log info verbose 1 [CAN] CANParser parsing signal: fan_speed byte=3
+ECU1 2026/06/11 10:00:00.045000 +0.005000 ECU1 COMM CAN0 LCAT 6 log info verbose 1 [CAN] CANParser parsing climate data temp=22C fan=3
+ECU1 2026/06/11 10:00:00.050000 +0.005000 ECU1 COMM CAN0 LCAT 7 log debug verbose 1 [CAN] Validating checksum for msg_id=0x3E5
+ECU1 2026/06/11 10:00:00.060000 +0.010000 ECU1 COMM CAN0 LCAT 8 log debug verbose 1 [CAN] Checksum calculation: XOR of bytes 0-6
+ECU1 2026/06/11 10:00:00.070000 +0.010000 ECU1 COMM CAN0 LCAT 9 log debug verbose 1 [CAN] Expected checksum byte position=7 format=LITTLE_ENDIAN
+ECU1 2026/06/11 10:00:00.085000 +0.015000 ECU1 COMM CAN0 LCAT 10 log error verbose 1 [CAN] CANParser checksum validation failed msg_id=0x3E5
+ECU1 2026/06/11 10:00:00.086000 +0.001000 ECU1 COMM CAN0 LCAT 11 log error verbose 1 [CAN] checksum calculated=0xA7 received=0x7A byte_order=LITTLE_ENDIAN
+ECU1 2026/06/11 10:00:00.087000 +0.001000 ECU1 COMM CAN0 LCAT 12 log warn verbose 1 [CAN] climate message dropped - using stale data
+ECU1 2026/06/11 10:00:00.090000 +0.003000 ECU1 HMI0 CLIM LCAT 13 log info verbose 1 [HMI] ClimateWidget displaying cached temp=21C (stale)
+ECU1 2026/06/11 10:00:00.100000 +0.010000 ECU1 HMI0 CLIM LCAT 14 log warn verbose 1 [HMI] ClimateWidget data age=1500ms exceeds freshness=500ms
+ECU1 2026/06/11 10:00:00.200000 +0.100000 ECU1 COMM CAN0 LCAT 15 log info verbose 1 [CAN] CANGateway receiving climate message msg_id=0x3E5
+ECU1 2026/06/11 10:00:00.250000 +0.050000 ECU1 COMM CAN0 LCAT 16 log info verbose 1 [CAN] CANParser climate data parsed successfully temp=22C fan=3
+ECU1 2026/06/11 10:00:00.260000 +0.010000 ECU1 HMI0 CLIM LCAT 17 log info verbose 1 [HMI] ClimateWidget updated temp=22C

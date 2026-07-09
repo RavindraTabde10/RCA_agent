@@ -1,0 +1,70 @@
+DLT Storage Header Pattern v1
+ECU1 2026/07/09 08:00:00.000123 +0.000123 ECU1 SYST BOOT LCAT 1 log info verbose 1 [BOOT] phase=KERNEL complete time=456ms
+ECU1 2026/07/09 08:00:00.567890 +0.567767 ECU1 SYST BOOT LCAT 2 log info verbose 1 [BOOT] phase=SERVICES starting
+ECU1 2026/07/09 08:00:01.234567 +0.666677 ECU1 SYST BOOT LCAT 3 log info verbose 1 [BOOT] ServiceManager::startService name=AudioService
+ECU1 2026/07/09 08:00:01.345678 +0.111111 ECU1 AUDI INIT LCAT 4 log info verbose 1 [AUDIO] AudioService initializing
+ECU1 2026/07/09 08:00:01.456789 +0.111111 ECU1 AUDI MIX0 LCAT 5 log info verbose 1 [AUDIO] AudioMixer buffer_size=2048 sample_rate=48000
+ECU1 2026/07/09 08:00:01.567890 +0.111101 ECU1 SYST BOOT LCAT 6 log info verbose 1 [BOOT] ServiceManager::startService name=MediaService
+ECU1 2026/07/09 08:00:01.678901 +0.111011 ECU1 MDIA INIT LCAT 7 log info verbose 1 [MEDIA] MediaService initializing
+ECU1 2026/07/09 08:00:01.789012 +0.110111 ECU1 MDIA LUM0 LCAT 8 log info verbose 1 [LUM] LastUserMode loading persisted state
+ECU1 2026/07/09 08:00:01.890123 +0.101111 ECU1 MDIA LUM0 LCAT 9 log info verbose 1 [LUM] LastUserMode persisted source=USB track=MyFavorite.mp3
+ECU1 2026/07/09 08:00:02.001234 +0.111111 ECU1 SYST BOOT LCAT 10 log info verbose 1 [BOOT] ServiceManager::startService name=ConnectivityService
+ECU1 2026/07/09 08:00:02.112345 +0.111111 ECU1 CONN INIT LCAT 11 log info verbose 1 [CONN] ConnectivityService initializing
+ECU1 2026/07/09 08:00:02.223456 +0.111111 ECU1 CONN BT01 LCAT 12 log info verbose 1 [BT] BluetoothStack initializing adapter=0
+ECU1 2026/07/09 08:00:02.334567 +0.111111 ECU1 CONN BT01 LCAT 13 log info verbose 1 [BT] BluetoothStack scanning for paired devices
+ECU1 2026/07/09 08:00:02.445678 +0.111111 ECU1 SYST BOOT LCAT 14 log info verbose 1 [BOOT] phase=SERVICES complete time=1879ms
+ECU1 2026/07/09 08:00:02.556789 +0.111111 ECU1 SYST BOOT LCAT 15 log info verbose 1 [BOOT] phase=HOMESCREEN starting
+ECU1 2026/07/09 08:00:02.667890 +0.111101 ECU1 HMI0 INIT LCAT 16 log info verbose 1 [HMI] HomeScreen loading
+ECU1 2026/07/09 08:00:02.889012 +0.221122 ECU1 HMI0 REND LCAT 17 log info verbose 1 [HMI] HomeScreen first frame rendered
+ECU1 2026/07/09 08:00:02.890123 +0.001111 ECU1 SYST BOOT LCAT 18 log info verbose 1 [BOOT] phase=HOMESCREEN displayed total_boot_time=2890ms
+ECU1 2026/07/09 08:00:02.901234 +0.011111 ECU1 SYST BOOT LCAT 19 log info verbose 1 [BOOT] MARKER BOOT completed in 2890 ms
+ECU1 2026/07/09 08:00:03.012345 +0.111111 ECU1 MDIA LUM0 LCAT 20 log info verbose 1 [LUM] LastUserMode transition=ToAvailable
+ECU1 2026/07/09 08:00:03.123456 +0.111111 ECU1 MDIA LUM0 LCAT 21 log info verbose 1 [LUM] LastUserMode restoreState begin source=USB
+ECU1 2026/07/09 08:00:03.234567 +0.111111 ECU1 MDIA USB0 LCAT 22 log info verbose 1 [USB] USBMediaService enumerating device
+ECU1 2026/07/09 08:00:03.456789 +0.222222 ECU1 MDIA USB0 LCAT 23 log info verbose 1 [USB] USBMediaService device ready vendor=SanDisk model=Ultra
+ECU1 2026/07/09 08:00:03.567890 +0.111101 ECU1 MDIA SRCS LCAT 24 log info verbose 1 [MEDIA] MuteStateSnapshotRepository SourceSnapshot source=USB status=Selected
+ECU1 2026/07/09 08:00:03.678901 +0.111011 ECU1 AUDI FOCS LCAT 25 log info verbose 1 [AUDIO] AudioFocusManager requestFocus app=MediaPlayer type=MEDIA
+ECU1 2026/07/09 08:00:03.789012 +0.110111 ECU1 AUDI FOCS LCAT 26 log info verbose 1 [AUDIO] tunermediaservice AUDIO_FOCUS_REQUEST result: Granted
+ECU1 2026/07/09 08:00:03.890123 +0.101111 ECU1 MDIA PLAY LCAT 27 log info verbose 1 [MEDIA] MediaPlayer opening track path=/usb/Music/MyFavorite.mp3
+ECU1 2026/07/09 08:00:04.123456 +0.233333 ECU1 MDIA PLAY LCAT 28 log info verbose 1 [MEDIA] MediaPlayer decoder initialized codec=MP3 bitrate=320kbps
+ECU1 2026/07/09 08:00:04.234567 +0.111111 ECU1 AUDI MIX0 LCAT 29 log info verbose 1 [AUDIO] AudioMixer stream attached id=1 source=MediaPlayer
+ECU1 2026/07/09 08:00:04.345678 +0.111111 ECU1 AUDI MIX0 LCAT 30 log info verbose 1 [AUDIO] AudioMixer first audio frame timestamp=08:00:04.345678
+ECU1 2026/07/09 08:00:04.400000 +0.054322 ECU1 MDIA SRCS LCAT 31 log info verbose 1 [MEDIA] MuteStateSnapshotRepository SourceSnapshot source=USB status=Playing
+ECU1 2026/07/09 08:00:04.456789 +0.056789 ECU1 AUDI PLAY LCAT 32 log info verbose 1 [AUDIO] PlaybackStateUpdater state=PLAYING source=USB
+ECU1 2026/07/09 08:00:04.567890 +0.111101 ECU1 MDIA LUM0 LCAT 33 log info verbose 1 [LUM] LastUserMode Sending play command source=USB
+ECU1 2026/07/09 08:00:04.678901 +0.111011 ECU1 MDIA LUM0 LCAT 34 log info verbose 1 [LUM] MARKER ENTLUM started playing in 1555 ms
+ECU1 2026/07/09 08:00:05.000000 +0.321099 ECU1 AUDI MIX0 LCAT 35 log info verbose 1 [AUDIO] AudioMixer volume=75% balance=0 fade=0
+ECU1 2026/07/09 08:00:10.123456 +5.123456 ECU1 HMI0 INPT LCAT 36 log info verbose 1 [HMI] Touch event type=TAP x=540 y=320 target=SourceButton
+ECU1 2026/07/09 08:00:10.134567 +0.011111 ECU1 MDIA SRCS LCAT 37 log info verbose 1 [MEDIA] SourceManager user selected source=BT_A2DP
+ECU1 2026/07/09 08:00:10.145678 +0.011111 ECU1 MDIA SRCS LCAT 38 log info verbose 1 [MEDIA] MuteStateSnapshotRepository SourceSnapshot source=BT_A2DP status=Selected
+ECU1 2026/07/09 08:00:10.200000 +0.054322 ECU1 CONN BT01 LCAT 39 log info verbose 1 [BT] BluetoothStack connecting profile=A2DP device=MyPhone
+ECU1 2026/07/09 08:00:10.345678 +0.145678 ECU1 CONN BT01 LCAT 40 log info verbose 1 [BT] BluetoothStack A2DP connected device=MyPhone codec=SBC
+ECU1 2026/07/09 08:00:10.456789 +0.111111 ECU1 AUDI FOCS LCAT 41 log info verbose 1 [AUDIO] AudioFocusManager requestFocus app=BTAudio type=MEDIA
+ECU1 2026/07/09 08:00:10.500000 +0.043211 ECU1 AUDI FOCS LCAT 42 log info verbose 1 [AUDIO] AudioFocusManager focus granted app=BTAudio
+ECU1 2026/07/09 08:00:10.567890 +0.067890 ECU1 AUDI MIX0 LCAT 43 log info verbose 1 [AUDIO] AudioMixer stream attached id=2 source=BTAudio
+ECU1 2026/07/09 08:00:10.623456 +0.055566 ECU1 AUDI MIX0 LCAT 44 log info verbose 1 [AUDIO] AudioMixer first audio frame timestamp=08:00:10.623456
+ECU1 2026/07/09 08:00:10.678901 +0.055445 ECU1 MDIA SRCS LCAT 45 log info verbose 1 [MEDIA] MuteStateSnapshotRepository SourceSnapshot source=BT_A2DP status=Playing
+ECU1 2026/07/09 08:00:10.700000 +0.021099 ECU1 AUDI PLAY LCAT 46 log info verbose 1 [AUDIO] PlaybackStateUpdater state=PLAYING source=BT_A2DP
+ECU1 2026/07/09 08:00:10.712345 +0.012345 ECU1 MDIA SRCS LCAT 47 log info verbose 1 [MEDIA] MARKER STR source=BT_A2DP duration=567 ms
+ECU1 2026/07/09 08:00:30.000000 +19.287655 ECU1 CONN PHON LCAT 48 log info verbose 1 [PHONE] Incoming call from +1-555-123-4567
+ECU1 2026/07/09 08:00:30.100000 +0.100000 ECU1 AUDI FOCS LCAT 49 log info verbose 1 [AUDIO] AudioFocusManager requestFocus app=Phone type=CALL
+ECU1 2026/07/09 08:00:30.150000 +0.050000 ECU1 AUDI FOCS LCAT 50 log info verbose 1 [AUDIO] AudioFocusManager focus transient loss app=BTAudio
+ECU1 2026/07/09 08:00:30.200000 +0.050000 ECU1 AUDI FOCS LCAT 51 log info verbose 1 [AUDIO] AudioFocusManager focus granted app=Phone
+ECU1 2026/07/09 08:00:30.250000 +0.050000 ECU1 CONN BT01 LCAT 52 log info verbose 1 [BT] BluetoothStack HFP connecting for call
+ECU1 2026/07/09 08:00:30.400000 +0.150000 ECU1 CONN BT01 LCAT 53 log info verbose 1 [BT] BluetoothStack HFP SCO link established
+ECU1 2026/07/09 08:00:30.450000 +0.050000 ECU1 AUDI MIX0 LCAT 54 log info verbose 1 [AUDIO] AudioMixer routing to HFP output
+ECU1 2026/07/09 08:00:30.500000 +0.050000 ECU1 CONN PHON LCAT 55 log info verbose 1 [PHONE] Call answered duration_start
+ECU1 2026/07/09 08:01:45.000000 +74.500000 ECU1 CONN PHON LCAT 56 log info verbose 1 [PHONE] Call ended duration=74500ms
+ECU1 2026/07/09 08:01:45.100000 +0.100000 ECU1 CONN BT01 LCAT 57 log info verbose 1 [BT] BluetoothStack HFP SCO link released
+ECU1 2026/07/09 08:01:45.200000 +0.100000 ECU1 AUDI FOCS LCAT 58 log info verbose 1 [AUDIO] AudioFocusManager releaseFocus app=Phone
+ECU1 2026/07/09 08:01:45.250000 +0.050000 ECU1 AUDI FOCS LCAT 59 log warn verbose 1 [AUDIO] AudioFocusManager state=PHONE_FOCUS waiting for release confirmation
+ECU1 2026/07/09 08:01:46.250000 +1.000000 ECU1 AUDI FOCS LCAT 60 log warn verbose 1 [AUDIO] AudioFocusManager state stuck state=PHONE_FOCUS duration=1000ms
+ECU1 2026/07/09 08:01:47.250000 +1.000000 ECU1 AUDI FOCS LCAT 61 log warn verbose 1 [AUDIO] AudioFocusManager state stuck state=PHONE_FOCUS duration=2000ms
+ECU1 2026/07/09 08:01:48.250000 +1.000000 ECU1 AUDI FOCS LCAT 62 log error verbose 1 [AUDIO] AudioFocusManager state stuck state=PHONE_FOCUS duration>2500ms - focus not released
+ECU1 2026/07/09 08:01:48.300000 +0.050000 ECU1 MDIA PLAY LCAT 63 log warn verbose 1 [MEDIA] MediaPlayer resume blocked - waiting for audio focus
+ECU1 2026/07/09 08:01:50.000000 +1.700000 ECU1 HMI0 INPT LCAT 64 log info verbose 1 [HMI] Touch event type=TAP x=640 y=400 target=PlayButton
+ECU1 2026/07/09 08:01:50.100000 +0.100000 ECU1 MDIA PLAY LCAT 65 log info verbose 1 [MEDIA] MediaPlayer user requested play - forcing focus request
+ECU1 2026/07/09 08:01:50.200000 +0.100000 ECU1 AUDI FOCS LCAT 66 log info verbose 1 [AUDIO] AudioFocusManager force release triggered by user action
+ECU1 2026/07/09 08:01:50.300000 +0.100000 ECU1 AUDI FOCS LCAT 67 log info verbose 1 [AUDIO] AudioFocusManager focus granted app=BTAudio
+ECU1 2026/07/09 08:01:50.400000 +0.100000 ECU1 AUDI PLAY LCAT 68 log info verbose 1 [AUDIO] PlaybackStateUpdater state=PLAYING source=BT_A2DP
+ECU1 2026/07/09 08:01:50.500000 +0.100000 ECU1 MDIA PLAY LCAT 69 log info verbose 1 [MEDIA] MediaPlayer workaround applied - focus manually restored after 5200ms delay

@@ -1,0 +1,13 @@
+ECU1 2026/07/05 08:00:02.890123 +0.000000 ECU1 SYST BOOT LCAT 1 log info verbose 1 [BOOT] phase=HOMESCREEN displayed total_boot_time=2890ms
+ECU1 2026/07/05 08:00:03.012345 +0.122222 ECU1 MDIA LUM0 LCAT 2 log info verbose 1 [LUM] LastUserMode transition=ToAvailable
+ECU1 2026/07/05 08:00:03.123456 +0.111111 ECU1 MDIA LUM0 LCAT 3 log info verbose 1 [LUM] LastUserMode restoreState begin source=FM_TUNER
+ECU1 2026/07/05 08:00:03.234567 +0.111111 ECU1 MDIA LUM0 LCAT 4 log warn verbose 1 [LUM] LastUserMode WARNING preset_id not found in persisted state
+ECU1 2026/07/05 08:00:03.345678 +0.111111 ECU1 MDIA LUM0 LCAT 5 log debug verbose 1 [LUM] Persistence file=/data/lum/radio_state.json
+ECU1 2026/07/05 08:00:03.400000 +0.054322 ECU1 MDIA LUM0 LCAT 6 log debug verbose 1 [LUM] Persisted state: source=FM_TUNER freq=null preset=null volume=45
+ECU1 2026/07/05 08:00:03.456789 +0.056789 ECU1 MDIA TUNR LCAT 7 log info verbose 1 [TUNER] TunerService tuning to preset=1 (default) freq=87.5MHz
+ECU1 2026/07/05 08:00:03.567890 +0.111101 ECU1 MDIA TUNR LCAT 8 log info verbose 1 [TUNER] TunerService tuning complete signal_strength=85%
+ECU1 2026/07/05 08:00:03.678901 +0.111011 ECU1 AUDI FOCS LCAT 9 log info verbose 1 [AUDIO] AudioFocusManager requestFocus app=TunerService type=MEDIA
+ECU1 2026/07/05 08:00:03.789012 +0.110111 ECU1 AUDI FOCS LCAT 10 log info verbose 1 [AUDIO] AudioFocusManager focus granted app=TunerService
+ECU1 2026/07/05 08:00:03.890123 +0.101111 ECU1 MDIA LUM0 LCAT 11 log info verbose 1 [LUM] LastUserMode Sending play command source=FM_TUNER preset=1
+ECU1 2026/07/05 08:00:03.912345 +0.022222 ECU1 MDIA LUM0 LCAT 12 log info verbose 1 [LUM] MARKER ENTLUM started playing in 890 ms
+ECU1 2026/07/05 08:00:04.000000 +0.087655 ECU1 AUDI PLAY LCAT 13 log info verbose 1 [AUDIO] PlaybackStateUpdater state=PLAYING source=FM_TUNER

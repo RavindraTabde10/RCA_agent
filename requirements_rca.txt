@@ -4,20 +4,24 @@
 pyyaml>=6.0
 python-dotenv>=1.0.0
 
-# AI/ML dependencies (uncomment when needed)
+# CLI and Output
+click>=8.1.0
+rich>=13.7.0
+
+# AI/ML dependencies
 openai>=1.0.0
-anthropic>=0.7.0
-langchain>=0.1.0
+# anthropic>=0.7.0       # Uncomment if using Anthropic
+# langchain>=0.1.0       # Uncomment if using LangChain
 tiktoken>=0.5.0
 
 # Data processing
 pandas>=2.0.0
 numpy>=1.24.0
 
-# Integration dependencies (uncomment as needed)
-# jira>=3.5.0
-# GitPython>=3.1.0
-# slack-sdk>=3.23.0
+# Integration dependencies
+# jira>=3.5.0            # Uncomment when JIRA integration is configured
+# GitPython>=3.1.0       # Uncomment when Git integration is configured
+# slack-sdk>=3.23.0      # Uncomment for Slack notifications
 
 # Web and API
 requests>=2.31.0
@@ -28,12 +32,12 @@ httpx>=0.25.0
 # psycopg2-binary>=2.9.0
 # pymongo>=4.6.0
 
-# Vector store
-lancedb>=0.3.0
-chromadb>=0.4.0
-faiss-cpu>=1.7.4
-pinecone-client>=2.2.0
-pyarrow>=14.0.0
+# Vector store (optional - for semantic search)
+# lancedb>=0.3.0
+# chromadb>=0.4.0
+# faiss-cpu>=1.7.4
+# pinecone-client>=2.2.0
+# pyarrow>=14.0.0
 
 # Testing
 pytest>=7.4.0
