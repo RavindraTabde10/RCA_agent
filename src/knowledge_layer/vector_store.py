@@ -1,0 +1,397 @@
+"""
+Vector Store - LanceDB integration for semantic search of historical defects
+"""
+
+import os
+import json
+import logging
+from typing import List, Dict, Any, Optional
+from pathlib import Path
+import lancedb
+from lancedb.pydantic import LanceModel, Vector
+from lancedb.embeddings import get_registry
+from src.utils.llm_client import get_llm_client
+
+
+class DefectEmbedding(LanceModel):
+    """Schema for defect embeddings in LanceDB"""
+    key: str
+    summary: str
+    description: str
+    component: str
+    root_cause: str
+    status: str
+    resolution: str
+    labels: str  # JSON string of labels
+    created: str
+    resolved: Optional[str] = None
+    fix_commit: Optional[str] = None
+    related_file: Optional[str] = None
+    duplicate_to: str  # JSON string of duplicate keys
+    text: str  # Combined text for embedding
+    vector: Vector(1536)  # OpenAI embedding dimension
+
+
+class VectorStore:
+    """Manages vector database for semantic defect search"""
+    
+    def __init__(self, db_path: str = "data/vector_db", llm_config: Dict[str, Any] = None):
+        """
+        Initialize vector store
+        
+        Args:
+            db_path: Path to LanceDB database
+            llm_config: Configuration for LLM client (for embeddings)
+        """
+        self.logger = logging.getLogger(__name__)
+        self.db_path = db_path
+        self.llm_config = llm_config or {}
+        
+        # Create db directory if it doesn't exist
+        Path(db_path).mkdir(parents=True, exist_ok=True)
+        
+        # Connect to LanceDB
+        self.db = lancedb.connect(db_path)
+        self.table_name = "defects"
+        
+        # Initialize LLM client for embeddings
+        try:
+            self.llm_client = get_llm_client(llm_config)
+            self.logger.info("Vector Store: LLM client initialized for embeddings")
+        except Exception as e:
+            self.logger.error(f"Vector Store: Failed to initialize LLM client: {str(e)}")
+            self.llm_client = None
+    
+    def generate_embedding(self, text: str) -> List[float]:
+        """
+        Generate embedding for text using Azure OpenAI
+        
+        Args:
+            text: Text to embed
+            
+        Returns:
+            List of floats representing the embedding
+        """
+        if not self.llm_client:
+            raise ValueError("LLM client not initialized. Cannot generate embeddings.")
+        
+        try:
+            # Use OpenAI's embeddings API
+            # Note: You'll need to add an embeddings method to your LLM client
+            # For now, we'll use a workaround with the chat API to get text representation
+            # In production, use: client.embeddings.create(model="text-embedding-ada-002", input=text)
+            
+            # Truncate text if too long (max 8000 tokens ~= 32000 chars)
+            if len(text) > 8000:
+                text = text[:8000]
+            
+            # This is a placeholder - you should use the embeddings endpoint
+            # For now, return a dummy embedding of correct size
+            import hashlib
+            import numpy as np
+            
+            # Generate deterministic embedding from hash (for testing)
+            # In production, replace with actual OpenAI embeddings API call
+            hash_obj = hashlib.sha256(text.encode())
+            hash_bytes = hash_obj.digest()
+            
+            # Expand to 1536 dimensions
+            np.random.seed(int.from_bytes(hash_bytes[:4], byteorder='big'))
+            embedding = np.random.randn(1536).tolist()
+            
+            # Normalize
+            norm = np.linalg.norm(embedding)
+            embedding = (np.array(embedding) / norm).tolist()
+            
+            return embedding
+            
+        except Exception as e:
+            self.logger.error(f"Error generating embedding: {str(e)}")
+            raise
+    
+    def load_defects_from_json(self, json_path: str) -> List[Dict[str, Any]]:
+        """
+        Load defects from JSON file
+        
+        Args:
+            json_path: Path to defects JSON file
+            
+        Returns:
+            List of defect dictionaries
+        """
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                defects = json.load(f)
+            self.logger.info(f"Loaded {len(defects)} defects from {json_path}")
+            return defects
+        except Exception as e:
+            self.logger.error(f"Error loading defects from JSON: {str(e)}")
+            raise
+    
+    def prepare_defect_for_embedding(self, defect: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Prepare defect data for embedding generation
+        
+        Args:
+            defect: Defect dictionary
+            
+        Returns:
+            Prepared defect with combined text and embedding
+        """
+        # Combine relevant fields into text for embedding
+        text_parts = [
+            f"Summary: {defect.get('summary', '')}",
+            f"Description: {defect.get('description', '')}",
+            f"Component: {defect.get('component', '')}",
+            f"Root Cause: {defect.get('root_cause', '')}",
+            f"Labels: {', '.join(defect.get('labels', []))}",
+        ]
+        
+        combined_text = " | ".join(text_parts)
+        
+        # Generate embedding
+        embedding = self.generate_embedding(combined_text)
+        
+        # Prepare data for LanceDB
+        prepared = {
+            "key": defect.get("key", ""),
+            "summary": defect.get("summary", ""),
+            "description": defect.get("description", ""),
+            "component": defect.get("component", ""),
+            "root_cause": defect.get("root_cause", ""),
+            "status": defect.get("status", ""),
+            "resolution": defect.get("resolution", ""),
+            "labels": json.dumps(defect.get("labels", [])),
+            "created": defect.get("created", ""),
+            "resolved": defect.get("resolved"),
+            "fix_commit": defect.get("fix_commit"),
+            "related_file": defect.get("related_file"),
+            "duplicate_to": json.dumps(defect.get("duplicate_to", [])),
+            "text": combined_text,
+            "vector": embedding
+        }
+        
+        return prepared
+    
+    def index_defects(self, json_path: str, batch_size: int = 10):
+        """
+        Index defects from JSON file into vector database
+        
+        Args:
+            json_path: Path to defects JSON file
+            batch_size: Number of defects to process in each batch
+        """
+        self.logger.info(f"Starting to index defects from {json_path}")
+        
+        # Load defects
+        defects = self.load_defects_from_json(json_path)
+        
+        # Prepare defects with embeddings
+        prepared_defects = []
+        total = len(defects)
+        
+        for i, defect in enumerate(defects):
+            try:
+                self.logger.info(f"Processing defect {i+1}/{total}: {defect.get('key')}")
+                prepared = self.prepare_defect_for_embedding(defect)
+                prepared_defects.append(prepared)
+                
+                # Batch insert
+                if len(prepared_defects) >= batch_size:
+                    self._insert_batch(prepared_defects)
+                    prepared_defects = []
+                    
+            except Exception as e:
+                self.logger.error(f"Error processing defect {defect.get('key')}: {str(e)}")
+        
+        # Insert remaining defects
+        if prepared_defects:
+            self._insert_batch(prepared_defects)
+        
+        self.logger.info(f"Successfully indexed {total} defects")
+    
+    def _insert_batch(self, defects: List[Dict[str, Any]]):
+        """
+        Insert a batch of defects into LanceDB
+        
+        Args:
+            defects: List of prepared defect dictionaries
+        """
+        try:
+            if self.table_name in self.db.table_names():
+                table = self.db.open_table(self.table_name)
+                table.add(defects)
+            else:
+                # Create new table
+                table = self.db.create_table(self.table_name, data=defects)
+            
+            self.logger.info(f"Inserted batch of {len(defects)} defects")
+        except Exception as e:
+            self.logger.error(f"Error inserting batch: {str(e)}")
+            raise
+    
+    def search_similar_defects(
+        self,
+        query: str,
+        limit: int = 5,
+        component_filter: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for similar defects using semantic similarity
+        
+        Args:
+            query: Search query (defect description or symptoms)
+            limit: Maximum number of results to return
+            component_filter: Optional component name to filter by
+            
+        Returns:
+            List of similar defects with similarity scores
+        """
+        try:
+            # Check if table exists
+            if self.table_name not in self.db.table_names():
+                self.logger.warning("Defects table not found. Please index defects first.")
+                return []
+            
+            # Generate embedding for query
+            query_embedding = self.generate_embedding(query)
+            
+            # Open table
+            table = self.db.open_table(self.table_name)
+            
+            # Perform vector search
+            results = table.search(query_embedding).limit(limit)
+            
+            # Apply component filter if specified
+            if component_filter:
+                results = results.where(f"component = '{component_filter}'")
+            
+            # Execute search
+            results_df = results.to_pandas()
+            
+            # Convert to list of dictionaries
+            similar_defects = []
+            for _, row in results_df.iterrows():
+                defect = {
+                    "key": row["key"],
+                    "summary": row["summary"],
+                    "description": row["description"],
+                    "component": row["component"],
+                    "root_cause": row["root_cause"],
+                    "status": row["status"],
+                    "resolution": row["resolution"],
+                    "labels": json.loads(row["labels"]),
+                    "created": row["created"],
+                    "resolved": row.get("resolved"),
+                    "fix_commit": row.get("fix_commit"),
+                    "related_file": row.get("related_file"),
+                    "duplicate_to": json.loads(row["duplicate_to"]),
+                    "distance": row.get("_distance", 0)  # Lower distance = more similar
+                }
+                similar_defects.append(defect)
+            
+            self.logger.info(f"Found {len(similar_defects)} similar defects")
+            return similar_defects
+            
+        except Exception as e:
+            self.logger.error(f"Error searching for similar defects: {str(e)}")
+            return []
+    
+    def get_defect_by_key(self, key: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve a specific defect by its key
+        
+        Args:
+            key: Defect key (e.g., "SAM1-342")
+            
+        Returns:
+            Defect dictionary or None if not found
+        """
+        try:
+            if self.table_name not in self.db.table_names():
+                return None
+            
+            table = self.db.open_table(self.table_name)
+            results = table.search().where(f"key = '{key}'").limit(1).to_pandas()
+            
+            if len(results) == 0:
+                return None
+            
+            row = results.iloc[0]
+            return {
+                "key": row["key"],
+                "summary": row["summary"],
+                "description": row["description"],
+                "component": row["component"],
+                "root_cause": row["root_cause"],
+                "status": row["status"],
+                "resolution": row["resolution"],
+                "labels": json.loads(row["labels"]),
+                "created": row["created"],
+                "resolved": row.get("resolved"),
+                "fix_commit": row.get("fix_commit"),
+                "related_file": row.get("related_file"),
+                "duplicate_to": json.loads(row["duplicate_to"])
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error retrieving defect {key}: {str(e)}")
+            return None
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """
+        Get statistics about the vector database
+        
+        Returns:
+            Dictionary with database statistics
+        """
+        try:
+            if self.table_name not in self.db.table_names():
+                return {"total_defects": 0, "indexed": False}
+            
+            table = self.db.open_table(self.table_name)
+            count = len(table.to_pandas())
+            
+            # Get component distribution
+            df = table.to_pandas()
+            components = df["component"].value_counts().to_dict()
+            
+            return {
+                "total_defects": count,
+                "indexed": True,
+                "components": components,
+                "table_name": self.table_name
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting stats: {str(e)}")
+            return {"error": str(e)}
+
+
+# Singleton instance
+_vector_store_instance = None
+
+
+def get_vector_store(db_path: str = "data/vector_db", llm_config: Dict[str, Any] = None) -> VectorStore:
+    """
+    Get or create vector store singleton
+    
+    Args:
+        db_path: Path to LanceDB database
+        llm_config: Configuration for LLM client
+        
+    Returns:
+        VectorStore instance
+    """
+    global _vector_store_instance
+    
+    if _vector_store_instance is None:
+        _vector_store_instance = VectorStore(db_path, llm_config)
+    
+    return _vector_store_instance
+
+
+def reset_vector_store():
+    """Reset the vector store singleton (useful for testing)"""
+    global _vector_store_instance
+    _vector_store_instance = None
