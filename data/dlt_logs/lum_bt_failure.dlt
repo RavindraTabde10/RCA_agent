@@ -1,0 +1,16 @@
+ECU1 2026/06/24 08:00:02.890123 +0.000000 ECU1 SYST BOOT LCAT 1 log info verbose 1 [BOOT] phase=HOMESCREEN displayed total_boot_time=2890ms
+ECU1 2026/06/24 08:00:03.012345 +0.122222 ECU1 MDIA LUM0 LCAT 2 log info verbose 1 [LUM] LastUserMode transition=ToAvailable
+ECU1 2026/06/24 08:00:03.123456 +0.111111 ECU1 MDIA LUM0 LCAT 3 log info verbose 1 [LUM] LastUserMode restoreState begin source=BT_A2DP
+ECU1 2026/06/24 08:00:03.234567 +0.111111 ECU1 CONN BT01 LCAT 4 log info verbose 1 [BT] BluetoothStack connecting device=Phone_A1B2 profile=A2DP
+ECU1 2026/06/24 08:00:03.345678 +0.111111 ECU1 CONN BT01 LCAT 5 log info verbose 1 [BT] BluetoothStack scanning for paired devices...
+ECU1 2026/06/24 08:00:03.456789 +0.111111 ECU1 CONN BT01 LCAT 6 log info verbose 1 [BT] BluetoothStack found device=Phone_A1B2 rssi=-65dBm
+ECU1 2026/06/24 08:00:03.567890 +0.111101 ECU1 CONN BT01 LCAT 7 log warn verbose 1 [BT] Profile A2DP unavailable device=Phone_A1B2 reason=NOT_PAIRED
+ECU1 2026/06/24 08:00:03.678901 +0.111011 ECU1 MDIA LUM0 LCAT 8 log warn verbose 1 [LUM] BTAudioRestore waiting for profile state=CONNECTING
+ECU1 2026/06/24 08:00:03.789012 +0.110111 ECU1 CONN BT01 LCAT 9 log info verbose 1 [BT] Pairing request sent to device=Phone_A1B2
+ECU1 2026/06/24 08:00:04.234567 +0.445555 ECU1 MDIA LUM0 LCAT 10 log warn verbose 1 [LUM] BTAudioRestore still waiting state=CONNECTING duration=1000ms
+ECU1 2026/06/24 08:00:04.345678 +0.111111 ECU1 CONN BT01 LCAT 11 log warn verbose 1 [BT] Pairing timeout device=Phone_A1B2 waited=1100ms
+ECU1 2026/06/24 08:00:04.456789 +0.111111 ECU1 CONN BT01 LCAT 12 log error verbose 1 [BT] Profile connection failed device=Phone_A1B2 profile=A2DP
+ECU1 2026/06/24 08:00:04.567890 +0.111101 ECU1 MDIA LUM0 LCAT 13 log error verbose 1 [LUM] LastUserMode ERROR state machine stuck in CONNECTING no transition for profile_unavailable
+ECU1 2026/06/24 08:00:04.678901 +0.111011 ECU1 MDIA LUM0 LCAT 14 log error verbose 1 [LUM] MARKER ENTLUM FAILED duration=1250ms reason=STATE_MACHINE_STUCK
+ECU1 2026/06/24 08:00:04.789012 +0.110111 ECU1 HMI0 DISP LCAT 15 log info verbose 1 [HMI] Displaying "Connecting..." on media screen
+ECU1 2026/06/24 08:00:05.000000 +0.210988 ECU1 HMI0 DISP LCAT 16 log info verbose 1 [HMI] No audio source active - waiting for user action

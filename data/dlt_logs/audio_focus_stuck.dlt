@@ -1,0 +1,24 @@
+ECU1 2026/07/09 08:00:00.000000 +0.000000 ECU1 MDIA PLAY LCAT 1 log info verbose 1 [MEDIA] MediaPlayer state=PLAYING source=USB track=song.mp3
+ECU1 2026/07/09 08:00:15.000000 +15.000000 ECU1 AUDI MIX0 LCAT 2 log info verbose 1 [AUDIO] AudioMixer active streams=1 volume=65%
+ECU1 2026/07/09 08:00:30.000000 +15.000000 ECU1 CONN PHON LCAT 3 log info verbose 1 [PHONE] Incoming call from +1-555-XXX-XXXX
+ECU1 2026/07/09 08:00:30.050000 +0.050000 ECU1 CONN BT01 LCAT 4 log info verbose 1 [BT] BluetoothStack HFP incoming call notification
+ECU1 2026/07/09 08:00:30.100000 +0.050000 ECU1 HMI0 DISP LCAT 5 log info verbose 1 [HMI] Displaying incoming call screen
+ECU1 2026/07/09 08:00:30.150000 +0.050000 ECU1 AUDI FOCS LCAT 6 log info verbose 1 [AUDIO] AudioFocusManager requestFocus app=Phone type=CALL
+ECU1 2026/07/09 08:00:30.200000 +0.050000 ECU1 AUDI FOCS LCAT 7 log info verbose 1 [AUDIO] AudioFocusManager focus granted app=Phone
+ECU1 2026/07/09 08:00:30.250000 +0.050000 ECU1 MDIA PLAY LCAT 8 log info verbose 1 [MEDIA] MediaPlayer pausing for phone call
+ECU1 2026/07/09 08:00:30.300000 +0.050000 ECU1 AUDI MIX0 LCAT 9 log info verbose 1 [AUDIO] AudioMixer muting media stream
+ECU1 2026/07/09 08:00:30.350000 +0.050000 ECU1 CONN BT01 LCAT 10 log info verbose 1 [BT] BluetoothStack SCO link establishing
+ECU1 2026/07/09 08:00:30.500000 +0.150000 ECU1 CONN BT01 LCAT 11 log info verbose 1 [BT] BluetoothStack HFP SCO link established codec=mSBC
+ECU1 2026/07/09 08:00:32.000000 +1.500000 ECU1 CONN PHON LCAT 12 log info verbose 1 [PHONE] Call answered
+ECU1 2026/07/09 08:01:45.000000 +73.000000 ECU1 CONN PHON LCAT 13 log info verbose 1 [PHONE] Call ended duration=74500ms
+ECU1 2026/07/09 08:01:45.100000 +0.100000 ECU1 CONN BT01 LCAT 14 log info verbose 1 [BT] BluetoothStack HFP SCO link released
+ECU1 2026/07/09 08:01:45.150000 +0.050000 ECU1 CONN BT01 LCAT 15 log info verbose 1 [BT] BluetoothStack HFP call terminated normally
+ECU1 2026/07/09 08:01:45.200000 +0.050000 ECU1 AUDI FOCS LCAT 16 log info verbose 1 [AUDIO] AudioFocusManager releaseFocus app=Phone
+ECU1 2026/07/09 08:01:45.250000 +0.050000 ECU1 AUDI FOCS LCAT 17 log warn verbose 1 [AUDIO] AudioFocusManager state=PHONE_FOCUS waiting for release confirmation
+ECU1 2026/07/09 08:01:45.500000 +0.250000 ECU1 AUDI FOCS LCAT 18 log debug verbose 1 [AUDIO] AudioFocusManager checking pending focus requests...
+ECU1 2026/07/09 08:01:46.250000 +0.750000 ECU1 AUDI FOCS LCAT 19 log warn verbose 1 [AUDIO] AudioFocusManager state stuck state=PHONE_FOCUS duration=1000ms
+ECU1 2026/07/09 08:01:47.250000 +1.000000 ECU1 AUDI FOCS LCAT 20 log warn verbose 1 [AUDIO] AudioFocusManager state stuck state=PHONE_FOCUS duration=2000ms
+ECU1 2026/07/09 08:01:48.250000 +1.000000 ECU1 AUDI FOCS LCAT 21 log error verbose 1 [AUDIO] AudioFocusManager state stuck state=PHONE_FOCUS duration>2500ms - focus not released
+ECU1 2026/07/09 08:01:48.300000 +0.050000 ECU1 MDIA PLAY LCAT 22 log warn verbose 1 [MEDIA] MediaPlayer resume blocked - waiting for audio focus
+ECU1 2026/07/09 08:01:48.350000 +0.050000 ECU1 HMI0 DISP LCAT 23 log info verbose 1 [HMI] Media player UI showing state=PAUSED
+ECU1 2026/07/09 08:01:50.000000 +1.650000 ECU1 MDIA PLAY LCAT 24 log warn verbose 1 [MEDIA] MediaPlayer waiting for focus timeout - no auto-resume

@@ -1,0 +1,38 @@
+DLT Storage Header Pattern v1
+ECU1 2026/06/28 10:00:00.000000 +0.000000 ECU1 SYST MEM0 LCAT 1 log info verbose 1 [MEM] MemoryMonitor baseline memory_used=1245MB memory_available=803MB
+ECU1 2026/06/28 10:00:00.100000 +0.100000 ECU1 MDIA PLAY LCAT 2 log info verbose 1 [MEDIA] MediaPlayer starting soak test playback
+ECU1 2026/06/28 10:00:00.200000 +0.100000 ECU1 MDIA PLAY LCAT 3 log info verbose 1 [MEDIA] MediaPlayer::allocBuffer size=4096 pool_used=12MB
+ECU1 2026/06/28 11:00:00.000000 +3599.800000 ECU1 SYST MEM0 LCAT 4 log info verbose 1 [MEM] MemoryMonitor hourly memory_used=1267MB memory_available=781MB delta=+22MB
+ECU1 2026/06/28 11:00:00.100000 +0.100000 ECU1 MDIA PLAY LCAT 5 log info verbose 1 [MEDIA] MediaPlayer track changes=45 buffers_allocated=180
+ECU1 2026/06/28 12:00:00.000000 +3599.900000 ECU1 SYST MEM0 LCAT 6 log info verbose 1 [MEM] MemoryMonitor hourly memory_used=1298MB memory_available=750MB delta=+31MB
+ECU1 2026/06/28 12:00:00.100000 +0.100000 ECU1 SYST MEM0 LCAT 7 log warn verbose 1 [MEM] MemoryMonitor trend detected increase=26.5MB/hour duration=2h
+ECU1 2026/06/28 13:00:00.000000 +3599.900000 ECU1 SYST MEM0 LCAT 8 log info verbose 1 [MEM] MemoryMonitor hourly memory_used=1334MB memory_available=714MB delta=+36MB
+ECU1 2026/06/28 14:00:00.000000 +3600.000000 ECU1 SYST MEM0 LCAT 9 log info verbose 1 [MEM] MemoryMonitor hourly memory_used=1378MB memory_available=670MB delta=+44MB
+ECU1 2026/06/28 14:00:00.100000 +0.100000 ECU1 SYST MEM0 LCAT 10 log warn verbose 1 [MEM] MemoryMonitor approaching threshold memory_used=1378MB threshold=1536MB
+ECU1 2026/06/28 15:00:00.000000 +3599.900000 ECU1 SYST MEM0 LCAT 11 log info verbose 1 [MEM] MemoryMonitor hourly memory_used=1423MB memory_available=625MB delta=+45MB
+ECU1 2026/06/28 16:00:00.000000 +3600.000000 ECU1 SYST MEM0 LCAT 12 log info verbose 1 [MEM] MemoryMonitor hourly memory_used=1478MB memory_available=570MB delta=+55MB
+ECU1 2026/06/28 16:00:00.100000 +0.100000 ECU1 SYST MEM0 LCAT 13 log warn verbose 1 [MEM] MemoryMonitor critical threshold approaching memory_used=1478MB threshold=1536MB remaining=58MB
+ECU1 2026/06/28 17:00:00.000000 +3599.900000 ECU1 SYST MEM0 LCAT 14 log warn verbose 1 [MEM] MemoryMonitor hourly memory_used=1523MB memory_available=525MB delta=+45MB
+ECU1 2026/06/28 17:30:00.000000 +1800.000000 ECU1 MDIA PLAY LCAT 15 log warn verbose 1 [MEDIA] MediaPlayer::allocBuffer allocation slow latency=45ms expected=5ms
+ECU1 2026/06/28 17:45:00.000000 +900.000000 ECU1 AUDI MIX0 LCAT 16 log warn verbose 1 [AUDIO] AudioMixer buffer underrun detected missed=3 frames
+ECU1 2026/06/28 18:00:00.000000 +900.000000 ECU1 SYST MEM0 LCAT 17 log error verbose 1 [MEM] MemoryMonitor threshold exceeded memory_used=1567MB threshold=1536MB
+ECU1 2026/06/28 18:00:00.100000 +0.100000 ECU1 SYST GC00 LCAT 18 log info verbose 1 [GC] GarbageCollector emergency collection triggered
+ECU1 2026/06/28 18:00:00.500000 +0.400000 ECU1 SYST GC00 LCAT 19 log info verbose 1 [GC] GarbageCollector collected=45MB duration=380ms
+ECU1 2026/06/28 18:00:00.600000 +0.100000 ECU1 SYST MEM0 LCAT 20 log info verbose 1 [MEM] MemoryMonitor post-GC memory_used=1522MB memory_available=526MB
+ECU1 2026/06/28 18:15:00.000000 +899.400000 ECU1 MDIA PLAY LCAT 21 log error verbose 1 [MEDIA] MediaPlayer::decodeFrame error code=ENOMEM buffer_pool_exhausted
+ECU1 2026/06/28 18:15:00.100000 +0.100000 ECU1 MDIA PLAY LCAT 22 log info verbose 1 [MEDIA] MediaPlayer error recovery - retrying decode
+ECU1 2026/06/28 18:30:00.000000 +899.900000 ECU1 SYST MEM0 LCAT 23 log error verbose 1 [MEM] MemoryMonitor critical memory_used=1589MB memory_available=459MB
+ECU1 2026/06/28 18:30:00.100000 +0.100000 ECU1 SYST GC00 LCAT 24 log info verbose 1 [GC] GarbageCollector emergency collection triggered
+ECU1 2026/06/28 18:30:01.200000 +1.100000 ECU1 SYST GC00 LCAT 25 log warn verbose 1 [GC] GarbageCollector minimal recovery collected=12MB duration=1100ms
+ECU1 2026/06/28 18:45:00.000000 +898.800000 ECU1 AUDI MIX0 LCAT 26 log error verbose 1 [AUDIO] AudioMixer buffer underrun severe missed=15 frames audio_glitch_detected
+ECU1 2026/06/28 19:00:00.000000 +900.000000 ECU1 SYST MEM0 LCAT 27 log error verbose 1 [MEM] MemoryMonitor critical memory_used=1623MB memory_available=425MB
+ECU1 2026/06/28 19:15:00.000000 +900.000000 ECU1 MDIA PLAY LCAT 28 log error verbose 1 [MEDIA] MediaPlayer::allocBuffer failed ENOMEM requested=4096
+ECU1 2026/06/28 19:15:00.100000 +0.100000 ECU1 MDIA PLAY LCAT 29 log error verbose 1 [MEDIA] MediaPlayer playback stopped - memory exhausted
+ECU1 2026/06/28 19:15:00.200000 +0.100000 ECU1 SYST WDOG LCAT 30 log warn verbose 1 [WATCHDOG] MediaService health check degraded response_time=890ms threshold=500ms
+ECU1 2026/06/28 19:30:00.000000 +899.800000 ECU1 SYST MEM0 LCAT 31 log error verbose 1 [MEM] MemoryMonitor OOM imminent memory_used=1678MB memory_available=370MB
+ECU1 2026/06/28 19:30:00.100000 +0.100000 ECU1 SYST MEM0 LCAT 32 log error verbose 1 [MEM] Memory allocation failed process=MediaPlayer requested=8192KB available=0KB
+ECU1 2026/06/28 19:30:00.200000 +0.100000 ECU1 SYST MEM0 LCAT 33 log error verbose 1 [MEM] OOM detected process=MediaPlayer triggering service restart
+ECU1 2026/06/28 19:30:00.300000 +0.100000 ECU1 SYST SRVC LCAT 34 log info verbose 1 [SERVICE] ServiceManager restarting MediaService reason=OOM
+ECU1 2026/06/28 19:30:01.000000 +0.700000 ECU1 MDIA INIT LCAT 35 log info verbose 1 [MEDIA] MediaService restarted - memory leak suspected
+ECU1 2026/06/28 19:30:01.100000 +0.100000 ECU1 SYST MEM0 LCAT 36 log info verbose 1 [MEM] MemoryMonitor post-restart memory_used=1345MB memory_available=703MB recovered=333MB
+ECU1 2026/06/28 19:30:01.200000 +0.100000 ECU1 SYST DIAG LCAT 37 log info verbose 1 [DIAG] Memory leak detected in MediaPlayer::decodeFrame estimated_leak_rate=35MB/hour

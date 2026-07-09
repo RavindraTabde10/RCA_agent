@@ -1,7 +1,7 @@
 # Application Configuration
 app:
   name: "AI Agent for Root Cause Analysis"
-  version: "0.1.0"
+  version: "1.0.0"
   log_level: "INFO"
   log_file: "logs/rca_agent.log"
 
@@ -19,16 +19,40 @@ agents:
     enabled: true
     priority: high
 
-# LLM Configuration (Azure OpenAI)
+# ==============================================
+# LLM Configuration
+# ==============================================
+# PLACEHOLDER: Configure your LLM API here
+# Options: azure_openai, openai, custom
+#
+# For Azure OpenAI:
+#   Set environment variables:
+#   - AZURE_OPENAI_ENDPOINT
+#   - AZURE_OPENAI_API_KEY
+#   - AZURE_OPENAI_DEPLOYMENT_NAME
+#   - AZURE_OPENAI_API_VERSION
+#
+# For OpenAI:
+#   Set environment variable:
+#   - OPENAI_API_KEY
+#
+# For Custom Endpoint:
+#   Set environment variables:
+#   - LLM_ENDPOINT_URL
+#   - LLM_API_KEY
+# ==============================================
 llm:
-  provider: "azure_openai"
+  provider: "azure_openai"  # Options: azure_openai, openai, or custom
   azure_endpoint: "${AZURE_OPENAI_ENDPOINT}"
-  api_key: "${AZURE_OPENAI_API_KEY}"
+  azure_api_key: "${AZURE_OPENAI_API_KEY}"
   api_version: "${AZURE_OPENAI_API_VERSION}"
   deployment_name: "${AZURE_OPENAI_DEPLOYMENT_NAME}"
-  model: "${AZURE_OPENAI_MODEL}"
-  temperature: 0.7
-  max_tokens: 2000
+  openai_api_key: "${OPENAI_API_KEY}"
+  endpoint_url: "${LLM_ENDPOINT_URL}"
+  api_key: "${LLM_API_KEY}"
+  model: "gpt-4"
+  temperature: 0.3
+  max_tokens: 4000
 
 # Reasoning Configuration
 reasoning:
@@ -50,16 +74,52 @@ knowledge:
     index_type: "hnsw"
 
 # Integration Configuration
+# ==============================================
+# JIRA Configuration
+# ==============================================
+# PLACEHOLDER: Configure your JIRA API here
+#
+# Set environment variables:
+#   - JIRA_URL (e.g., https://yourcompany.atlassian.net)
+#   - JIRA_EMAIL (your Atlassian account email)
+#   - JIRA_API_TOKEN (generate from Atlassian account)
+#   - JIRA_PROJECT_KEY (e.g., SAM1)
+# ==============================================
 integrations:
   jira:
-    enabled: false
-    url: ""
+    enabled: true  # Set to true when JIRA is configured
+    url: "${JIRA_URL}"
+    email: "${JIRA_EMAIL}"
     api_token: "${JIRA_API_TOKEN}"
-    project_key: ""
+    project_key: "${JIRA_PROJECT_KEY}"
+    # JIRA operations settings
+    add_comment: true           # Add RCA comment to ticket
+    upload_attachments: true    # Upload MD and HTML reports
+    link_duplicates: true       # Link duplicate tickets
+    update_fields: false        # Update custom fields (advanced)
   
+  # ==============================================
+  # Git Repository Configuration
+  # ==============================================
+  # PLACEHOLDER: Configure your source code repository here
+  #
+  # Set environment variables:
+  #   - GIT_REPO_URL (e.g., https://github.com/org/repo.git)
+  #   - GIT_BRANCH (default: main)
+  #   - GIT_TOKEN (personal access token for private repos)
+  #   - GIT_LOCAL_PATH (local directory to clone/store repo)
+  # ==============================================
   git:
-    enabled: false
-    repo_path: ""
+    enabled: true  # Set to true when Git is configured
+    repo_url: "${GIT_REPO_URL}"
+    branch: "${GIT_BRANCH}"
+    token: "${GIT_TOKEN}"
+    local_path: "${GIT_LOCAL_PATH}"  # Local path to clone repository
+    src_subdir: "src"               # Subdirectory containing source code
+    # Git operations settings
+    auto_pull: true                 # Automatically pull latest on analysis
+    search_enabled: true            # Enable code search
+    blame_enabled: true             # Enable git blame for affected files
   
   slack:
     enabled: false
@@ -69,6 +129,26 @@ integrations:
     enabled: false
     smtp_server: ""
     smtp_port: 587
+
+# ==============================================
+# Data Paths Configuration
+# ==============================================
+paths:
+  base_path: "."
+  defects_dir: "data/defects"
+  historical_defects: "data/historical_defects/defects_data.json"
+  dlt_logs_dir: "data/dlt_logs"
+  src_dir: "data/src"
+  domain_knowledge_dir: "data/domain_knowledge"
+  output_dir: "output/reports"
+
+# ==============================================
+# Duplicate Detection Thresholds
+# ==============================================
+thresholds:
+  duplicate: 0.90           # 90%+ similarity = potential duplicate
+  related: 0.75             # 75%+ similarity = related issue
+  min_similarity: 0.50      # 50%+ similarity = worth mentioning
 
 # Output Configuration
 output:
@@ -92,3 +172,48 @@ performance:
   cache_enabled: true
   cache_ttl_seconds: 3600
 
+# ==============================================
+# Scheduler Configuration (Automated RCA)
+# ==============================================
+# Configure labels and behavior for automated ticket processing
+# Use rca_scheduler.py to run the automated job
+#
+# Workflow:
+#   1. Add 'needs-rca' label to JIRA ticket
+#   2. Scheduler fetches ticket automatically
+#   3. RCA runs and updates JIRA
+#   4. Label changes: 'needs-rca' → 'rca-complete'
+# ==============================================
+scheduler:
+  # Labels that trigger RCA analysis
+  trigger_labels:
+    - "needs-rca"
+    - "auto-rca"
+    - "rca-requested"
+  
+  # Label added after successful RCA
+  completion_label: "rca-complete"
+  
+  # Label added while RCA is running
+  in_progress_label: "rca-in-progress"
+  
+  # Label added if RCA fails
+  error_label: "rca-error"
+  
+  # Maximum tickets to process per scheduler run
+  max_tickets_per_run: 10
+  
+  # Additional JQL filter (e.g., only open tickets)
+  jql_filter: "status != Closed AND status != Done"
+  
+  # Remove trigger label after RCA completes
+  remove_trigger_label: true
+  
+  # Upload MD/HTML reports to JIRA
+  upload_to_jira: true
+  
+  # Link duplicate tickets
+  mark_duplicates: true
+  
+  # Daemon mode interval (seconds)
+  daemon_interval: 300  # 5 minutes

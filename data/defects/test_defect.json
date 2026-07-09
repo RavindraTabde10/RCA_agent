@@ -1,0 +1,22 @@
+{
+  "defects": [
+    {
+      "key": "TEST-001",
+      "summary": "Audio output stops when MOST ring communication breaks - Bus Timeout",
+      "description": "Problem: Audio suddenly stops playing while streaming music. HMI shows media player as PLAYING but there is no sound output.\n\nSteps to Reproduce:\n1. Start music streaming playback\n2. Navigate using voice guidance simultaneously\n3. After extended operation (around 6 hours), audio stops\n4. HMI shows media player still in PLAYING state\n5. No audio output from speakers\n\nExpected Result: Audio should continue playing without interruption\n\nActual Result: Audio stops but HMI shows PLAYING state. System appears hung.\n\nFrequency: Intermittent - occurs after 4-8 hours of continuous use\n\nEnvironment: Vehicle Test, SW Version BUILD-2026.06.29-001",
+      "issue_type": "Bug",
+      "priority": "P1",
+      "severity": "Critical",
+      "status": "Open",
+      "component": "AudioService",
+      "reporter": "test_user",
+      "assignee": null,
+      "created": "2026-06-29",
+      "labels": ["audio", "most", "bus-timeout", "needs-rca"],
+      "affected_version": "IVI-2026.06.29",
+      "dlt_attachment": "audio_bus_timeout.dlt",
+      "attachments": ["audio_bus_timeout.dlt"],
+      "comments": []
+    }
+  ]
+}

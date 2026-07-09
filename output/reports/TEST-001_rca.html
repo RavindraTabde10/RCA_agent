@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCA Report - TEST-001</title>
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            color: #667eea;
+            font-size: 36px;
+            font-weight: 700;
+        }
+        
+        .timestamp {
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card.highlight {
+            border-left: 4px solid #667eea;
+        }
+        
+        .alert {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+        
+        .alert-warning h3 {
+            color: #856404;
+            border: none;
+        }
+        
+        .confidence-card {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .confidence-card.high { border-top: 4px solid #28a745; }
+        .confidence-card.medium { border-top: 4px solid #ffc107; }
+        .confidence-card.low { border-top: 4px solid #dc3545; }
+        
+        .confidence-score {
+            font-size: 48px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .info-table {
+            width: 100%;
+        }
+        
+        .info-table th {
+            text-align: left;
+            padding: 10px;
+            width: 150px;
+            color: #666;
+        }
+        
+        .info-table td {
+            padding: 10px;
+        }
+        
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .confidence-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .confidence-badge.high { background: #d4edda; color: #155724; }
+        .confidence-badge.medium { background: #fff3cd; color: #856404; }
+        .confidence-badge.low { background: #f8d7da; color: #721c24; }
+        
+        .root-cause {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            display: block;
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .log-box {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-line {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .log-line.error {
+            color: #ff6b6b;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .data-table code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .evidence-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-row {
+                flex-direction: column;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔍 Root Cause Analysis Report</h1>
+            <h2>TEST-001</h2>
+            <p class="timestamp">Generated: 2026-07-09T19:09:30.486008</p>
+        </header>
+
+        <div class="card confidence-card medium">
+            <h3>Analysis Confidence</h3>
+            <div class="confidence-score">65%</div>
+        </div>
+
+        <section class="card">
+            <h3>📋 Defect Summary</h3>
+            <table class="info-table">
+                <tr><th>ID</th><td>TEST-001</td></tr>
+                <tr><th>Summary</th><td>Audio output stops when MOST ring communication breaks - Bus Timeout</td></tr>
+                <tr><th>Component</th><td><span class="badge">AudioService</span></td></tr>
+                <tr><th>Priority</th><td>P1</td></tr>
+                <tr><th>Status</th><td>Open</td></tr>
+            </table>
+        </section>
+
+        <section class="card highlight">
+            <h3>🔍 Root Cause</h3>
+            <p class="root-cause">Based on DLT patterns and component mapping, the issue appears to be in the AudioService module. Further LLM analysis is needed for precise root cause.</p>
+        </section>
+
+        <section class="card">
+            <h3>🔧 Fix Recommendation</h3>
+            <p>Configure LLM API to get specific fix recommendations.</p>
+        </section>
+
+        <section class="card">
+            <h3>📊 Evidence</h3>
+            <ul class="evidence-list">
+                <li>{'line': 16, 'level': 'ERROR', 'app_id': None, 'component': 'Unknown', 'message': 'ECU1 2026/06/29 15:00:00.450000 +0.050000 ECU1 COMM MOST LCAT 16 log error verbose 1 [MOST] ring synchronization lost missed_frames=3', 'timestamp': None}</li>
+<li>{'line': 17, 'level': 'ERROR', 'app_id': None, 'component': 'Unknown', 'message': 'ECU1 2026/06/29 15:00:00.500000 +0.050000 ECU1 COMM MOST LCAT 17 log error verbose 1 [MOST] ring timeout node=AMP01 no_response=100ms', 'timestamp': None}</li>
+<li>{'line': 18, 'level': 'ERROR', 'app_id': None, 'component': 'Unknown', 'message': 'ECU1 2026/06/29 15:00:00.550000 +0.050000 ECU1 AUDI MIX0 LCAT 18 log error verbose 1 [AUDIO] AudioOutput MOST link down - audio stopped', 'timestamp': None}</li>
+<li>{'line': 20, 'level': 'ERROR', 'app_id': None, 'component': 'Unknown', 'message': 'ECU1 2026/06/29 15:00:00.700000 +0.100000 ECU1 COMM MOST LCAT 20 log error verbose 1 [MOST] Recovery failed - ring communication broken', 'timestamp': None}</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h3>📝 DLT Log Analysis</h3>
+            <div class="stats-row">
+                <div class="stat">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Errors</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Warnings</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Components</span>
+                </div>
+            </div>
+            <div class="log-box">
+                <div class="log-line error">[Unknown] ECU1 2026/06/29 15:00:00.450000 +0.050000 ECU1 COMM MOST LCAT 16 log error verbo</div>
+<div class="log-line error">[Unknown] ECU1 2026/06/29 15:00:00.500000 +0.050000 ECU1 COMM MOST LCAT 17 log error verbo</div>
+<div class="log-line error">[Unknown] ECU1 2026/06/29 15:00:00.550000 +0.050000 ECU1 AUDI MIX0 LCAT 18 log error verbo</div>
+<div class="log-line error">[Unknown] ECU1 2026/06/29 15:00:00.700000 +0.100000 ECU1 COMM MOST LCAT 20 log error verbo</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>📁 Affected Source Files</h3>
+            <table class="data-table">
+                <thead>
+                    <tr><th>File</th><th>Component</th><th>Confidence</th></tr>
+                </thead>
+                <tbody>
+                    
+                <tr>
+                    <td><code>common/TimeoutHandler.cpp</code></td>
+                    <td><span class="badge">N/A</span></td>
+                    <td><span class="confidence-badge medium">60%</span></td>
+                </tr>
+                <tr>
+                    <td><code>common/Timer.cpp</code></td>
+                    <td><span class="badge">N/A</span></td>
+                    <td><span class="confidence-badge medium">60%</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="card">
+            <h3>🛡️ Preventive Measures</h3>
+            <ul>
+                <li>Add unit tests for error scenarios</li>
+<li>Implement timeout handling</li>
+<li>Add defensive null checks</li>
+            </ul>
+        </section>
+
+        <footer class="footer">
+            <p>Generated by RCA Agent • Please review and validate findings</p>
+        </footer>
+    </div>
+</body>
+</html>

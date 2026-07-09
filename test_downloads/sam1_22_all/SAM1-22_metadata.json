@@ -1,0 +1,22 @@
+{
+  "key": "SAM1-22",
+  "summary": "Audio takes too long to start from USB",
+  "description": "Problem:\nWhen switching to USB audio source, there is a noticeable delay before audio starts. Feels slower than previous software version.\nSteps to reproduce:\n- 1. Insert USB drive with audio content\n- 2. Wait for USB to be recognized\n- 3. Tap USB source in media menu\n- 4. Use stopwatch to measure time until audio plays\n- 5. Repeat 10 times and average\nExpected result:\nAudio should start within 200ms of selecting USB source.\nActual result:\nAudio takes 350-400ms on average to start. This is noticeable to user and feels sluggish.",
+  "status": "To Do",
+  "labels": [
+    "audio",
+    "kpi",
+    "needs-rca",
+    "performance",
+    "usb"
+  ],
+  "attachments": [
+    {
+      "filename": "usb_str_slow.dlt",
+      "content_url": "https://hrishabhtiwari.atlassian.net/rest/api/3/attachment/content/10037",
+      "size": 2845,
+      "mimeType": "text/plain",
+      "author": "Hrishabh kumar Tiwari"
+    }
+  ]
+}

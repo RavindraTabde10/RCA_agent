@@ -1,0 +1,20 @@
+ECU1 2026/06/29 09:00:00.000000 +0.000000 ECU1 COMM MOST LCAT 1 log info verbose 1 [MOST] MOSTRing initialized ring_id=1 nodes=3
+ECU1 2026/06/29 09:00:00.100000 +0.100000 ECU1 COMM MOST LCAT 2 log info verbose 1 [MOST] Node registered: IVI (master)
+ECU1 2026/06/29 09:00:00.200000 +0.100000 ECU1 COMM MOST LCAT 3 log info verbose 1 [MOST] Node registered: AMP01 (amplifier)
+ECU1 2026/06/29 09:00:00.300000 +0.100000 ECU1 COMM MOST LCAT 4 log info verbose 1 [MOST] Node registered: DSP01 (processor)
+ECU1 2026/06/29 09:00:00.400000 +0.100000 ECU1 AUDI MIX0 LCAT 5 log info verbose 1 [AUDIO] AudioOutput MOST link established
+ECU1 2026/06/29 09:00:00.500000 +0.100000 ECU1 MDIA PLAY LCAT 6 log info verbose 1 [MEDIA] MediaPlayer starting playback source=STREAMING
+ECU1 2026/06/29 12:00:00.000000 +10799.500000 ECU1 COMM MOST LCAT 7 log info verbose 1 [MOST] ring sync status=OK bandwidth=72% cpu_load=45%
+ECU1 2026/06/29 12:00:00.100000 +0.100000 ECU1 SYST PERF LCAT 8 log info verbose 1 [PERF] System running stable memory=1320MB threads=145
+ECU1 2026/06/29 14:00:00.000000 +7199.900000 ECU1 COMM MOST LCAT 9 log info verbose 1 [MOST] ring sync status=OK bandwidth=78% cpu_load=55%
+ECU1 2026/06/29 14:30:00.000000 +1800.000000 ECU1 NAVI GUID LCAT 10 log info verbose 1 [NAV] Voice guidance active route_length=125km
+ECU1 2026/06/29 15:00:00.000000 +1800.000000 ECU1 COMM MOST LCAT 11 log info verbose 1 [MOST] ring sync status=OK bandwidth=85% cpu_load=68%
+ECU1 2026/06/29 15:00:00.150000 +0.150000 ECU1 SYST PERF LCAT 12 log warn verbose 1 [PERF] CPU load elevated cpu_load=72% threshold=70%
+ECU1 2026/06/29 15:00:00.250000 +0.100000 ECU1 COMM MOST LCAT 13 log warn verbose 1 [MOST] sync frame delayed expected=0ms actual=8ms cpu_load=75%
+ECU1 2026/06/29 15:00:00.350000 +0.100000 ECU1 COMM MOST LCAT 14 log warn verbose 1 [MOST] sync frame delayed expected=0ms actual=12ms cpu_load=78%
+ECU1 2026/06/29 15:00:00.400000 +0.050000 ECU1 COMM MOST LCAT 15 log warn verbose 1 [MOST] sync frame delayed expected=0ms actual=25ms cpu_load=82%
+ECU1 2026/06/29 15:00:00.450000 +0.050000 ECU1 COMM MOST LCAT 16 log error verbose 1 [MOST] ring synchronization lost missed_frames=3
+ECU1 2026/06/29 15:00:00.500000 +0.050000 ECU1 COMM MOST LCAT 17 log error verbose 1 [MOST] ring timeout node=AMP01 no_response=100ms
+ECU1 2026/06/29 15:00:00.550000 +0.050000 ECU1 AUDI MIX0 LCAT 18 log error verbose 1 [AUDIO] AudioOutput MOST link down - audio stopped
+ECU1 2026/06/29 15:00:00.600000 +0.050000 ECU1 HMI0 DISP LCAT 19 log info verbose 1 [HMI] Media player showing PLAYING but no audio output
+ECU1 2026/06/29 15:00:00.700000 +0.100000 ECU1 COMM MOST LCAT 20 log error verbose 1 [MOST] Recovery failed - ring communication broken

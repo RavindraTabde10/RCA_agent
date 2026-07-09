@@ -4,8 +4,42 @@ Config - Configuration management
 
 import yaml
 import os
+import re
 from typing import Dict, Any, Optional
 import logging
+
+
+def substitute_env_variables(config: Any) -> Any:
+    """
+    Recursively substitute ${VAR} placeholders with environment variables
+    
+    Args:
+        config: Configuration value (can be dict, list, str, etc.)
+        
+    Returns:
+        Configuration with substituted values
+    """
+    if isinstance(config, dict):
+        return {key: substitute_env_variables(value) for key, value in config.items()}
+    elif isinstance(config, list):
+        return [substitute_env_variables(item) for item in config]
+    elif isinstance(config, str):
+        # Match ${VAR_NAME} pattern
+        pattern = r'\$\{([^}]+)\}'
+        
+        def replacer(match):
+            var_name = match.group(1)
+            # Handle naming variations (JIRA_URL vs JIRA_BASE_URL, etc.)
+            value = os.getenv(var_name)
+            if value is None and var_name == 'JIRA_URL':
+                value = os.getenv('JIRA_BASE_URL')
+            if value is None and var_name == 'JIRA_PROJECT_KEY':
+                value = os.getenv('JIRA_TICKET_KEY')
+            return value if value is not None else match.group(0)
+        
+        return re.sub(pattern, replacer, config)
+    else:
+        return config
 
 
 def load_config(config_path: str = "config/config.yaml") -> Dict[str, Any]:
@@ -27,6 +61,9 @@ def load_config(config_path: str = "config/config.yaml") -> Dict[str, Any]:
     try:
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
+        
+        # Substitute environment variables
+        config = substitute_env_variables(config)
         
         logger.info(f"Loaded configuration from {config_path}")
         return config
