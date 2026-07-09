@@ -506,20 +506,17 @@ class JiraDataFetcher:
         Download attachments from an already-fetched ticket to a workspace folder
         
         This is optimized for the scheduler - no extra API call needed.
+        All files are downloaded directly to the workspace folder.
         
         Args:
             ticket: Already fetched ticket data dict
-            workspace_dir: Directory to download to
+            workspace_dir: Directory to download to (all files go here)
             
         Returns:
             List of downloaded file paths
         """
         downloaded = []
-        dlt_dir = os.path.join(workspace_dir, 'dlt_logs')
-        attachments_dir = os.path.join(workspace_dir, 'attachments')
-        
-        os.makedirs(dlt_dir, exist_ok=True)
-        os.makedirs(attachments_dir, exist_ok=True)
+        os.makedirs(workspace_dir, exist_ok=True)
         
         # Get attachments from ticket (check both locations)
         attachments = ticket.get('attachments', [])
@@ -551,17 +548,15 @@ class JiraDataFetcher:
             if not filename or not content_url:
                 continue
             
-            # Determine target directory based on file type
-            is_dlt = filename.lower().endswith(('.dlt', '.log', '.txt'))
-            target_dir = dlt_dir if is_dlt else attachments_dir
+            # All files go to workspace root
+            out_file = Path(workspace_dir) / filename
             
             # Handle duplicate filenames
-            out_file = Path(target_dir) / filename
             if out_file.exists():
                 base, ext = os.path.splitext(filename)
                 i = 1
                 while True:
-                    candidate = Path(target_dir) / f"{base}_{i}{ext}"
+                    candidate = Path(workspace_dir) / f"{base}_{i}{ext}"
                     if not candidate.exists():
                         out_file = candidate
                         break
@@ -669,6 +664,141 @@ class JiraDataFetcher:
             return False
         except Exception as exc:
             print(f"  ✗ Failed to add comment to {ticket_key}: {exc}")
+            return False
+    
+    def add_attachment(self, ticket_key: str, file_path: str) -> bool:
+        """
+        Upload attachment to a JIRA ticket
+        
+        Args:
+            ticket_key: JIRA issue key
+            file_path: Path to file to upload
+            
+        Returns:
+            True if successful
+        """
+        if not os.path.exists(file_path):
+            print(f"  ✗ File not found: {file_path}")
+            return False
+        
+        try:
+            import mimetypes
+            
+            # Prepare multipart/form-data upload
+            filename = os.path.basename(file_path)
+            
+            # Read file content
+            with open(file_path, 'rb') as f:
+                file_content = f.read()
+            
+            # Guess MIME type
+            mime_type, _ = mimetypes.guess_type(filename)
+            if not mime_type:
+                mime_type = 'application/octet-stream'
+            
+            # Generate boundary for multipart/form-data
+            import random
+            import string
+            boundary = ''.join(random.choices(string.ascii_letters + string.digits, k=30))
+            
+            # Build multipart body
+            body_parts = []
+            body_parts.append(f'--{boundary}'.encode())
+            body_parts.append(f'Content-Disposition: form-data; name="file"; filename="{filename}"'.encode())
+            body_parts.append(f'Content-Type: {mime_type}'.encode())
+            body_parts.append(b'')
+            body_parts.append(file_content)
+            body_parts.append(f'--{boundary}--'.encode())
+            
+            body = b'\r\n'.join(body_parts)
+            
+            # Prepare request
+            api_url = f"{self.base_url}/rest/api/3/issue/{ticket_key}/attachments"
+            
+            # Custom headers for file upload
+            upload_headers = {
+                **self.headers,
+                'Content-Type': f'multipart/form-data; boundary={boundary}',
+                'X-Atlassian-Token': 'no-check'  # Required for JIRA attachments
+            }
+            # Remove conflicting Content-Type from base headers
+            if 'Content-Type' in self.headers:
+                upload_headers = {k: v for k, v in self.headers.items() if k != 'Content-Type'}
+                upload_headers['Content-Type'] = f'multipart/form-data; boundary={boundary}'
+                upload_headers['X-Atlassian-Token'] = 'no-check'
+                upload_headers['Authorization'] = self.headers['Authorization']
+                upload_headers['Accept'] = 'application/json'
+            
+            req = request.Request(api_url, data=body, headers=upload_headers, method="POST")
+            
+            with request.urlopen(req, timeout=60) as response:
+                print(f"  ✓ Uploaded {filename} to {ticket_key}")
+                return True
+                
+        except error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="ignore")
+            print(f"  ✗ Failed to upload {filename} to {ticket_key}: {exc.code} {body}")
+            return False
+        except Exception as exc:
+            print(f"  ✗ Failed to upload attachment to {ticket_key}: {exc}")
+            return False
+    
+    def link_duplicate(self, issue_key: str, duplicate_of: str) -> bool:
+        """
+        Link an issue as duplicate of another issue
+        
+        Args:
+            issue_key: The duplicate issue key
+            duplicate_of: The original issue key
+            
+        Returns:
+            True if successful
+        """
+        try:
+            api_url = f"{self.base_url}/rest/api/3/issueLink"
+            
+            link_data = {
+                "type": {
+                    "name": "Duplicate"
+                },
+                "inwardIssue": {
+                    "key": issue_key
+                },
+                "outwardIssue": {
+                    "key": duplicate_of
+                },
+                "comment": {
+                    "body": {
+                        "type": "doc",
+                        "version": 1,
+                        "content": [
+                            {
+                                "type": "paragraph",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": f"Automatically detected as duplicate by RCA Agent"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+            
+            data = json.dumps(link_data).encode('utf-8')
+            req = request.Request(api_url, data=data, headers=self.headers, method="POST")
+            
+            with request.urlopen(req, timeout=20) as response:
+                print(f"  ✓ Linked {issue_key} as duplicate of {duplicate_of}")
+                return True
+                
+        except error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="ignore")
+            print(f"  ✗ Failed to link {issue_key} as duplicate: {exc.code} {body}")
+            return False
+        except Exception as exc:
+            print(f"  ✗ Failed to link duplicate: {exc}")
             return False
     
     def save_ticket_metadata(self, ticket_key: str, dest_dir: str) -> str:

@@ -108,15 +108,28 @@ class LLMService(BaseLLMService):
             raise ValueError("Azure OpenAI endpoint and API key required")
         
         try:
-            from openai import AzureOpenAI
+            # Use generic OpenAI client with custom base URL for APIM compatibility
+            # This matches the approach in LLMClient that works with APIM gateways
+            from openai import OpenAI
             
-            self._client = AzureOpenAI(
-                azure_endpoint=self.azure_endpoint,
+            # Construct base URL: {endpoint}/deployments/{deployment_name}
+            # This format works with Azure API Management (APIM) gateways
+            base_url = f"{self.azure_endpoint}/deployments/{self.azure_deployment}"
+            
+            self._client = OpenAI(
+                base_url=base_url,
                 api_key=self.azure_key,
-                api_version=self.azure_api_version
+                default_headers={
+                    "api-key": self.azure_key
+                },
+                default_query={
+                    "api-version": self.azure_api_version
+                }
             )
             self.provider = 'azure_openai'
             self.logger.info(f"Azure OpenAI client initialized: {self.azure_endpoint}")
+            self.logger.info(f"Base URL: {base_url}")
+            self.logger.info(f"Deployment: {self.azure_deployment}")
         except ImportError:
             self.logger.error("openai package not installed. Run: pip install openai")
             raise
@@ -180,6 +193,19 @@ class LLMService(BaseLLMService):
             self.logger.error(f"LLM analysis failed: {e}")
             return self._get_error_response(str(e))
     
+    def analyze_text(self, prompt: str, system_message: str = None) -> str:
+        """
+        Alias for analyze() method - for compatibility with RCA engine
+        
+        Args:
+            prompt: User prompt with analysis request
+            system_message: Optional system message for context
+            
+        Returns:
+            LLM response text
+        """
+        return self.analyze(prompt, system_message)
+    
     def _call_openai(self, prompt: str, system_message: str) -> str:
         """Call OpenAI/Azure OpenAI API"""
         messages = [
@@ -190,9 +216,17 @@ class LLMService(BaseLLMService):
         params = {
             "model": self.azure_deployment if self.provider == 'azure_openai' else self.model,
             "messages": messages,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens
+            "temperature": self.temperature
         }
+        
+        # For newer models (GPT-4o, GPT-5, etc.), use max_completion_tokens
+        # For older models, use max_tokens
+        # Check if model name suggests it's a newer model
+        model_name = self.azure_deployment if self.provider == 'azure_openai' else self.model
+        if any(x in model_name.lower() for x in ['gpt-5', 'gpt-4o', 'o1', 'o3']):
+            params["max_completion_tokens"] = self.max_tokens
+        else:
+            params["max_tokens"] = self.max_tokens
         
         response = self._client.chat.completions.create(**params)
         return response.choices[0].message.content

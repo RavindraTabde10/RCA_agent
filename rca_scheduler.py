@@ -181,11 +181,8 @@ class RCAScheduler:
         """
         Create isolated workspace folder for a ticket
         
-        Each ticket gets its own folder to prevent DLT file conflicts:
-        - output/tickets/TICKET-123/
-          ├── dlt_logs/          # DLT files for this ticket only
-          ├── reports/           # Generated reports
-          └── attachments/       # Downloaded attachments
+        Simple structure:
+        - output/tickets/TICKET-123/  (all files directly inside)
         
         Args:
             issue_key: JIRA ticket key (e.g., 'PROJ-123')
@@ -195,13 +192,10 @@ class RCAScheduler:
         """
         # Sanitize issue key for folder name
         safe_key = issue_key.replace('/', '_').replace('\\', '_')
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        ticket_folder = os.path.join(self.tickets_workspace, f"{safe_key}_{timestamp}")
+        ticket_folder = os.path.join(self.tickets_workspace, safe_key)
         
-        # Create subdirectories
-        os.makedirs(os.path.join(ticket_folder, 'dlt_logs'), exist_ok=True)
-        os.makedirs(os.path.join(ticket_folder, 'reports'), exist_ok=True)
-        os.makedirs(os.path.join(ticket_folder, 'attachments'), exist_ok=True)
+        # Create ticket folder
+        os.makedirs(ticket_folder, exist_ok=True)
         
         logger.info(f"📁 Created workspace for {issue_key}: {ticket_folder}")
         return ticket_folder
@@ -262,9 +256,9 @@ class RCAScheduler:
         Args:
             workspace: Ticket workspace folder
         """
-        # Update engine paths to use ticket workspace
-        self.rca_engine.dlt_logs_dir = os.path.join(workspace, 'dlt_logs')
-        self.rca_engine.output_dir = os.path.join(workspace, 'reports')
+        # Update engine paths to use ticket workspace (all files in same folder)
+        self.rca_engine.dlt_logs_dir = workspace
+        self.rca_engine.output_dir = workspace
     
     def fetch_tickets_by_label(self, labels: List[str] = None) -> List[Dict[str, Any]]:
         """
@@ -427,11 +421,10 @@ class RCAScheduler:
             
             # Configure RCA engine to use ticket-specific paths
             self._configure_engine_for_ticket(workspace)
-            logger.info(f"   DLT folder: {self.rca_engine.dlt_logs_dir}")
-            logger.info(f"   Reports folder: {self.rca_engine.output_dir}")
+            logger.info(f"   Workspace: {workspace}")
             
             # ========================================
-            # STEP 2: Download DLT attachments
+            # STEP 2: Download attachments
             # ========================================
             # Use optimized method - no extra API call since we have ticket data
             logger.info(f"   📥 Attempting to download attachments...")
