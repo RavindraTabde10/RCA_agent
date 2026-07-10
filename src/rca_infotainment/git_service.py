@@ -55,6 +55,10 @@ class GitService:
         self.local_path = git_config.get('local_path') or os.getenv('GIT_LOCAL_PATH', 'data/source_repo')
         self.src_subdir = git_config.get('src_subdir', 'src')  # Subdirectory containing source code
         
+       #enter prises login
+        self.git_username = git_config.get('username') or os.getenv('GIT_USERNAME', '')
+        self.github_enterprise_url = git_config.get('enterprise_api_url') or os.getenv('GITHUB_ENTERPRISE_API_URL', 'https://cc-github.bmwgroup.net/api/v3')
+        
         self._repo = None
         self.connected = False
         
@@ -1008,6 +1012,269 @@ Automated fix for defect **{defect_id}** based on Root Cause Analysis.
         else:
             result["errors"].append("Failed to create PR (branch pushed successfully)")
             # PR creation failed but branch is pushed - partial success
+            result["partial_success"] = True
+        
+        return result
+
+    # ==========================================
+    # ENTERPRISE GITHUB PR OPERATIONS
+    # ==========================================
+    
+    def create_enterprise_pull_request(
+        self,
+        defect_id: str,
+        branch_name: str,
+        title: str = None,
+        description: str = None,
+        base_branch: str = "master",
+        owner: str = None,
+        repo: str = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Create a Pull Request on enterprise GitHub (e.g., cc-github.bmwgroup.net)
+        
+        Use this for BMW internal repositories instead of public GitHub.
+        
+        Args:
+            defect_id: Defect/ticket ID
+            branch_name: Source branch for PR
+            title: PR title (auto-generated if not provided)
+            description: PR description/body
+            base_branch: Target branch (default: master)
+            owner: GitHub repository owner (extracted from repo_url if not provided)
+            repo: GitHub repository name (extracted from repo_url if not provided)
+            
+        Returns:
+            PR info dict with url, number, etc. or None on failure
+        """
+        if not self.git_username or not self.token:
+            self.logger.error("GitHub credentials not configured. Set GIT_USERNAME and GIT_TOKEN.")
+            return None
+        
+        # Extract owner/repo from URL if not provided
+        if not owner or not repo:
+            owner, repo = self._extract_repo_info()
+            if not owner or not repo:
+                self.logger.error("Could not extract owner/repo from URL")
+                return None
+        
+        pr_title = title or f"fix({defect_id}): Apply RCA recommended fix"
+        pr_body = description or self._generate_pr_description(defect_id)
+        
+        url = f"{self.github_enterprise_url}/repos/{owner}/{repo}/pulls"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "title": pr_title,
+            "head": f"{self.git_username}:{branch_name}",
+            "base": base_branch,
+            "body": pr_body
+        }
+        
+        try:
+            response = requests.post(
+                url, 
+                headers=headers, 
+                auth=(self.git_username, self.token), 
+                json=payload, 
+                verify=False  # May be needed for enterprise certs
+            )
+            
+            if response.status_code in (200, 201):
+                pr_data = response.json()
+                result = {
+                    "platform": "github_enterprise",
+                    "number": pr_data.get("number"),
+                    "url": pr_data.get("html_url"),
+                    "state": pr_data.get("state"),
+                    "title": pr_data.get("title"),
+                    "created_at": pr_data.get("created_at")
+                }
+                self.logger.info(f"Created Enterprise GitHub PR #{result['number']}: {result['url']}")
+                return result
+            elif response.status_code == 422:
+                # PR might already exist
+                error = response.json()
+                if "already exists" in str(error):
+                    self.logger.warning("PR already exists for this branch")
+                    return self._get_existing_enterprise_pr(owner, repo, branch_name)
+                else:
+                    self.logger.error(f"Enterprise GitHub API error: {error}")
+            else:
+                self.logger.error(f"Enterprise GitHub API error: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to create Enterprise GitHub PR: {e}")
+        
+        return None
+    
+    def _get_existing_enterprise_pr(
+        self, 
+        owner: str, 
+        repo: str, 
+        head_branch: str
+    ) -> Optional[Dict[str, Any]]:
+        """Get existing Enterprise GitHub PR for a branch"""
+        url = f"{self.github_enterprise_url}/repos/{owner}/{repo}/pulls"
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        params = {
+            "head": f"{owner}:{head_branch}",
+            "state": "open"
+        }
+        
+        try:
+            response = requests.get(
+                url, 
+                headers=headers, 
+                params=params,
+                auth=(self.git_username, self.token),
+                verify=False
+            )
+            if response.status_code == 200:
+                prs = response.json()
+                if prs:
+                    pr = prs[0]
+                    return {
+                        "platform": "github_enterprise",
+                        "number": pr.get("number"),
+                        "url": pr.get("html_url"),
+                        "state": pr.get("state"),
+                        "title": pr.get("title"),
+                        "exists": True
+                    }
+        except Exception as e:
+            self.logger.error(f"Failed to get existing PR: {e}")
+        
+        return None
+    
+    def check_enterprise_pr_status(
+        self, 
+        pr_number: int, 
+        owner: str = None, 
+        repo: str = None
+    ) -> Dict[str, Any]:
+        """
+        Check the status of a Pull Request on enterprise GitHub
+        
+        Args:
+            pr_number: PR number to check
+            owner: Repo owner (extracted from repo_url if not provided)
+            repo: Repo name (extracted from repo_url if not provided)
+            
+        Returns:
+            PR status information
+        """
+        if not owner or not repo:
+            owner, repo = self._extract_repo_info()
+        
+        url = f"{self.github_enterprise_url}/repos/{owner}/{repo}/pulls/{pr_number}"
+        headers = {"Accept": "application/json"}
+        
+        try:
+            response = requests.get(
+                url,
+                headers=headers,
+                auth=(self.git_username, self.token),
+                verify=False
+            )
+            
+            if response.status_code == 200:
+                pr_data = response.json()
+                return {
+                    "success": True,
+                    "number": pr_data.get("number"),
+                    "state": pr_data.get("state"),
+                    "merged": pr_data.get("merged", False),
+                    "title": pr_data.get("title"),
+                    "url": pr_data.get("html_url"),
+                    "created_at": pr_data.get("created_at"),
+                    "updated_at": pr_data.get("updated_at")
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": f"Failed to get PR status: {response.status_code}"
+                }
+                
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Request failed: {str(e)}"
+            }
+    
+    def create_fix_and_enterprise_pr(
+        self,
+        defect_id: str,
+        file_path: str,
+        old_content: str,
+        new_content: str,
+        commit_message: str = None,
+        pr_title: str = None,
+        pr_description: str = None
+    ) -> Dict[str, Any]:
+        """
+        Complete workflow for enterprise GitHub: Create branch → Apply fix → Commit → Push → Create PR
+        
+        Use this for BMW internal repositories (cc-github.bmwgroup.net).
+        
+        Args:
+            defect_id: Defect/ticket ID (e.g., "SAM1-2001")
+            file_path: Path to file to fix
+            old_content: Content to replace
+            new_content: New content
+            commit_message: Custom commit message
+            pr_title: Custom PR title
+            pr_description: Custom PR description
+            
+        Returns:
+            Result dict with branch, commit, pr info
+        """
+        result = {
+            "success": False,
+            "defect_id": defect_id,
+            "branch": None,
+            "commit": None,
+            "pr": None,
+            "errors": []
+        }
+        
+        # Step 1: Create fix branch
+        branch_name = self.create_fix_branch(defect_id)
+        if not branch_name:
+            result["errors"].append("Failed to create branch")
+            return result
+        result["branch"] = branch_name
+        
+        # Step 2: Apply fix
+        if not self.apply_fix(file_path, old_content, new_content):
+            result["errors"].append(f"Failed to apply fix to {file_path}")
+            return result
+        
+        # Step 3: Commit
+        commit_hash = self.commit_fix(defect_id, commit_message, [file_path])
+        if not commit_hash:
+            result["errors"].append("Failed to commit changes")
+            return result
+        result["commit"] = commit_hash
+        
+        # Step 4: Push branch
+        if not self.push_branch(branch_name):
+            result["errors"].append("Failed to push branch")
+            return result
+        
+        # Step 5: Create PR on enterprise GitHub
+        pr_info = self.create_enterprise_pull_request(
+            defect_id=defect_id,
+            branch_name=branch_name,
+            title=pr_title,
+            description=pr_description
+        )
+        
+        if pr_info:
+            result["pr"] = pr_info
+            result["success"] = True
+            self.logger.info(f"Successfully created enterprise fix PR for {defect_id}: {pr_info.get('url')}")
+        else:
+            result["errors"].append("Failed to create PR (branch pushed successfully)")
             result["partial_success"] = True
         
         return result

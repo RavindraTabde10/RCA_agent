@@ -15,6 +15,18 @@ import logging
 from typing import Dict, Any, List, Optional
 from abc import ABC, abstractmethod
 
+# Import domain configuration
+try:
+    from rca_infotainment.domain_config import get_domain_config, get_llm_system_suffix, is_automotive
+except ImportError:
+    # Fallback if domain_config not available
+    def get_domain_config():
+        return None
+    def get_llm_system_suffix():
+        return ""
+    def is_automotive():
+        return True
+
 
 class BaseLLMService(ABC):
     """Base class for LLM services"""
@@ -261,7 +273,36 @@ class LLMService(BaseLLMService):
         return data.get('response', data.get('content', data.get('text', str(data))))
     
     def _get_default_system_message(self) -> str:
-        """Get default system message for RCA"""
+        """Get default system message for RCA based on domain."""
+        # Get domain-specific configuration
+        domain_config = get_domain_config()
+        domain_suffix = get_llm_system_suffix()
+        
+        # Base message
+        base_message = """You are an expert software engineer specializing in Root Cause Analysis (RCA).
+Your task is to analyze defect information and provide:
+1. Clear root cause identification
+2. Evidence supporting your conclusion  
+3. Specific code files that need to be fixed
+4. Detailed fix recommendations
+5. Confidence level in your analysis
+6. Preventive measures for the future
+
+Be specific, technical, and actionable in your responses."""
+        
+        # Add domain-specific context
+        if domain_config:
+            domain_context = f"""
+
+--- DOMAIN CONTEXT: {domain_config.display_name} ---
+{domain_suffix}
+
+Key components to analyze: {', '.join(domain_config.component_keywords.keys())}
+Common root causes in this domain: {', '.join(domain_config.common_root_causes[:5])}
+"""
+            return base_message + domain_context
+        
+        # Fallback to automotive-specific message for backward compatibility
         return """You are an expert automotive infotainment software engineer specializing in:
 - DLT (Diagnostic Log and Trace) log analysis
 - Root Cause Analysis (RCA) for complex embedded systems

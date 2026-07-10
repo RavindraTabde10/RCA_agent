@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard SSE Diagnostic</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .event { padding: 5px; margin: 2px 0; background: #2a2a2a; }
+        .error { color: #f00; }
+        .info { color: #0ff; }
+        #status { font-size: 20px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="status">Connecting to SSE...</div>
+    <button onclick="clearLog()">Clear Log</button>
+    <div id="log"></div>
+    
+    <script>
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        let eventCount = 0;
+        
+        function addLog(msg, className = '') {
+            const div = document.createElement('div');
+            div.className = 'event ' + className;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            log.insertBefore(div, log.firstChild);
+        }
+        
+        function clearLog() {
+            log.innerHTML = '';
+        }
+        
+        // Connect to SSE
+        addLog('Attempting to connect to /events...', 'info');
+        const eventSource = new EventSource('http://localhost:5050/events');
+        
+        eventSource.onopen = () => {
+            status.textContent = '✓ Connected to SSE';
+            status.style.color = '#0f0';
+            addLog('SSE connection opened successfully', 'info');
+        };
+        
+        eventSource.onmessage = (e) => {
+            eventCount++;
+            status.textContent = `✓ Connected - Received ${eventCount} events`;
+            
+            try {
+                const event = JSON.parse(e.data);
+                addLog(`Event: ${event.type} - ${JSON.stringify(event.data).substring(0, 200)}`);
+            } catch (err) {
+                addLog(`Parse error: ${err}`, 'error');
+                addLog(`Raw data: ${e.data.substring(0, 200)}`);
+            }
+        };
+        
+        eventSource.onerror = (err) => {
+            status.textContent = '✗ Connection error';
+            status.style.color = '#f00';
+            addLog(`SSE error: ${JSON.stringify(err)}`, 'error');
+        };
+    </script>
+</body>
+</html>

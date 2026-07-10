@@ -1,0 +1,25 @@
+{
+  "key": "TEST-DASHBOARD-001",
+  "id": "10001",
+  "summary": "[USB] Source switch from FM to USB takes more than 200ms (STR KPI failure)",
+  "description": "When user taps USB source button, the source-to-render time exceeds 200ms threshold. Observed 378ms delay during STR test.\n\nSteps to reproduce:\n1. Start FM radio playback\n2. Connect USB device with media files\n3. Tap USB source button\n4. Measure time from button press to first audio frame\n\nExpected: < 200ms\nActual: 378ms\n\nSW Version: SW_2026.06.01_R1\nHW Version: EVB_R2.1\nTest Environment: Vehicle simulator",
+  "status": "Open",
+  "issue_type": "Bug",
+  "priority": "High",
+  "labels": ["test-defect", "str-kpi-failure", "usb"],
+  "created": "2026-06-10T10:00:00.000Z",
+  "updated": "2026-06-10T10:00:00.000Z",
+  "component": "Media",
+  "sw_version": "SW_2026.06.01_R1",
+  "hw_version": "EVB_R2.1",
+  "reporter": "Test User",
+  "assignee": "RCA Engine",
+  "dlt_attachment": "usb_str_slow.dlt",
+  "attachments": [
+    {
+      "filename": "usb_str_slow.dlt",
+      "size": 2845,
+      "mimeType": "application/octet-stream"
+    }
+  ]
+}

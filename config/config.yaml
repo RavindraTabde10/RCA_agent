@@ -5,6 +5,28 @@ app:
   log_level: "INFO"
   log_file: "logs/rca_agent.log"
 
+# ==============================================
+# Domain Configuration
+# ==============================================
+# Industry domain determines analysis patterns, terminology, and rules
+#
+# Supported domains:
+#   automotive    - Automotive/Infotainment (DLT, CAN, ECU)
+#   telecom       - Telecommunications (network, signaling)
+#   healthcare    - Healthcare (HL7, FHIR, medical)
+#   finance       - Financial services (transactions)
+#   manufacturing - Manufacturing/IoT (PLC, SCADA)
+#   software      - Generic software (application logs)
+#
+# Set via environment variable: RCA_DOMAIN
+# Or override here:
+# ==============================================
+domain:
+  type: "${RCA_DOMAIN:automotive}"    # Domain type (env var with default)
+  log_format: "${RCA_DOMAIN_LOG_FORMAT:dlt}"  # Log format for this domain
+  enable_domain_rules: true           # Use domain-specific analysis rules
+  custom_config: null                 # Path to custom domain config (optional)
+
 # AI Agents Configuration
 agents:
   log_agent:
@@ -107,15 +129,19 @@ integrations:
   #   - GIT_REPO_URL (e.g., https://github.com/org/repo.git)
   #   - GIT_BRANCH (default: main)
   #   - GIT_TOKEN (personal access token for private repos)
+  #   - GIT_USERNAME (GitHub username for enterprise)
   #   - GIT_LOCAL_PATH (local directory to clone/store repo)
+  #   - GITHUB_ENTERPRISE_API_URL (e.g., https://cc-github.bmwgroup.net/api/v3)
   # ==============================================
   git:
     enabled: true  # Set to true when Git is configured
     repo_url: "${GIT_REPO_URL}"
     branch: "${GIT_BRANCH}"
     token: "${GIT_TOKEN}"
+    username: "${GIT_USERNAME}"
     local_path: "${GIT_LOCAL_PATH}"  # Local path to clone repository
     src_subdir: "src"               # Subdirectory containing source code
+    enterprise_api_url: "${GITHUB_ENTERPRISE_API_URL}"  # Enterprise GitHub API URL
     # Git operations settings
     auto_pull: true                 # Automatically pull latest on analysis
     search_enabled: true            # Enable code search

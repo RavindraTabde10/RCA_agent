@@ -1,12 +1,23 @@
 # RCA Agent - AI-Powered Root Cause Analysis Tool
 
-An intelligent Root Cause Analysis (RCA) system designed for **automotive infotainment systems**. It automatically analyzes software defects by processing DLT logs, matching historical defects using vector similarity, and leveraging LLM analysis to identify root causes and recommend fixes.
+An intelligent Root Cause Analysis (RCA) system designed for **multiple industries** including automotive, telecom, healthcare, finance, and manufacturing. It automatically analyzes software defects by processing logs, matching historical defects using vector similarity, and leveraging LLM analysis to identify root causes and recommend fixes.
+
+## 🆕 What's New
+
+- **ML-Based Domain Classification** - Auto-assign defects to Audio/Bluetooth/Boot/Stability teams using trained model
+- **Real-Time Monitoring Dashboard** - Live token tracking, analysis progress, and event logs
+- **Multi-Industry Support** - Configure domain: automotive, telecom, healthcare, finance, manufacturing, software
+- **Token Consumption Tracking** - Live cost monitoring per analysis stage
+- **Analysis Throttling** - 2-second gap between concurrent analyses for stability
 
 ---
 
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Domain Classification](#-ml-based-domain-classification)
+- [Real-Time Dashboard](#-real-time-monitoring-dashboard)
+- [Multi-Industry Support](#-multi-industry-domain-support)
 - [Architecture](#architecture)
 - [System Flow](#system-flow)
 - [Components](#components)
@@ -46,6 +57,262 @@ The RCA Agent automates defect analysis through:
 | Time to Fix | 2-5 days | 0.5-1.5 days | **60-70%** faster |
 | Wrong Team Assignment | 25-30% | 5-10% | **70-80%** less |
 | Correct Diagnosis | 60-70% | 85-95% | **25-35%** better |
+
+---
+
+## 🎯 ML-Based Domain Classification
+
+Automatically assigns defects to the correct team using a trained machine learning model (Sentence Transformer + Logistic Regression).
+
+### Supported Domains
+
+| Domain | Team | Icon | Keywords |
+|--------|------|------|----------|
+| **Audio System** | Audio Engineering | 🔊 | audio, sound, speaker, volume, playback |
+| **Bluetooth Connectivity** | Connectivity Team | 📱 | bluetooth, BT, pairing, A2DP, HFP |
+| **Boot & System** | Boot/Platform Team | 🚀 | boot, startup, kernel, init, cold start |
+| **Stability/Memory** | System Stability Team | 💾 | memory, leak, crash, OOM, freeze |
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Domain Classification Flow                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Defect Text ──► Sentence Transformer ──► ML Model ──► Domain       │
+│  (summary +       (all-MiniLM-L6-v2)      (Logistic    Assignment   │
+│   description)                             Regression)              │
+│                                                                      │
+│  Example:                                                            │
+│  "Bluetooth phone disconnects after 10 min"                         │
+│       │                                                              │
+│       ▼                                                              │
+│  📱 bluetooth_connectivity_domain (92% confidence)                  │
+│  → Assigned to: Connectivity Team                                    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Training Data
+
+The model is trained on **230 synthesized defect records** located in:
+```
+domain_assign/model_training/
+├── domain_classifier_logistic.pkl      # Trained model
+├── all-MiniLM-L6-v2/                   # Sentence transformer model
+├── domain_assignment_synthesized_data.csv
+├── domain_training_extended.csv
+└── domain_labeled_defects_detailed.csv
+```
+
+### Usage
+
+```python
+# Automatic (integrated with RCA Engine)
+result = engine.analyze_defect("SAM1-2001")
+print(result["stages"]["domain_classification"]["data"])
+# {'domain': 'audio_system_domain', 'confidence': 0.87, 'team': 'Audio Engineering'}
+
+# Manual prediction
+from src.rca_infotainment.domain_classifier import predict_domain_for_defect
+
+defect = {"summary": "Audio stutters during USB playback", "description": "..."}
+prediction = predict_domain_for_defect(defect)
+# {'domain': 'audio_system_domain', 'domain_display': 'Audio System', 'confidence': 0.85}
+```
+
+---
+
+## 📊 Real-Time Monitoring Dashboard
+
+The RCA Monitoring Dashboard provides live visibility into analysis progress, token consumption, and system events.
+
+### Features
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                       RCA MONITORING DASHBOARD                                   │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  TICKETS    TOKENS      QUOTA      COST        ACTIVE     SESSION              │
+│     3       12.5K         0       €0.46          1        5m 23s               │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  ┌─────────────────────────────┐  ┌──────────────────────────────────────────┐ │
+│  │ ⚡ Active Analyses          │  │ 📜 Live Event Log                        │ │
+│  │                             │  │                                          │ │
+│  │  TEST-001  [llm_analysis]   │  │  01:07:20  stage   TEST-001: llm...     │ │
+│  │  ✓ DLT Analysis    1,006 tk │  │  01:07:19  tokens  +500 tokens          │ │
+│  │  ✓ Source Mapping    550 tk │  │  01:07:18  stage   historical_match     │ │
+│  │  ● LLM Analysis    2,350 tk │  │  01:07:17  tokens  +250 tokens          │ │
+│  └─────────────────────────────┘  └──────────────────────────────────────────┘ │
+│                                                                                  │
+│  ┌─────────────────────────────┐  ┌──────────────────────────────────────────┐ │
+│  │ 💰 Token Events              │  │ 📋 Recent Analyses                      │ │
+│  │                             │  │                                          │ │
+│  │ TIME    TICKET   STAGE  +TK │  │ TICKET      STATUS   TOKENS   COST      │ │
+│  │ 01:07   TEST-001 llm   +500 │  │ TEST-001    ✓        6.0K     €0.22     │ │
+│  │ 01:06   TEST-001 src   +400 │  │ SAM1-2001   ✓        5.2K     €0.19     │ │
+│  └─────────────────────────────┘  └──────────────────────────────────────────┘ │
+│                                                                                  │
+│  📈 Token Consumption Over Time                Peak: 706  Avg: 387  Rate: 43K/m │
+│  ┌──────────────────────────────────────────────────────────────────────────────┐│
+│  │     ╱‾‾‾‾‾‾‾‾‾‾‾‾‾──────────────────────────────────────────────           ││
+│  │    ╱                                                                        ││
+│  │   ╱                                                            ● Tokens    ││
+│  │  ╱                                                             ● Cost      ││
+│  └──────────────────────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Dashboard Usage
+
+```bash
+# Run analysis with live dashboard
+python test_rca_dry_full.py
+
+# Dashboard opens automatically at http://localhost:5050
+```
+
+### Dashboard Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Tickets** | Total tickets analyzed this session |
+| **Tokens** | Cumulative token consumption |
+| **Quota** | Daily quota remaining (if configured) |
+| **Cost** | Estimated cost in EUR |
+| **Active** | Currently running analyses |
+| **Session** | Dashboard uptime |
+
+### Token Tracking by Stage
+
+Each analysis stage reports token usage:
+
+| Stage | Description | Typical Tokens |
+|-------|-------------|----------------|
+| `dlt_analysis` | DLT log parsing and pattern extraction | 500-1,500 |
+| `source_mapping` | Map errors to source code | 300-800 |
+| `historical_match` | Search similar defects | 400-1,000 |
+| `llm_analysis` | LLM root cause analysis | 2,000-5,000 |
+| `report_generation` | Generate MD/HTML reports | 200-500 |
+
+---
+
+## 🌐 Multi-Industry Domain Support
+
+RCA Agent supports multiple industry domains with domain-specific:
+- Error/warning keywords
+- Component mappings
+- Common root causes
+- LLM analysis context
+- Report terminology
+
+### Supported Domains
+
+| Domain | Industry | Log Formats | Focus Areas |
+|--------|----------|-------------|-------------|
+| `automotive` | Automotive/Infotainment | DLT, CAN, LIN | ECU, Media, Bluetooth, Boot |
+| `telecom` | Telecommunications | Syslog, CDR, PCAP | 5G/LTE, Signaling, SIP |
+| `healthcare` | Healthcare/Medical | HL7, FHIR, DICOM | EHR, Lab, Medical Devices |
+| `finance` | Financial Services | JSON, FIX, SWIFT | Trading, Payments, Compliance |
+| `manufacturing` | Manufacturing/IoT | OPC-UA, Modbus, MQTT | PLC, SCADA, Sensors |
+| `software` | Generic Software | JSON, Syslog, Text | Applications, APIs, Databases |
+
+### Configure Domain
+
+**Option 1: Environment Variable**
+```bash
+# Windows PowerShell
+$env:RCA_DOMAIN='automotive'
+python test_rca_dry_full.py
+
+# Linux/Mac
+export RCA_DOMAIN=telecom
+python test_rca_dry_full.py
+```
+
+**Option 2: .env File**
+```bash
+# .env
+RCA_DOMAIN=automotive
+RCA_DOMAIN_LOG_FORMAT=dlt
+RCA_ENABLE_DOMAIN_RULES=true
+```
+
+**Option 3: config.yaml**
+```yaml
+domain:
+  type: "automotive"
+  log_format: "dlt"
+  enable_domain_rules: true
+```
+
+### Domain Configuration Details
+
+Each domain includes:
+
+```python
+# src/rca_infotainment/domain_config.py
+
+AUTOMOTIVE_CONFIG = DomainConfig(
+    domain=DomainType.AUTOMOTIVE,
+    display_name="Automotive / Infotainment",
+    
+    error_keywords=["ERROR", "FATAL", "TIMEOUT", "DEADLOCK", ...],
+    warning_keywords=["WARNING", "KPI_FAIL", "THRESHOLD_EXCEEDED", ...],
+    
+    component_keywords={
+        "Media": ["MEDIA", "USB", "BT", "AUDIO", "VIDEO"],
+        "Navigation": ["NAVI", "GPS", "MAP", "ROUTE"],
+        "HMI": ["HMI", "GUI", "DISPLAY", "TOUCH"],
+        ...
+    },
+    
+    common_root_causes=[
+        "Thread synchronization issue",
+        "Memory leak or corruption",
+        "CAN bus timeout",
+        "USB enumeration failure",
+        ...
+    ],
+    
+    kpi_definitions={
+        "STR": {"name": "Source-To-Render", "threshold": 200, "unit": "ms"},
+        "BOOT": {"name": "Cold Boot Time", "threshold": 30, "unit": "s"},
+        ...
+    },
+    
+    system_prompt_suffix="""
+    You are analyzing automotive infotainment system logs (DLT format).
+    Focus on: timing issues, CAN/LIN communication, audio/video sync.
+    """
+)
+```
+
+### Using Domain in Code
+
+```python
+from rca_infotainment.domain_config import (
+    get_domain_config,
+    get_domain_type,
+    is_automotive,
+    get_error_keywords,
+    get_common_root_causes
+)
+
+# Get current domain configuration
+config = get_domain_config()
+print(f"Domain: {config.display_name}")
+
+# Check domain type
+if is_automotive():
+    print("Using automotive-specific analysis")
+
+# Get domain-specific keywords
+errors = get_error_keywords()  # ["ERROR", "FATAL", ...]
+causes = get_common_root_causes()  # ["Thread sync...", ...]
+```
 
 ---
 
@@ -492,12 +759,18 @@ src/
 │   ├── rca_cli.py              # Command-line interface
 │   ├── rca_engine.py           # Main orchestrator
 │   ├── dlt_analyzer.py         # DLT log parsing (binary + text)
+│   ├── domain_config.py        # Multi-industry domain configuration
+│   ├── domain_classifier.py    # ML-based domain classification
 │   ├── source_mapper.py        # Error → code mapping
 │   ├── historical_matcher.py   # Similarity matching
 │   ├── report_generator.py     # MD/HTML reports
-│   ├── llm_service.py          # LLM integration
+│   ├── html_report_generator.py# Styled HTML report generation
+│   ├── llm_service.py          # LLM integration (domain-aware)
 │   ├── jira_service.py         # JIRA API client
-│   └── git_service.py          # Git repository access
+│   ├── git_service.py          # Git repository access
+│   └── dashboard/              # Real-time monitoring dashboard
+│       ├── dashboard_server.py # HTTP server with SSE updates
+│       └── tracker.py          # Analysis tracking utilities
 │
 ├── knowledge_layer/
 │   └── vector_store.py         # LanceDB vector database
@@ -505,6 +778,10 @@ src/
 ├── input_layer/
 │   ├── defect_parser.py        # Parse defect data
 │   └── log_processor.py        # Process log files
+│
+├── integrations/
+│   ├── git_integration.py      # Git repository integration
+│   └── jira_integration.py     # JIRA system integration
 │
 ├── processing_layer/
 │   └── agents/
@@ -514,18 +791,35 @@ src/
 │   ├── diagnosis_generator.py  # Generate diagnosis
 │   └── team_assignment.py      # Route to teams
 │
-└── utils/
-    ├── config.py               # Configuration loader
-    ├── logger.py               # Logging setup
-    └── llm_client.py           # LLM client wrapper
+├── models/
+│   ├── defect.py               # Defect data models
+│   └── diagnosis.py            # Diagnosis data models
+│
+└── utils/                      # Utility modules
 
+# Root level scripts
 rca_scheduler.py                # Automated scheduler (label-based)
+build_vector_db.py              # Build vector database from historical defects
+jira_data_fetcher.py            # Fetch defects from JIRA
+test_rca_dry_full.py            # Main dry test with dashboard
+
+# Deployment scripts (Windows)
+run_dashboard_demo.bat          # Run dashboard demo (no JIRA)
+run_rca_cli.bat                 # Run CLI commands
+run_rca_scheduler.bat           # Run automated scheduler
+
+# Deployment scripts (Linux/Mac)
+run_rca_scheduler.sh            # Run automated scheduler
 ```
 
 ### Key Components
 
 | Component | File | Description |
 |-----------|------|-------------|
+| **Domain Classifier** | `domain_classifier.py` | ML-based team assignment (Audio/BT/Boot/Stability) |
+| **RCA Dashboard** | `dashboard/dashboard_server.py` | Real-time monitoring with token tracking |
+| **Token Tracker** | `dashboard/tracker.py` | Analysis and token tracking utilities |
+| **Domain Config** | `domain_config.py` | Multi-industry domain support |
 | **RCA Scheduler** | `rca_scheduler.py` | Automated job - fetches tickets by label |
 | **RCA Engine** | `rca_engine.py` | Main orchestrator - coordinates all stages |
 | **DLT Analyzer** | `dlt_analyzer.py` | Parses DLT logs (binary & text), extracts errors/patterns |
@@ -567,6 +861,40 @@ pip install -r requirements_rca.txt
 python build_vector_db.py
 ```
 
+### Quick Start Scripts (Windows)
+
+After setup, use these batch files to run the tool:
+
+```batch
+# Demo dashboard (no JIRA required - tests full pipeline)
+run_dashboard_demo.bat
+
+# Analyze a defect with dashboard
+run_rca_cli.bat analyze SAM1-2001 --dashboard
+
+# Analyze and upload to JIRA
+run_rca_cli.bat analyze SAM1-2001 --jira
+
+# Run automated scheduler
+run_rca_scheduler.bat
+
+# Run scheduler in dry-run mode (no JIRA updates)
+run_rca_scheduler.bat --dry-run
+```
+
+### Quick Start Scripts (Linux/Mac)
+
+```bash
+# Make scripts executable
+chmod +x run_rca_scheduler.sh
+
+# Run automated scheduler
+./run_rca_scheduler.sh
+
+# Or run Python directly
+python src/rca_infotainment/rca_cli.py analyze SAM1-2001 --dashboard
+```
+
 ### Vector Database Build
 
 The `build_vector_db.py` script:
@@ -581,22 +909,55 @@ Without this step, the system falls back to keyword-based search.
 
 ## ⚙️ Configuration
 
-### Environment Variables
-
-Create a `.env` file or set environment variables:
+### Quick Start: Copy .env.example
 
 ```bash
-# LLM Configuration (choose one)
-# Azure OpenAI
+# Copy the example environment file
+cp .env.example .env
+
+# Edit with your values
+nano .env  # or use any editor
+```
+
+### Environment Variables (.env)
+
+```bash
+# ============================================================================
+# DOMAIN CONFIGURATION (NEW!)
+# ============================================================================
+# Industry domain: automotive, telecom, healthcare, finance, manufacturing, software
+RCA_DOMAIN=automotive
+RCA_DOMAIN_LOG_FORMAT=dlt
+RCA_ENABLE_DOMAIN_RULES=true
+
+# ============================================================================
+# DASHBOARD CONFIGURATION
+# ============================================================================
+DASHBOARD_PORT=5050
+DASHBOARD_HOST=localhost
+DASHBOARD_AUTO_OPEN=true
+
+# ============================================================================
+# TOKEN TRACKING & COST
+# ============================================================================
+TOKEN_COST_PER_1K=0.037      # €0.037 per 1000 tokens
+TOKEN_DAILY_QUOTA=100000      # Daily limit (0 = unlimited)
+
+# ============================================================================
+# LLM CONFIGURATION
+# ============================================================================
+# Azure OpenAI (recommended)
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key
 AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
 AZURE_OPENAI_API_VERSION=2024-02-15-preview
 
 # OR OpenAI
-OPENAI_API_KEY=your-api-key
+# OPENAI_API_KEY=your-api-key
 
-# JIRA Integration (optional)
+# ============================================================================
+# JIRA INTEGRATION
+# ============================================================================
 JIRA_URL=https://yourcompany.atlassian.net
 JIRA_EMAIL=your-email@company.com
 JIRA_API_TOKEN=your-api-token
@@ -633,6 +994,18 @@ thresholds:
 ---
 
 ## 📖 Usage
+
+### Quick Start: Dry Test with Dashboard
+
+```bash
+# Run dry test (no JIRA, uses sample DLT file)
+# Opens dashboard automatically at http://localhost:5050
+python test_rca_dry_full.py
+
+# With specific domain
+$env:RCA_DOMAIN='telecom'
+python test_rca_dry_full.py
+```
 
 ### CLI Commands
 
@@ -677,6 +1050,34 @@ result = engine.analyze_defect(
 
 print(f"Root Cause: {result['root_cause']}")
 print(f"Confidence: {result['confidence']:.0%}")
+```
+
+### Test Scripts
+
+The repository includes several test scripts for different purposes:
+
+| Script | Purpose |
+|--------|---------|
+| `test_rca_dry_full.py` | **Main dry test** - Full RCA with dashboard, no JIRA |
+| `test_dashboard_tokens.py` | Test dashboard token tracking |
+| `test_html_report_dry.py` | Test HTML report generation |
+| `test_local_rca.py` | Test local RCA without external services |
+| `test_llm_integration.py` | Test LLM service integration |
+| `test_vector_store.py` | Test vector database operations |
+| `test_vector_integration.py` | Test vector search integration |
+| `test_jira_fetcher.py` | Test JIRA data fetching |
+| `test_jira_search.py` | Test JIRA search functionality |
+| `test_rca_scheduler.py` | Test automated scheduler |
+
+```bash
+# Run main dry test (recommended for first-time users)
+python test_rca_dry_full.py
+
+# Test HTML report generation
+python test_html_report_dry.py
+
+# Test vector store search
+python test_vector_store.py
 ```
 
 ---
@@ -1027,5 +1428,16 @@ MIT License
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2026-07-09
+**Version**: 2.0.0  
+**Last Updated**: 2026-07-10
+
+### Changelog v2.0.0
+
+- Added Real-Time Monitoring Dashboard with live token tracking
+- Added Multi-Industry Domain Support (automotive, telecom, healthcare, finance, manufacturing, software)
+- Added Token Consumption Tracking per analysis stage
+- Added Analysis Throttling (2-second gap between concurrent analyses)
+- Added .env.example with comprehensive configuration
+- Updated branding to "RCA MONITORING DASHBOARD"
+- Added domain-aware LLM prompts
+- Improved auto-scroll for live event logs

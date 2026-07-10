@@ -3,12 +3,13 @@
 RCA CLI - Command Line Interface for Root Cause Analysis Tool
 
 Usage:
-    python rca_cli.py list                      # List all defects
-    python rca_cli.py stats                     # Show statistics
-    python rca_cli.py search "query"            # Search historical defects
-    python rca_cli.py analyze SAM1-2001         # Analyze a defect
-    python rca_cli.py analyze SAM1-2001 --jira  # Analyze and upload to JIRA
-    python rca_cli.py status                    # Check service status
+    python rca_cli.py list                              # List all defects
+    python rca_cli.py stats                             # Show statistics
+    python rca_cli.py search "query"                    # Search historical defects
+    python rca_cli.py analyze SAM1-2001                 # Analyze a defect
+    python rca_cli.py analyze SAM1-2001 --jira          # Analyze and upload to JIRA
+    python rca_cli.py analyze SAM1-2001 --dashboard     # Analyze with live dashboard
+    python rca_cli.py status                            # Check service status
 """
 
 import os
@@ -30,6 +31,14 @@ from src.rca_infotainment.jira_service import JiraService
 from src.rca_infotainment.llm_service import LLMService
 from src.rca_infotainment.git_service import GitService
 from src.utils.config import load_config
+
+# Optional dashboard import
+try:
+    from src.rca_infotainment.dashboard.dashboard_server import RCADashboard
+    DASHBOARD_AVAILABLE = True
+except ImportError:
+    DASHBOARD_AVAILABLE = False
+    RCADashboard = None
 
 
 console = Console()
@@ -190,15 +199,29 @@ def search(query, limit):
 @click.option('--jira', is_flag=True, help='Upload results to JIRA')
 @click.option('--no-duplicates', is_flag=True, help='Skip duplicate marking')
 @click.option('--output', '-o', default=None, help='Custom output directory')
-def analyze(defect_id, jira, no_duplicates, output):
+@click.option('--dashboard', '-d', is_flag=True, help='Open real-time monitoring dashboard')
+def analyze(defect_id, jira, no_duplicates, output, dashboard):
     """Analyze a defect and generate RCA report
     
     Examples:
         rca_cli.py analyze SAM1-2001
         rca_cli.py analyze SAM1-2001 --jira
+        rca_cli.py analyze SAM1-2001 --dashboard
         rca_cli.py analyze SAM1-2001 -o ./reports
     """
     engine = get_engine()
+    
+    # Start dashboard if requested
+    dashboard_instance = None
+    if dashboard:
+        if DASHBOARD_AVAILABLE:
+            console.print("[cyan]Starting RCA Monitoring Dashboard...[/cyan]")
+            dashboard_instance = RCADashboard(port=5050)
+            dashboard_instance.start(open_browser=True)
+            engine.set_dashboard(dashboard_instance)
+            console.print("[green]Dashboard running at http://localhost:5050[/green]")
+        else:
+            console.print("[yellow]Dashboard not available - continuing without it[/yellow]")
     
     # Override output directory if specified
     if output:
@@ -229,6 +252,21 @@ def analyze(defect_id, jira, no_duplicates, output):
         _display_analysis_result(result)
     else:
         console.print(f"[red]Analysis failed: {result.get('error', 'Unknown error')}[/red]")
+    
+    # Dashboard feedback - keep running for user to explore
+    if dashboard_instance:
+        console.print()
+        console.print("[cyan]Dashboard is still running at http://localhost:5050[/cyan]")
+        console.print("[dim]Press Ctrl+C to stop the dashboard and exit[/dim]")
+        try:
+            # Keep the process alive so dashboard stays accessible
+            import time
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Stopping dashboard...[/yellow]")
+            dashboard_instance.stop()
+            console.print("[green]Dashboard stopped. Goodbye![/green]")
 
 
 def _display_analysis_result(result):

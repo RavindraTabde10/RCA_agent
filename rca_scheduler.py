@@ -39,6 +39,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 from src.rca_infotainment.rca_engine import RCAEngine
 from src.rca_infotainment.llm_service import LLMService
 from src.rca_infotainment.git_service import GitService
+from src.rca_infotainment.dashboard.dashboard_server import RCADashboard
 from src.utils.config import load_config
 
 # Import the simple JIRA fetcher (uses standard library only)
@@ -50,6 +51,9 @@ try:
     load_dotenv()
 except ImportError:
     pass  # dotenv is optional
+
+# Ensure logs directory exists
+os.makedirs('logs', exist_ok=True)
 
 # Setup logging
 logging.basicConfig(
@@ -83,21 +87,26 @@ class RCAScheduler:
         'mark_duplicates': True,                                        # Link duplicate tickets
     }
     
-    def __init__(self, config_path: str = "config/config.yaml", dry_run: bool = False):
+    def __init__(self, config_path: str = "config/config.yaml", dry_run: bool = False, enable_dashboard: bool = False, dashboard_port: int = 5050):
         """
         Initialize RCA Scheduler
         
         Args:
             config_path: Path to configuration file
             dry_run: If True, don't update JIRA (test mode)
+            enable_dashboard: If True, start live monitoring dashboard
+            dashboard_port: Port for dashboard server (default: 5050)
         """
         self.dry_run = dry_run
+        self.enable_dashboard = enable_dashboard
+        self.dashboard_port = dashboard_port
         self.config = load_config(config_path)
         self.scheduler_config = {**self.DEFAULT_CONFIG, **self.config.get('scheduler', {})}
         
         # Initialize services
         self.jira_fetcher = None
         self.rca_engine = None
+        self.dashboard = None
         self._init_services()
         
         # Statistics
@@ -115,6 +124,17 @@ class RCAScheduler:
     
     def _init_services(self):
         """Initialize all required services"""
+        # Initialize Dashboard (if enabled)
+        if self.enable_dashboard:
+            try:
+                logger.info(f"Starting dashboard on port {self.dashboard_port}...")
+                self.dashboard = RCADashboard(port=self.dashboard_port)
+                self.dashboard.start(open_browser=False)  # Don't auto-open browser in scheduler mode
+                logger.info(f"✓ Dashboard started at http://localhost:{self.dashboard_port}")
+            except Exception as e:
+                logger.warning(f"✗ Failed to start dashboard: {e}")
+                self.dashboard = None
+        
         # Initialize JIRA Data Fetcher (uses standard library - no requests needed)
         try:
             jira_config = self.config.get('integrations', {}).get('jira', {})
@@ -155,6 +175,11 @@ class RCAScheduler:
             if self.jira_fetcher:
                 self.rca_engine.set_jira_client(self.jira_fetcher)
                 logger.info("✓ JIRA client set on RCA engine")
+            
+            # Connect dashboard to RCA engine for live monitoring
+            if self.dashboard:
+                self.rca_engine.set_dashboard(self.dashboard)
+                logger.info("✓ Dashboard connected to RCA engine")
             
             # Set Git client (optional)
             try:
@@ -605,9 +630,11 @@ def main():
         epilog="""
 Examples:
     python rca_scheduler.py                     # Run once
+    python rca_scheduler.py --dashboard         # Run with live monitoring dashboard
     python rca_scheduler.py --daemon            # Run continuously (5 min interval)
     python rca_scheduler.py --interval 60       # Run every 1 minute
     python rca_scheduler.py --dry-run           # Test mode (no JIRA updates)
+    python rca_scheduler.py --dashboard --daemon  # Continuous with dashboard
     python rca_scheduler.py --labels needs-rca auto-analyze
 
 Schedule with Windows Task Scheduler:
@@ -624,6 +651,10 @@ Schedule with cron (Linux):
                        help='Interval between runs in seconds (default: 300)')
     parser.add_argument('--dry-run', action='store_true',
                        help='Test mode - do not update JIRA')
+    parser.add_argument('--dashboard', action='store_true',
+                       help='Enable live monitoring dashboard on port 5050')
+    parser.add_argument('--dashboard-port', type=int, default=5050,
+                       help='Dashboard port (default: 5050)')
     parser.add_argument('--config', default='config/config.yaml',
                        help='Path to configuration file')
     parser.add_argument('--labels', nargs='+',
@@ -637,12 +668,16 @@ Schedule with cron (Linux):
     print("="*60)
     print("RCA SCHEDULER")
     print("Automated Root Cause Analysis for JIRA Tickets")
+    if args.dashboard:
+        print(f"Live Dashboard: http://localhost:{args.dashboard_port}")
     print("="*60)
     
     # Initialize scheduler
     scheduler = RCAScheduler(
         config_path=args.config,
-        dry_run=args.dry_run
+        dry_run=args.dry_run,
+        enable_dashboard=args.dashboard,
+        dashboard_port=args.dashboard_port
     )
     
     # Override labels if provided
