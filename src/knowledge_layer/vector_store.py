@@ -11,6 +11,7 @@ import lancedb
 from lancedb.pydantic import LanceModel, Vector
 from lancedb.embeddings import get_registry
 from src.utils.llm_client import get_llm_client
+from sentence_transformers import SentenceTransformer
 
 
 class DefectEmbedding(LanceModel):
@@ -29,11 +30,37 @@ class DefectEmbedding(LanceModel):
     related_file: Optional[str] = None
     duplicate_to: str  # JSON string of duplicate keys
     text: str  # Combined text for embedding
-    vector: Vector(1536)  # OpenAI embedding dimension
+    vector: Vector(384)  # all-MiniLM-L6-v2 embedding dimension
 
 
 class VectorStore:
     """Manages vector database for semantic defect search"""
+    
+    @staticmethod
+    def distance_to_similarity(distance: float) -> float:
+        """
+        Convert L2 distance to similarity score (0-1)
+        
+        Args:
+            distance: L2 distance from LanceDB (0 = identical, 2 = opposite)
+            
+        Returns:
+            Similarity score (0-1, where 1 is most similar)
+        """
+        return 1.0 / (1.0 + distance)
+    
+    @staticmethod
+    def similarity_to_percentage(similarity: float) -> float:
+        """
+        Convert similarity score to percentage
+        
+        Args:
+            similarity: Similarity score (0-1)
+            
+        Returns:
+            Percentage (0-100)
+        """
+        return similarity * 100.0
     
     def __init__(self, db_path: str = "data/vector_db", llm_config: Dict[str, Any] = None):
         """
@@ -54,7 +81,22 @@ class VectorStore:
         self.db = lancedb.connect(db_path)
         self.table_name = "defects"
         
-        # Initialize LLM client for embeddings
+        # Initialize local embedding model
+        self.embedding_model_path = "src/models/all-MiniLM-L6-v2"
+        try:
+            self.embedding_model = SentenceTransformer(self.embedding_model_path)
+            self.logger.info(f"Vector Store: Local embedding model loaded from {self.embedding_model_path}")
+        except Exception as e:
+            self.logger.warning(f"Vector Store: Failed to load local model, will download: {str(e)}")
+            # Fallback to download if local path doesn't exist
+            try:
+                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+                self.logger.info("Vector Store: Downloaded and initialized all-MiniLM-L6-v2 model")
+            except Exception as e2:
+                self.logger.error(f"Vector Store: Failed to initialize embedding model: {str(e2)}")
+                self.embedding_model = None
+        
+        # Initialize LLM client for embeddings (kept for backward compatibility)
         try:
             self.llm_client = get_llm_client(llm_config)
             self.logger.info("Vector Store: LLM client initialized for embeddings")
@@ -64,7 +106,7 @@ class VectorStore:
     
     def generate_embedding(self, text: str) -> List[float]:
         """
-        Generate embedding for text using Azure OpenAI
+        Generate embedding for text using local sentence-transformers model
         
         Args:
             text: Text to embed
@@ -72,38 +114,26 @@ class VectorStore:
         Returns:
             List of floats representing the embedding
         """
-        if not self.llm_client:
-            raise ValueError("LLM client not initialized. Cannot generate embeddings.")
+        if not self.embedding_model:
+            raise ValueError("Embedding model not initialized. Cannot generate embeddings.")
         
         try:
-            # Use OpenAI's embeddings API
-            # Note: You'll need to add an embeddings method to your LLM client
-            # For now, we'll use a workaround with the chat API to get text representation
-            # In production, use: client.embeddings.create(model="text-embedding-ada-002", input=text)
-            
-            # Truncate text if too long (max 8000 tokens ~= 32000 chars)
+            # Truncate text if too long (model typically handles ~512 tokens)
+            # all-MiniLM-L6-v2 has max sequence length of 256 word pieces
             if len(text) > 8000:
                 text = text[:8000]
             
-            # This is a placeholder - you should use the embeddings endpoint
-            # For now, return a dummy embedding of correct size
-            import hashlib
-            import numpy as np
+            # Generate embedding using local model
+            embedding = self.embedding_model.encode(text, convert_to_tensor=False)
             
-            # Generate deterministic embedding from hash (for testing)
-            # In production, replace with actual OpenAI embeddings API call
-            hash_obj = hashlib.sha256(text.encode())
-            hash_bytes = hash_obj.digest()
+            # Convert to list and ensure it's the right format
+            embedding_list = embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
             
-            # Expand to 1536 dimensions
-            np.random.seed(int.from_bytes(hash_bytes[:4], byteorder='big'))
-            embedding = np.random.randn(1536).tolist()
+            # Note: all-MiniLM-L6-v2 produces 384-dimensional embeddings
+            # If you need 1536 dimensions, you'll need to update the DefectEmbedding schema
+            # or use a different model like text-embedding-ada-002
             
-            # Normalize
-            norm = np.linalg.norm(embedding)
-            embedding = (np.array(embedding) / norm).tolist()
-            
-            return embedding
+            return embedding_list
             
         except Exception as e:
             self.logger.error(f"Error generating embedding: {str(e)}")
@@ -272,6 +302,16 @@ class VectorStore:
             # Convert to list of dictionaries
             similar_defects = []
             for _, row in results_df.iterrows():
+                # Get distance from LanceDB (L2 distance)
+                distance = row.get("_distance", 0)
+                
+                # Convert distance to similarity score (0-1 scale)
+                # For L2 distance with normalized embeddings:
+                # - distance ranges from 0 (identical) to 2 (opposite)
+                # - similarity = 1 / (1 + distance)
+                # This gives: distance 0 -> similarity 1.0, distance 2 -> similarity 0.33
+                similarity_score = 1.0 / (1.0 + distance)
+                
                 defect = {
                     "key": row["key"],
                     "summary": row["summary"],
@@ -286,11 +326,16 @@ class VectorStore:
                     "fix_commit": row.get("fix_commit"),
                     "related_file": row.get("related_file"),
                     "duplicate_to": json.loads(row["duplicate_to"]),
-                    "distance": row.get("_distance", 0)  # Lower distance = more similar
+                    "distance": distance,  # Raw L2 distance (lower = more similar)
+                    "similarity_score": similarity_score  # Normalized 0-1 score (higher = more similar)
                 }
                 similar_defects.append(defect)
             
             self.logger.info(f"Found {len(similar_defects)} similar defects")
+            if similar_defects:
+                self.logger.info(f"Top match: {similar_defects[0]['key']} "
+                               f"(similarity: {similar_defects[0]['similarity_score']:.2%}, "
+                               f"distance: {similar_defects[0]['distance']:.4f})")
             return similar_defects
             
         except Exception as e:

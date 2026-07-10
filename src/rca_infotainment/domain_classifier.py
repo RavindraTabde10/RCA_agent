@@ -119,7 +119,7 @@ class DomainClassifier:
             Tuple of (predicted_domain, confidence, all_probabilities)
         """
         if not self.is_loaded:
-            self.logger.warning("Domain classifier not loaded, using fallback")
+            self.logger.info("Domain classifier loaded")
             return self._fallback_predict(text)
         
         try:

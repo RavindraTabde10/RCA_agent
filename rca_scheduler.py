@@ -123,6 +123,18 @@ class RCAScheduler:
         logger.info(f"RCA Scheduler initialized (dry_run={dry_run})")
         logger.info(f"Trigger labels: {self.scheduler_config['trigger_labels']}")
         logger.info(f"Auto-create PR: {self.scheduler_config.get('auto_create_pr', False)}")
+        
+        # Log semantic similarity capabilities
+        if self.rca_engine and hasattr(self.rca_engine, 'historical_matcher'):
+            matcher = self.rca_engine.historical_matcher
+            if hasattr(matcher, '_vector_store') and matcher._vector_store:
+                logger.info("✓ Semantic similarity enabled (LanceDB + all-MiniLM-L6-v2)")
+                logger.info(f"  Duplicate threshold: ≥90% similarity")
+                logger.info(f"  Related threshold: ≥75% similarity")
+            else:
+                logger.info("⚠ Semantic similarity unavailable (using keyword search)")
+        else:
+            logger.info("⚠ Historical matcher not initialized")
     
     def _init_services(self):
         """Initialize all required services"""
@@ -394,8 +406,19 @@ class RCAScheduler:
         # Duplicate info
         duplicate_info = rca_result.get('duplicate_info', {})
         if duplicate_info.get('is_duplicate'):
+            similarity = duplicate_info.get('similarity_score', 0)
             lines.append(f"⚠️ POTENTIAL DUPLICATE OF: {duplicate_info.get('duplicate_of')}")
-            lines.append(f"   Similarity: {duplicate_info.get('similarity', 0):.0%}")
+            lines.append(f"   Semantic Similarity: {similarity:.2%} (score: {similarity:.4f})")
+            lines.append(f"   Search Type: Semantic (LanceDB + all-MiniLM-L6-v2)")
+            lines.append("")
+        
+        # Related defects info
+        related_defects = duplicate_info.get('related_defects', [])
+        if related_defects and not duplicate_info.get('is_duplicate'):
+            lines.append(f"🔗 RELATED DEFECTS FOUND: {len(related_defects)}")
+            for rel in related_defects[:3]:  # Show top 3
+                rel_similarity = rel.get('similarity_score', 0)
+                lines.append(f"   - {rel.get('defect_id')}: {rel_similarity:.2%}")
             lines.append("")
         
         # Fix recommendation
@@ -524,8 +547,15 @@ class RCAScheduler:
             if duplicate_info.get('is_duplicate'):
                 result['is_duplicate'] = True
                 result['duplicate_of'] = duplicate_info.get('duplicate_of')
+                result['similarity_score'] = duplicate_info.get('similarity_score', 0)
                 self.stats['duplicates_found'] += 1
                 logger.info(f"⚠️ Duplicate detected: {issue_key} → {result['duplicate_of']}")
+                logger.info(f"   Semantic Similarity: {result['similarity_score']:.2%}")
+            
+            # Log related defects even if not duplicate
+            related_defects = duplicate_info.get('related_defects', [])
+            if related_defects:
+                logger.info(f"🔗 Found {len(related_defects)} related defects (≥75% similar)")
             
             # ========================================
             # STEP 5: Update labels based on result
@@ -552,6 +582,13 @@ class RCAScheduler:
                 logger.info(f"✅ RCA completed for {issue_key}")
                 logger.info(f"   Root Cause: {result['root_cause'][:100]}...")
                 logger.info(f"   Confidence: {result['confidence']:.0%}")
+                
+                # Log duplicate/similarity info
+                if result.get('is_duplicate'):
+                    logger.info(f"   Duplicate Status: YES (→ {result.get('duplicate_of')})")
+                    logger.info(f"   Similarity Score: {result.get('similarity_score', 0):.2%}")
+                elif related_defects:
+                    logger.info(f"   Related Defects: {len(related_defects)} found")
                 
                 # Log PR info if created
                 if result.get('pr_url'):
@@ -634,7 +671,12 @@ class RCAScheduler:
         logger.info(f"Tickets processed: {len(run_summary['tickets'])}")
         logger.info(f"Success: {sum(1 for t in run_summary['tickets'] if t['status'] == 'success')}")
         logger.info(f"Failed: {sum(1 for t in run_summary['tickets'] if t['status'] != 'success')}")
-        logger.info(f"Duplicates found: {sum(1 for t in run_summary['tickets'] if t.get('is_duplicate'))}")
+        
+        duplicates = [t for t in run_summary['tickets'] if t.get('is_duplicate')]
+        logger.info(f"Duplicates found: {len(duplicates)}")
+        if duplicates:
+            for dup in duplicates:
+                logger.info(f"   - {dup['issue_key']} → {dup.get('duplicate_of')} ({dup.get('similarity_score', 0):.2%})")
         
         return run_summary
     
@@ -710,6 +752,14 @@ Schedule with cron (Linux):
     if args.dashboard:
         print(f"Live Dashboard: http://localhost:{args.dashboard_port}")
     print("="*60)
+    print("Features:")
+    print("  ✓ Semantic similarity search (LanceDB)")
+    print("  ✓ Local embedding model (all-MiniLM-L6-v2)")
+    print("  ✓ Automatic duplicate detection (≥90% similarity)")
+    print("  ✓ Related defect linking (≥75% similarity)")
+    if args.dry_run:
+        print("  ⚠ DRY RUN MODE - No JIRA updates")
+    print("="*60)
     
     # Initialize scheduler
     scheduler = RCAScheduler(
@@ -740,6 +790,19 @@ Schedule with cron (Linux):
         print(f"Successful: {stats['tickets_success']}")
         print(f"Failed: {stats['tickets_failed']}")
         print(f"Duplicates found: {stats['duplicates_found']}")
+        
+        # Show duplicate details if any found
+        if result and stats['duplicates_found'] > 0:
+            print("\n" + "-"*60)
+            print("DUPLICATE DETAILS (Semantic Similarity)")
+            print("-"*60)
+            for ticket in result.get('tickets', []):
+                if ticket.get('is_duplicate'):
+                    similarity = ticket.get('similarity_score', 0)
+                    print(f"{ticket['issue_key']} → {ticket.get('duplicate_of')}")
+                    print(f"  Similarity: {similarity:.2%} (LanceDB semantic search)")
+        
+        print("\n" + "="*60)
 
 
 if __name__ == "__main__":
