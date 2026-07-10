@@ -35,6 +35,7 @@ def main():
     # Paths
     defects_json = "data/historical_defects/defects_data.json"
     db_path = "data/vector_db"
+    embedding_model_path = "src/models/all-MiniLM-L6-v2"
     
     # Check if defects file exists
     if not os.path.exists(defects_json):
@@ -93,8 +94,12 @@ def main():
             if results:
                 print(f"   Found {len(results)} similar defects:")
                 for i, defect in enumerate(results, 1):
+                    similarity = defect.get('similarity_score', 0)
+                    distance = defect.get('distance', 0)
                     print(f"     {i}. {defect['key']}: {defect['summary']}")
-                    print(f"        Component: {defect['component']}, Distance: {defect.get('distance', 'N/A'):.4f}")
+                    print(f"        Component: {defect['component']}, "
+                          f"Similarity: {similarity:.2%}, "
+                          f"Distance: {distance:.4f}")
             else:
                 print("   No results found")
         except Exception as e:

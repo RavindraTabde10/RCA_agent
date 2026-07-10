@@ -163,7 +163,7 @@ class GitService:
             return True
             
         except Exception as e:
-            self.logger.error(f"Failed to pull: {e}")
+            self.logger.warning("check pull: fallback to existing source repo.")
             return False
     
     # ==========================================

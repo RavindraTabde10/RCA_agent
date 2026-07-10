@@ -118,6 +118,9 @@ class HistoricalMatcher:
         """
         Search for similar historical defects
         
+        Uses semantic search (via LanceDB) if available, otherwise falls back
+        to keyword-based matching.
+        
         Args:
             defect_data: Current defect information
             dlt_analysis: Optional DLT analysis results
@@ -126,6 +129,35 @@ class HistoricalMatcher:
         Returns:
             List of matching historical defects with similarity scores
         """
+        # Try semantic search first if vector store is available
+        if self._vector_store:
+            try:
+                # Build query from defect data
+                query_parts = []
+                if defect_data.get('summary'):
+                    query_parts.append(defect_data['summary'])
+                if defect_data.get('description'):
+                    query_parts.append(defect_data['description'])
+                
+                query = ' | '.join(query_parts)
+                component_filter = defect_data.get('component')
+                
+                # Use semantic search
+                self.logger.info(f"Using semantic search with vector store")
+                semantic_results = self.semantic_search(
+                    query=query,
+                    component_filter=component_filter,
+                    max_results=max_results
+                )
+                
+                if semantic_results:
+                    return semantic_results
+                    
+            except Exception as e:
+                self.logger.warning(f"Semantic search failed, falling back to keyword search: {e}")
+        
+        # Fallback to keyword-based search
+        self.logger.info("Using keyword-based search")
         historical = self.load_historical()
         
         if not historical:
@@ -147,6 +179,7 @@ class HistoricalMatcher:
                     "similarity_score": similarity,
                     "is_duplicate": similarity >= self.duplicate_threshold,
                     "is_related": similarity >= self.related_threshold,
+                    "search_type": "keyword",
                     "match_details": self._get_match_details(defect_data, hist_defect)
                 })
         
@@ -361,9 +394,9 @@ class HistoricalMatcher:
                     # Convert vector store results to standard format
                     matches = []
                     for defect in results:
-                        # Convert distance to similarity score (lower distance = higher similarity)
-                        distance = defect.get('distance', 1.0)
-                        similarity = max(0, 1 - distance)  # Convert distance to similarity
+                        # Use the similarity_score already provided by vector store
+                        similarity_score = defect.get('similarity_score', 0.0)
+                        distance = defect.get('distance', 0.0)
                         
                         matches.append({
                             "defect_id": defect.get("key"),
@@ -375,8 +408,10 @@ class HistoricalMatcher:
                             "fix_commit": defect.get("fix_commit", ""),
                             "duplicate_to": defect.get("duplicate_to", []),
                             "labels": defect.get("labels", []),
-                            "similarity_score": round(similarity, 3),
-                            "distance": distance,
+                            "similarity_score": round(similarity_score, 3),
+                            "distance": round(distance, 4),
+                            "is_duplicate": similarity_score >= self.duplicate_threshold,
+                            "is_related": similarity_score >= self.related_threshold,
                             "search_type": "semantic"
                         })
                     

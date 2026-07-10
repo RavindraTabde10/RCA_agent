@@ -11,6 +11,7 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+src/models/all-MiniLM-L6-v2/
 downloads/
 eggs/
 .eggs/
