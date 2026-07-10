@@ -5,6 +5,28 @@ app:
   log_level: "INFO"
   log_file: "logs/rca_agent.log"
 
+# ==============================================
+# Domain Configuration
+# ==============================================
+# Industry domain determines analysis patterns, terminology, and rules
+#
+# Supported domains:
+#   automotive    - Automotive/Infotainment (DLT, CAN, ECU)
+#   telecom       - Telecommunications (network, signaling)
+#   healthcare    - Healthcare (HL7, FHIR, medical)
+#   finance       - Financial services (transactions)
+#   manufacturing - Manufacturing/IoT (PLC, SCADA)
+#   software      - Generic software (application logs)
+#
+# Set via environment variable: RCA_DOMAIN
+# Or override here:
+# ==============================================
+domain:
+  type: "${RCA_DOMAIN:automotive}"    # Domain type (env var with default)
+  log_format: "${RCA_DOMAIN_LOG_FORMAT:dlt}"  # Log format for this domain
+  enable_domain_rules: true           # Use domain-specific analysis rules
+  custom_config: null                 # Path to custom domain config (optional)
+
 # AI Agents Configuration
 agents:
   log_agent:
@@ -107,19 +129,24 @@ integrations:
   #   - GIT_REPO_URL (e.g., https://github.com/org/repo.git)
   #   - GIT_BRANCH (default: main)
   #   - GIT_TOKEN (personal access token for private repos)
+  #   - GIT_USERNAME (GitHub username for enterprise)
   #   - GIT_LOCAL_PATH (local directory to clone/store repo)
+  #   - GITHUB_ENTERPRISE_API_URL (e.g., https://cc-github.bmwgroup.net/api/v3)
   # ==============================================
   git:
     enabled: true  # Set to true when Git is configured
     repo_url: "${GIT_REPO_URL}"
     branch: "${GIT_BRANCH}"
     token: "${GIT_TOKEN}"
+    username: "${GIT_USERNAME}"
     local_path: "${GIT_LOCAL_PATH}"  # Local path to clone repository
     src_subdir: "src"               # Subdirectory containing source code
+    enterprise_api_url: "${GITHUB_ENTERPRISE_API_URL}"  # Enterprise GitHub API URL
     # Git operations settings
     auto_pull: true                 # Automatically pull latest on analysis
     search_enabled: true            # Enable code search
     blame_enabled: true             # Enable git blame for affected files
+    auto_create_pr: true            # Automatically create PR with code fix after RCA analysis
   
   slack:
     enabled: false
@@ -173,16 +200,18 @@ performance:
   cache_ttl_seconds: 3600
 
 # ==============================================
-# Scheduler Configuration (Automated RCA)
+# RCA Scheduler Configuration
 # ==============================================
-# Configure labels and behavior for automated ticket processing
-# Use rca_scheduler.py to run the automated job
+# Settings for automated RCA scheduler (rca_scheduler.py)
+# The scheduler monitors JIRA for tickets with trigger labels
+# and automatically runs RCA analysis + optional PR creation
 #
 # Workflow:
 #   1. Add 'needs-rca' label to JIRA ticket
 #   2. Scheduler fetches ticket automatically
 #   3. RCA runs and updates JIRA
 #   4. Label changes: 'needs-rca' → 'rca-complete'
+#   5. If auto_create_pr=true, creates GitHub PR with fix
 # ==============================================
 scheduler:
   # Labels that trigger RCA analysis
@@ -214,6 +243,9 @@ scheduler:
   
   # Link duplicate tickets
   mark_duplicates: true
+  
+  # Automatically create GitHub PR with code fix after RCA analysis
+  auto_create_pr: true
   
   # Daemon mode interval (seconds)
   daemon_interval: 300  # 5 minutes

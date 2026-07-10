@@ -18,6 +18,12 @@ from .jira_service import JiraService
 from .llm_service import LLMService
 from .git_service import GitService
 from .source_mapper import SourceMapper
+from .html_report_generator import (
+    generate_rca_html_report,
+    generate_standalone_html_report,
+    save_html_report,
+    save_standalone_report
+)
 
 __version__ = "1.0.0"
 __all__ = [
@@ -28,5 +34,9 @@ __all__ = [
     "JiraService",
     "LLMService",
     "GitService",
-    "SourceMapper"
+    "SourceMapper",
+    "generate_rca_html_report",
+    "generate_standalone_html_report",
+    "save_html_report",
+    "save_standalone_report"
 ]

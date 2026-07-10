@@ -27,6 +27,13 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from urllib import error, parse, request
 
+# Try to import requests library for better HTTP handling
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+
 # Try to import official JIRA library
 try:
     from jira import JIRA
@@ -156,16 +163,17 @@ class JiraDataFetcher:
         self._connected = False
         self.jira_client = None
         
-        # Try to use official JIRA library if available
-        if HAS_JIRA_LIB:
-            try:
-                self.jira_client = JIRA(
-                    server=self.base_url,
-                    basic_auth=(self.email, self.api_token)
-                )
-            except Exception as e:
-                print(f"⚠ JIRA library initialization failed, using urllib: {e}")
-                self.jira_client = None
+        # Disable JIRA library to force v3 API usage via urllib
+        # The official JIRA library uses deprecated v2 API which returns 410 errors
+        # if HAS_JIRA_LIB:
+        #     try:
+        #         self.jira_client = JIRA(
+        #             server=self.base_url,
+        #             basic_auth=(self.email, self.api_token)
+        #         )
+        #     except Exception as e:
+        #         print(f"⚠ JIRA library initialization failed, using urllib: {e}")
+        #         self.jira_client = None
     
     def test_connection(self) -> bool:
         """Test connection to JIRA"""
@@ -323,19 +331,74 @@ class JiraDataFetcher:
                 print(f"Found {len(tickets)} tickets with labels: {labels}")
                 return tickets
             except Exception as e:
-                print(f"✗ Search failed with JIRA library: {e}")
-                return []
+                # If JIRA library fails (e.g., 410 error from deprecated API v2), fall back to urllib with v3 API
+                error_msg = str(e)
+                if "410" in error_msg or "removed" in error_msg.lower():
+                    print(f"⚠ JIRA library using deprecated API v2, switching to API v3 urllib implementation")
+                else:
+                    print(f"✗ Search failed with JIRA library: {e}")
+                # Continue to urllib fallback below
         
-        # Fallback to urllib implementation
-        # Use POST method with JSON body
-        api_url = f"{self.base_url}/rest/api/3/search"
-        body = json.dumps({
+        # Fallback to urllib/requests implementation using v3 API
+        # Note: Some JIRA instances require /search/jql instead of /search
+        api_url = f"{self.base_url}/rest/api/3/search/jql"
+        
+        # Prepare request body
+        request_body = {
             'jql': jql,
             'maxResults': max_results,
             'fields': ['key', 'summary', 'description', 'status', 'issuetype', 'priority', 'labels', 'created', 'updated', 'attachment']
-        }).encode('utf-8')
+        }
         
-        req = request.Request(api_url, data=body, headers=self.headers, method="POST")
+        # Try with requests library first (more reliable)
+        if HAS_REQUESTS:
+            try:
+                # Build auth tuple for requests
+                auth = (self.email, self.api_token)
+                headers = {
+                    'Accept': 'application/json'
+                }
+                
+                # Use GET with query parameters instead of POST
+                params = {
+                    'jql': jql,
+                    'maxResults': max_results,
+                    'fields': 'key,summary,description,status,issuetype,priority,labels,created,updated,attachment'
+                }
+                
+                response = requests.get(
+                    api_url,
+                    params=params,
+                    headers=headers,
+                    auth=auth,
+                    timeout=30
+                )
+                response.raise_for_status()
+                
+                data = response.json()
+                tickets = []
+                for issue in data.get('issues', []):
+                    normalized = self._normalize_issue(issue)
+                    tickets.append(normalized)
+                
+                print(f"Found {len(tickets)} tickets with labels: {labels}")
+                return tickets
+                
+            except requests.exceptions.HTTPError as exc:
+                print(f"✗ Search failed: {exc.response.status_code} {exc.response.text}")
+                return []
+            except Exception as exc:
+                print(f"✗ Search failed: {exc}")
+                return []
+        
+        # Fallback to urllib if requests not available
+        body_data = json.dumps(request_body).encode('utf-8')
+        
+        # Ensure proper headers for JSON request
+        headers_with_content_type = self.headers.copy()
+        headers_with_content_type['Content-Type'] = 'application/json'
+        
+        req = request.Request(api_url, data=body_data, headers=headers_with_content_type, method="POST")
         
         try:
             with request.urlopen(req, timeout=30) as response:
@@ -570,6 +633,14 @@ class JiraDataFetcher:
     # ==========================================
     # WRITE OPERATIONS (for automation)
     # ==========================================
+    
+    def add_label(self, ticket_key: str, label: str) -> bool:
+        """Add a single label to a JIRA ticket"""
+        return self.update_labels(ticket_key, add_labels=[label])
+    
+    def remove_label(self, ticket_key: str, label: str) -> bool:
+        """Remove a single label from a JIRA ticket"""
+        return self.update_labels(ticket_key, remove_labels=[label])
     
     def update_labels(self, ticket_key: str, add_labels: List[str] = None,
                      remove_labels: List[str] = None) -> bool:

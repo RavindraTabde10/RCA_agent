@@ -21,88 +21,96 @@ class SourceMapper:
     """
     
     # Component to directory/file mapping
+    # UPDATED to match actual files in data/source_repo
     COMPONENT_FILE_MAP = {
         "AudioService": {
             "dir": "audio",
-            "files": ["AudioManager.cpp", "AudioService.cpp", "AudioSession.cpp"],
-            "main_file": "AudioManager.cpp"
+            "files": ["AudioMixer.cpp", "AudioMixer.h", "AudioFocusManager.cpp", "AudioFocusManager.h"],
+            "main_file": "AudioMixer.cpp"
         },
         "AudioMixer": {
             "dir": "audio",
-            "files": ["AudioMixer.cpp", "MixerChannel.cpp", "AudioBuffer.cpp"],
+            "files": ["AudioMixer.cpp", "AudioMixer.h", "AudioFocusManager.cpp"],
             "main_file": "AudioMixer.cpp"
+        },
+        "AudioFocus": {
+            "dir": "audio",
+            "files": ["AudioFocusManager.cpp", "AudioFocusManager.h"],
+            "main_file": "AudioFocusManager.cpp"
         },
         "MediaController": {
             "dir": "media",
-            "files": ["MediaController.cpp", "MediaSession.cpp", "PlaybackManager.cpp"],
-            "main_file": "MediaController.cpp"
+            "files": ["USBMediaHandler.cpp", "LastUserMode.cpp"],
+            "main_file": "USBMediaHandler.cpp"
         },
         "MediaPlayer": {
             "dir": "media",
-            "files": ["MediaPlayer.cpp", "Decoder.cpp", "StreamHandler.cpp"],
-            "main_file": "MediaPlayer.cpp"
+            "files": ["USBMediaHandler.cpp", "LastUserMode.cpp"],
+            "main_file": "USBMediaHandler.cpp"
+        },
+        "USBService": {
+            "dir": "media",
+            "files": ["USBMediaHandler.cpp", "LastUserMode.cpp"],
+            "main_file": "USBMediaHandler.cpp"
         },
         "BluetoothManager": {
             "dir": "connectivity",
-            "files": ["BluetoothManager.cpp", "BTDevice.cpp", "PairingManager.cpp"],
-            "main_file": "BluetoothManager.cpp"
+            "files": ["BluetoothStack.cpp"],
+            "main_file": "BluetoothStack.cpp"
         },
         "BTHandsFree": {
             "dir": "connectivity",
-            "files": ["BTHandsFree.cpp", "HFPProfile.cpp", "CallHandler.cpp"],
-            "main_file": "BTHandsFree.cpp"
+            "files": ["BluetoothStack.cpp"],
+            "main_file": "BluetoothStack.cpp"
         },
         "BTA2DP": {
             "dir": "connectivity",
-            "files": ["BTA2DP.cpp", "A2DPSink.cpp", "AudioCodec.cpp"],
-            "main_file": "BTA2DP.cpp"
-        },
-        "WiFiManager": {
-            "dir": "connectivity",
-            "files": ["WiFiManager.cpp", "NetworkScanner.cpp", "Connection.cpp"],
-            "main_file": "WiFiManager.cpp"
+            "files": ["BluetoothStack.cpp"],
+            "main_file": "BluetoothStack.cpp"
         },
         "SystemControl": {
             "dir": "system",
-            "files": ["SystemManager.cpp", "StateController.cpp", "EventDispatcher.cpp"],
-            "main_file": "SystemManager.cpp"
+            "files": ["BootManager.cpp", "MemoryMonitor.cpp"],
+            "main_file": "BootManager.cpp"
         },
         "BootManager": {
             "dir": "system",
-            "files": ["BootManager.cpp", "InitSequence.cpp", "ServiceLoader.cpp"],
+            "files": ["BootManager.cpp", "MemoryMonitor.cpp"],
             "main_file": "BootManager.cpp"
         },
         "VehicleBus": {
             "dir": "communication",
-            "files": ["VehicleBusController.cpp", "CANHandler.cpp", "MessageRouter.cpp"],
-            "main_file": "VehicleBusController.cpp"
+            "files": ["CANGateway.cpp", "MOSTController.cpp"],
+            "main_file": "CANGateway.cpp"
         },
         "CANController": {
             "dir": "communication",
-            "files": ["CANController.cpp", "CANMessage.cpp", "SignalDecoder.cpp"],
-            "main_file": "CANController.cpp"
+            "files": ["CANGateway.cpp", "MOSTController.cpp"],
+            "main_file": "CANGateway.cpp"
         },
-        "USBService": {
-            "dir": "media",
-            "files": ["USBMediaHandler.cpp", "USBScanner.cpp", "MediaIndexer.cpp"],
-            "main_file": "USBMediaHandler.cpp"
-        },
-        "RadioTuner": {
-            "dir": "media",
-            "files": ["RadioTuner.cpp", "TunerDriver.cpp", "FrequencyManager.cpp"],
-            "main_file": "RadioTuner.cpp"
+        "DLT": {
+            "dir": "common",
+            "files": ["DLTLogger.cpp", "DLTLogger.h"],
+            "main_file": "DLTLogger.cpp"
         }
     }
     
     # Error pattern to file mapping
+    # UPDATED to use only files that actually exist
     PATTERN_FILE_MAP = {
-        "timeout": ["common/TimeoutHandler.cpp", "common/Timer.cpp"],
-        "memory": ["common/MemoryPool.cpp", "common/BufferManager.cpp"],
-        "threading": ["common/ThreadPool.cpp", "common/Mutex.cpp", "common/Lock.cpp"],
-        "null_reference": ["common/SafePtr.cpp", "common/Validator.cpp"],
-        "connection": ["connectivity/ConnectionManager.cpp", "connectivity/RetryHandler.cpp"],
-        "overflow": ["common/RingBuffer.cpp", "common/CircularQueue.cpp"],
-        "exception": ["common/ExceptionHandler.cpp", "common/ErrorLogger.cpp"]
+        "timeout": ["common/DLTLogger.cpp", "system/BootManager.cpp"],
+        "memory": ["system/MemoryMonitor.cpp", "common/Types.h"],
+        "threading": ["system/BootManager.cpp", "audio/AudioMixer.cpp"],
+        "null_reference": ["common/Types.h", "common/DLTLogger.cpp"],
+        "connection": ["connectivity/BluetoothStack.cpp", "communication/CANGateway.cpp"],
+        "overflow": ["audio/AudioMixer.cpp", "system/MemoryMonitor.cpp"],
+        "exception": ["common/DLTLogger.cpp", "system/BootManager.cpp"],
+        "usb": ["media/USBMediaHandler.cpp"],
+        "audio": ["audio/AudioMixer.cpp", "audio/AudioFocusManager.cpp"],
+        "bluetooth": ["connectivity/BluetoothStack.cpp"],
+        "can": ["communication/CANGateway.cpp"],
+        "most": ["communication/MOSTController.cpp"],
+        "boot": ["system/BootManager.cpp"]
     }
     
     def __init__(self, config: Dict[str, Any] = None):
@@ -135,8 +143,11 @@ class SourceMapper:
         
         seen_files = set()
         
-        # Map components to files
+        # Log what we received for debugging
         components = dlt_analysis.get("components", [])
+        self.logger.info(f"Source mapping: received {len(components)} components: {components}")
+        
+        # Map components to files
         for component in components:
             if component in self.COMPONENT_FILE_MAP:
                 mapping = self.COMPONENT_FILE_MAP[component]
@@ -191,6 +202,13 @@ class SourceMapper:
         # Calculate overall confidence
         if result["mapped_files"]:
             result["confidence"] = sum(f["confidence"] for f in result["mapped_files"]) / len(result["mapped_files"])
+        
+        # Log results for debugging
+        self.logger.info(f"Source mapping complete: {len(result['mapped_files'])} files mapped")
+        if result["mapped_files"]:
+            self.logger.info(f"Top 5 mapped files: {[f['file'] for f in result['mapped_files'][:5]]}")
+        if result["unmapped_components"]:
+            self.logger.warning(f"Unmapped components: {result['unmapped_components']}")
         
         return result
     

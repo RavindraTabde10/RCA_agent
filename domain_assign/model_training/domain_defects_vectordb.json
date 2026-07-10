@@ -1,0 +1,1842 @@
+[
+  {
+    "id": "SAM1-3001",
+    "summary": "Audio playback stuttering during USB source",
+    "description": "User reports intermittent audio stuttering when playing music from USB drive. Occurs especially during track changes. Audio buffer underrun detected in logs.",
+    "domain": "Audio System",
+    "text": "Audio playback stuttering during USB source User reports intermittent audio stuttering when playing music from USB drive. Occurs especially during track changes. Audio buffer underrun detected in logs.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3002",
+    "summary": "No sound after switching from FM to BT",
+    "description": "After switching audio source from FM Radio to Bluetooth the system shows playing state but no audio output. Requires system reboot to fix.",
+    "domain": "Audio System",
+    "text": "No sound after switching from FM to BT After switching audio source from FM Radio to Bluetooth the system shows playing state but no audio output. Requires system reboot to fix.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3003",
+    "summary": "Crackling noise in speaker during phone calls",
+    "description": "Distorted audio and crackling sound in speakers during hands-free phone calls. More noticeable at higher volumes.",
+    "domain": "Audio System",
+    "text": "Crackling noise in speaker during phone calls Distorted audio and crackling sound in speakers during hands-free phone calls. More noticeable at higher volumes.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3004",
+    "summary": "Volume level not persisted after reboot",
+    "description": "User sets volume to specific level but after system reboot volume resets to default level. Volume persistence not working.",
+    "domain": "Audio System",
+    "text": "Volume level not persisted after reboot User sets volume to specific level but after system reboot volume resets to default level. Volume persistence not working.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3005",
+    "summary": "Audio delay when switching between apps",
+    "description": "Noticeable 2-3 second delay in audio when switching between navigation and media player applications.",
+    "domain": "Audio System",
+    "text": "Audio delay when switching between apps Noticeable 2-3 second delay in audio when switching between navigation and media player applications.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3006",
+    "summary": "Left speaker not working in surround mode",
+    "description": "In surround sound mode the front left speaker produces no output. Works fine in stereo mode.",
+    "domain": "Audio System",
+    "text": "Left speaker not working in surround mode In surround sound mode the front left speaker produces no output. Works fine in stereo mode.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3007",
+    "summary": "Audio cuts out during navigation announcements",
+    "description": "Music playback stops during navigation voice guidance but doesn't resume after announcement completes.",
+    "domain": "Audio System",
+    "text": "Audio cuts out during navigation announcements Music playback stops during navigation voice guidance but doesn't resume after announcement completes.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3008",
+    "summary": "Equalizer settings reset to default randomly",
+    "description": "Custom equalizer settings are lost and reset to default at random times during normal operation.",
+    "domain": "Audio System",
+    "text": "Equalizer settings reset to default randomly Custom equalizer settings are lost and reset to default at random times during normal operation.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3009",
+    "summary": "Bass boost causes audio clipping at high volume",
+    "description": "When bass boost is enabled audio clips and distorts at volume levels above 70%.",
+    "domain": "Audio System",
+    "text": "Bass boost causes audio clipping at high volume When bass boost is enabled audio clips and distorts at volume levels above 70%.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3010",
+    "summary": "FM Radio audio has constant background noise",
+    "description": "FM Radio source has noticeable background static/hissing noise even with strong signal strength.",
+    "domain": "Audio System",
+    "text": "FM Radio audio has constant background noise FM Radio source has noticeable background static/hissing noise even with strong signal strength.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3011",
+    "summary": "Audio source switch takes more than 500ms",
+    "description": "Switching between any audio sources (USB/BT/FM/AUX) takes 500-800ms exceeding 200ms KPI requirement.",
+    "domain": "Audio System",
+    "text": "Audio source switch takes more than 500ms Switching between any audio sources (USB/BT/FM/AUX) takes 500-800ms exceeding 200ms KPI requirement.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3012",
+    "summary": "Microphone echo during Bluetooth calls",
+    "description": "Caller reports hearing their own voice echo during hands-free calls via Bluetooth.",
+    "domain": "Audio System",
+    "text": "Microphone echo during Bluetooth calls Caller reports hearing their own voice echo during hands-free calls via Bluetooth.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3013",
+    "summary": "Audio format not supported error for MP3 files",
+    "description": "Some MP3 files show format not supported error despite being valid MP3 format.",
+    "domain": "Audio System",
+    "text": "Audio format not supported error for MP3 files Some MP3 files show format not supported error despite being valid MP3 format.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3014",
+    "summary": "Popping sound when audio starts/stops",
+    "description": "Audible pop or click sound from speakers when audio playback starts or stops.",
+    "domain": "Audio System",
+    "text": "Popping sound when audio starts/stops Audible pop or click sound from speakers when audio playback starts or stops.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3015",
+    "summary": "Balance control doesn't work correctly",
+    "description": "Adjusting left/right balance control has no effect on audio output distribution.",
+    "domain": "Audio System",
+    "text": "Balance control doesn't work correctly Adjusting left/right balance control has no effect on audio output distribution.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3016",
+    "summary": "System freeze when opening media player",
+    "description": "Complete system freeze occurs when launching media player application. Screen becomes unresponsive. Requires hard reboot.",
+    "domain": "Stability/memory",
+    "text": "System freeze when opening media player Complete system freeze occurs when launching media player application. Screen becomes unresponsive. Requires hard reboot.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3017",
+    "summary": "Gradual system slowdown after 2 hours operation",
+    "description": "System becomes progressively slower over time. UI animations lag touch response degrades. Symptoms appear after 2+ hours of use.",
+    "domain": "Stability/memory",
+    "text": "Gradual system slowdown after 2 hours operation System becomes progressively slower over time. UI animations lag touch response degrades. Symptoms appear after 2+ hours of use.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3018",
+    "summary": "Random reboots during navigation",
+    "description": "System randomly reboots while using navigation application. No specific pattern identified. Occurs 2-3 times per day.",
+    "domain": "Stability/memory",
+    "text": "Random reboots during navigation System randomly reboots while using navigation application. No specific pattern identified. Occurs 2-3 times per day.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3019",
+    "summary": "Application crash when switching profiles",
+    "description": "Switching between user profiles causes application crash and return to home screen.",
+    "domain": "Stability/memory",
+    "text": "Application crash when switching profiles Switching between user profiles causes application crash and return to home screen.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3020",
+    "summary": "System becomes unresponsive after STR cycle",
+    "description": "After suspend-to-RAM (sleep mode) and wake-up system UI is frozen and unresponsive to touch input.",
+    "domain": "Stability/memory",
+    "text": "System becomes unresponsive after STR cycle After suspend-to-RAM (sleep mode) and wake-up system UI is frozen and unresponsive to touch input.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3021",
+    "summary": "Memory usage keeps increasing over time",
+    "description": "System memory consumption continuously increases even with no active applications running.",
+    "domain": "Stability/memory",
+    "text": "Memory usage keeps increasing over time System memory consumption continuously increases even with no active applications running.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3022",
+    "summary": "Crash when opening settings menu repeatedly",
+    "description": "Opening and closing settings menu 10+ times in quick succession causes system crash.",
+    "domain": "Stability/memory",
+    "text": "Crash when opening settings menu repeatedly Opening and closing settings menu 10+ times in quick succession causes system crash.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3023",
+    "summary": "Out of memory error during boot",
+    "description": "System fails to complete boot sequence showing out of memory error. Occurs on cold boot.",
+    "domain": "Stability/memory",
+    "text": "Out of memory error during boot System fails to complete boot sequence showing out of memory error. Occurs on cold boot.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3024",
+    "summary": "Display corruption after long running session",
+    "description": "After 5+ hours of operation display shows corrupted graphics artifacts and distorted UI elements.",
+    "domain": "Stability/memory",
+    "text": "Display corruption after long running session After 5+ hours of operation display shows corrupted graphics artifacts and distorted UI elements.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3025",
+    "summary": "Home screen crashes when many widgets active",
+    "description": "Home screen application crashes when user has more than 8 widgets configured on dashboard.",
+    "domain": "Stability/memory",
+    "text": "Home screen crashes when many widgets active Home screen application crashes when user has more than 8 widgets configured on dashboard.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3026",
+    "summary": "System logs filling up storage space",
+    "description": "System partition fills up with log files causing system instability and eventual failure.",
+    "domain": "Stability/memory",
+    "text": "System logs filling up storage space System partition fills up with log files causing system instability and eventual failure.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3027",
+    "summary": "Stack overflow in camera preview",
+    "description": "Backup camera preview causes system crash with stack overflow error in logs.",
+    "domain": "Stability/memory",
+    "text": "Stack overflow in camera preview Backup camera preview causes system crash with stack overflow error in logs.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3028",
+    "summary": "Kernel panic during heavy multitasking",
+    "description": "Running navigation media player and phone simultaneously causes kernel panic and reboot.",
+    "domain": "Stability/memory",
+    "text": "Kernel panic during heavy multitasking Running navigation media player and phone simultaneously causes kernel panic and reboot.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3029",
+    "summary": "Watchdog timeout triggering reboot",
+    "description": "System watchdog timer expires causing forced reboot. Main thread appears hung.",
+    "domain": "Stability/memory",
+    "text": "Watchdog timeout triggering reboot System watchdog timer expires causing forced reboot. Main thread appears hung.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3030",
+    "summary": "Resource exhaustion when many apps open",
+    "description": "System becomes unstable when user opens more than 15 applications. Apps fail to launch.",
+    "domain": "Stability/memory",
+    "text": "Resource exhaustion when many apps open System becomes unstable when user opens more than 15 applications. Apps fail to launch.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3031",
+    "summary": "Heap corruption detected in diagnostics",
+    "description": "Diagnostic mode reports heap corruption errors. System behavior becomes unpredictable.",
+    "domain": "Stability/memory",
+    "text": "Heap corruption detected in diagnostics Diagnostic mode reports heap corruption errors. System behavior becomes unpredictable.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3032",
+    "summary": "Yellow screen of death and continuous reboot",
+    "description": "System displays yellow error screen and enters continuous reboot loop. Cannot recover without reflash.",
+    "domain": "Stability/memory",
+    "text": "Yellow screen of death and continuous reboot System displays yellow error screen and enters continuous reboot loop. Cannot recover without reflash.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3033",
+    "summary": "Memory leak in climate control service",
+    "description": "Climate control background service memory usage grows 10MB per hour of operation.",
+    "domain": "Stability/memory",
+    "text": "Memory leak in climate control service Climate control background service memory usage grows 10MB per hour of operation.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3034",
+    "summary": "Segmentation fault during software update",
+    "description": "Software OTA update process crashes with segmentation fault leaving system in inconsistent state.",
+    "domain": "Stability/memory",
+    "text": "Segmentation fault during software update Software OTA update process crashes with segmentation fault leaving system in inconsistent state.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3035",
+    "summary": "System hang during shutdown sequence",
+    "description": "System hangs during shutdown sequence. Screen goes black but system doesn't power off. Requires battery disconnect.",
+    "domain": "Stability/memory",
+    "text": "System hang during shutdown sequence System hangs during shutdown sequence. Screen goes black but system doesn't power off. Requires battery disconnect.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3036",
+    "summary": "Bluetooth phone disconnects after 10 minutes",
+    "description": "Paired phone disconnects from Bluetooth after approximately 10 minutes of connection. Auto-reconnect fails.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth phone disconnects after 10 minutes Paired phone disconnects from Bluetooth after approximately 10 minutes of connection. Auto-reconnect fails.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3037",
+    "summary": "Cannot pair new Bluetooth devices",
+    "description": "System fails to enter pairing mode when attempting to add new Bluetooth device. Pairing button has no effect.",
+    "domain": "Bluetooth connectivity",
+    "text": "Cannot pair new Bluetooth devices System fails to enter pairing mode when attempting to add new Bluetooth device. Pairing button has no effect.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3038",
+    "summary": "Bluetooth audio quality poor and choppy",
+    "description": "Music streaming over Bluetooth A2DP has poor quality with frequent interruptions and dropouts.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth audio quality poor and choppy Music streaming over Bluetooth A2DP has poor quality with frequent interruptions and dropouts.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3039",
+    "summary": "Phone contacts not syncing via Bluetooth",
+    "description": "After Bluetooth connection phone contacts are not downloaded to vehicle system. PBAP sync fails.",
+    "domain": "Bluetooth connectivity",
+    "text": "Phone contacts not syncing via Bluetooth After Bluetooth connection phone contacts are not downloaded to vehicle system. PBAP sync fails.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3040",
+    "summary": "Bluetooth disconnects when starting engine",
+    "description": "Bluetooth phone connection drops every time engine is started then reconnects after few seconds.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth disconnects when starting engine Bluetooth phone connection drops every time engine is started then reconnects after few seconds.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3041",
+    "summary": "Multiple phones connected causes instability",
+    "description": "When 2+ phones are connected simultaneously Bluetooth becomes unstable and devices randomly disconnect.",
+    "domain": "Bluetooth connectivity",
+    "text": "Multiple phones connected causes instability When 2+ phones are connected simultaneously Bluetooth becomes unstable and devices randomly disconnect.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3042",
+    "summary": "Hands-free call audio cutting in and out",
+    "description": "During Bluetooth hands-free calls audio cuts in and out making conversation difficult.",
+    "domain": "Bluetooth connectivity",
+    "text": "Hands-free call audio cutting in and out During Bluetooth hands-free calls audio cuts in and out making conversation difficult.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3043",
+    "summary": "Bluetooth auto-reconnect not working",
+    "description": "After phone goes out of range and returns system doesn't automatically reconnect. Manual reconnect needed.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth auto-reconnect not working After phone goes out of range and returns system doesn't automatically reconnect. Manual reconnect needed.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3044",
+    "summary": "Bluetooth device name not displaying correctly",
+    "description": "Paired device shows as Unknown Device instead of actual phone name in device list.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth device name not displaying correctly Paired device shows as Unknown Device instead of actual phone name in device list.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3045",
+    "summary": "Cannot remove paired device from list",
+    "description": "Attempting to unpair/forget a Bluetooth device fails. Device remains in paired list after deletion.",
+    "domain": "Bluetooth connectivity",
+    "text": "Cannot remove paired device from list Attempting to unpair/forget a Bluetooth device fails. Device remains in paired list after deletion.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3046",
+    "summary": "Bluetooth music playback control not working",
+    "description": "Play/pause/skip controls on steering wheel don't work for Bluetooth music. Controls work for USB.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth music playback control not working Play/pause/skip controls on steering wheel don't work for Bluetooth music. Controls work for USB.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3047",
+    "summary": "Intermittent Bluetooth connectivity drops",
+    "description": "Bluetooth connection randomly drops and reconnects every 30-60 minutes of use.",
+    "domain": "Bluetooth connectivity",
+    "text": "Intermittent Bluetooth connectivity drops Bluetooth connection randomly drops and reconnects every 30-60 minutes of use.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3048",
+    "summary": "Bluetooth pairing requires multiple attempts",
+    "description": "Device pairing succeeds only after 3-4 attempts. First few attempts always fail with authentication error.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth pairing requires multiple attempts Device pairing succeeds only after 3-4 attempts. First few attempts always fail with authentication error.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3049",
+    "summary": "Phone battery drains faster when connected",
+    "description": "Users report faster phone battery drain when connected to vehicle Bluetooth.",
+    "domain": "Bluetooth connectivity",
+    "text": "Phone battery drains faster when connected Users report faster phone battery drain when connected to vehicle Bluetooth.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3050",
+    "summary": "Bluetooth call audio only works in one speaker",
+    "description": "During hands-free calls audio only comes from driver side speaker instead of both.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth call audio only works in one speaker During hands-free calls audio only comes from driver side speaker instead of both.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3051",
+    "summary": "Bluetooth connection lost after software update",
+    "description": "After OTA software update Bluetooth fails to connect to previously paired devices. All devices affected.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth connection lost after software update After OTA software update Bluetooth fails to connect to previously paired devices. All devices affected.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3052",
+    "summary": "Cannot answer call via Bluetooth controls",
+    "description": "Incoming call notification appears but pressing answer button on steering wheel doesn't answer.",
+    "domain": "Bluetooth connectivity",
+    "text": "Cannot answer call via Bluetooth controls Incoming call notification appears but pressing answer button on steering wheel doesn't answer.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3053",
+    "summary": "Bluetooth range very limited",
+    "description": "Bluetooth connection only works when phone is within 1-2 meters of head unit. Normal range should be 10m.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth range very limited Bluetooth connection only works when phone is within 1-2 meters of head unit. Normal range should be 10m.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3054",
+    "summary": "Phone shows connected but audio plays on phone",
+    "description": "Phone indicates connected via Bluetooth but audio continues playing on phone speaker not vehicle.",
+    "domain": "Bluetooth connectivity",
+    "text": "Phone shows connected but audio plays on phone Phone indicates connected via Bluetooth but audio continues playing on phone speaker not vehicle.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3055",
+    "summary": "Bluetooth pairing fails with iPhone devices",
+    "description": "Android phones pair successfully but iPhone pairing always fails with authentication error.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth pairing fails with iPhone devices Android phones pair successfully but iPhone pairing always fails with authentication error.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3056",
+    "summary": "Boot time exceeds 45 second requirement",
+    "description": "System boot from power on to home screen takes 58-65 seconds. Requirement is max 45 seconds.",
+    "domain": "Boot and System",
+    "text": "Boot time exceeds 45 second requirement System boot from power on to home screen takes 58-65 seconds. Requirement is max 45 seconds.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3057",
+    "summary": "Black screen during boot for 30 seconds",
+    "description": "After power on screen remains black for ~30 seconds before splash screen appears. Appears system is frozen.",
+    "domain": "Boot and System",
+    "text": "Black screen during boot for 30 seconds After power on screen remains black for ~30 seconds before splash screen appears. Appears system is frozen.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3058",
+    "summary": "System fails to boot after sudden power loss",
+    "description": "If power is cut during operation next boot attempt fails. System stuck at splash screen.",
+    "domain": "Boot and System",
+    "text": "System fails to boot after sudden power loss If power is cut during operation next boot attempt fails. System stuck at splash screen.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3059",
+    "summary": "Boot logo not displaying correctly",
+    "description": "Boot splash screen shows corrupted image or wrong logo. Sometimes displays debug text instead.",
+    "domain": "Boot and System",
+    "text": "Boot logo not displaying correctly Boot splash screen shows corrupted image or wrong logo. Sometimes displays debug text instead.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3060",
+    "summary": "Kernel panic during boot sequence",
+    "description": "System crashes during boot with kernel panic error. Boot process never completes.",
+    "domain": "Boot and System",
+    "text": "Kernel panic during boot sequence System crashes during boot with kernel panic error. Boot process never completes.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3061",
+    "summary": "Services fail to start after boot",
+    "description": "Boot completes but several services fail to start. Home screen loads but features missing.",
+    "domain": "Boot and System",
+    "text": "Services fail to start after boot Boot completes but several services fail to start. Home screen loads but features missing.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3062",
+    "summary": "Boot process hangs at specific percentage",
+    "description": "Boot progress bar stops at 67% and system hangs indefinitely. No further progress or timeout.",
+    "domain": "Boot and System",
+    "text": "Boot process hangs at specific percentage Boot progress bar stops at 67% and system hangs indefinitely. No further progress or timeout.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3063",
+    "summary": "Repeated boot loops on cold start",
+    "description": "On cold boot (temperature below 0\u00b0C) system enters boot loop. Warm starts work fine.",
+    "domain": "Boot and System",
+    "text": "Repeated boot loops on cold start On cold boot (temperature below 0\u00b0C) system enters boot loop. Warm starts work fine.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3064",
+    "summary": "USB autoplay during boot delays startup",
+    "description": "If USB drive connected during boot system takes 20 seconds longer to reach home screen.",
+    "domain": "Boot and System",
+    "text": "USB autoplay during boot delays startup If USB drive connected during boot system takes 20 seconds longer to reach home screen.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3065",
+    "summary": "Boot recovery mode not working",
+    "description": "Attempting to boot into recovery mode fails. System always boots into normal mode.",
+    "domain": "Boot and System",
+    "text": "Boot recovery mode not working Attempting to boot into recovery mode fails. System always boots into normal mode.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3066",
+    "summary": "Slow boot after software update",
+    "description": "First boot after OTA update takes 3+ minutes much slower than normal 45 second boot.",
+    "domain": "Boot and System",
+    "text": "Slow boot after software update First boot after OTA update takes 3+ minutes much slower than normal 45 second boot.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3067",
+    "summary": "Boot fails with secure boot violation",
+    "description": "System refuses to boot displaying secure boot verification failure error.",
+    "domain": "Boot and System",
+    "text": "Boot fails with secure boot violation System refuses to boot displaying secure boot verification failure error.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3068",
+    "summary": "Splash screen freezes during animation",
+    "description": "Boot splash screen animation starts but freezes after 2-3 seconds while boot continues.",
+    "domain": "Boot and System",
+    "text": "Splash screen freezes during animation Boot splash screen animation starts but freezes after 2-3 seconds while boot continues.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3069",
+    "summary": "System initialization timeout error",
+    "description": "Boot process times out with system initialization timeout error. Logs show service startup delays.",
+    "domain": "Boot and System",
+    "text": "System initialization timeout error Boot process times out with system initialization timeout error. Logs show service startup delays.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3070",
+    "summary": "Boot partition mounting fails intermittently",
+    "description": "Random boot failures with cannot mount boot partition error. Occurs approximately 1 in 20 boots.",
+    "domain": "Boot and System",
+    "text": "Boot partition mounting fails intermittently Random boot failures with cannot mount boot partition error. Occurs approximately 1 in 20 boots.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3071",
+    "summary": "Emergency mode boot due to fsck failure",
+    "description": "System boots into emergency mode reporting filesystem check failed. Requires manual intervention.",
+    "domain": "Boot and System",
+    "text": "Emergency mode boot due to fsck failure System boots into emergency mode reporting filesystem check failed. Requires manual intervention.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3072",
+    "summary": "Boot process missing audio chime",
+    "description": "System boot audio chime doesn't play on startup. All other audio functions work normally after boot.",
+    "domain": "Boot and System",
+    "text": "Boot process missing audio chime System boot audio chime doesn't play on startup. All other audio functions work normally after boot.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3073",
+    "summary": "CAN bus initialization failure during boot",
+    "description": "CAN communication fails to initialize during boot. Vehicle functions unavailable.",
+    "domain": "Boot and System",
+    "text": "CAN bus initialization failure during boot CAN communication fails to initialize during boot. Vehicle functions unavailable.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3074",
+    "summary": "Boot takes 90+ seconds on first startup",
+    "description": "Initial factory boot after programming takes over 90 seconds. Subsequent boots are normal.",
+    "domain": "Boot and System",
+    "text": "Boot takes 90+ seconds on first startup Initial factory boot after programming takes over 90 seconds. Subsequent boots are normal.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3075",
+    "summary": "System datetime resets on every boot",
+    "description": "After each boot system date and time reset to factory default 2020-01-01. RTC not working.",
+    "domain": "Boot and System",
+    "text": "System datetime resets on every boot After each boot system date and time reset to factory default 2020-01-01. RTC not working.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3076",
+    "summary": "Fastboot mode not accessible",
+    "description": "Cannot enter fastboot/download mode using button combination. Only normal boot works.",
+    "domain": "Boot and System",
+    "text": "Fastboot mode not accessible Cannot enter fastboot/download mode using button combination. Only normal boot works.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3077",
+    "summary": "Boot interrupted by power management event",
+    "description": "Boot sequence interrupted mid-process by unexpected sleep event causing incomplete initialization.",
+    "domain": "Boot and System",
+    "text": "Boot interrupted by power management event Boot sequence interrupted mid-process by unexpected sleep event causing incomplete initialization.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3078",
+    "summary": "Dual boot partition sync failure",
+    "description": "System has dual boot partitions for redundancy but sync between partitions failing.",
+    "domain": "Boot and System",
+    "text": "Dual boot partition sync failure System has dual boot partitions for redundancy but sync between partitions failing.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3079",
+    "summary": "Boot configuration data corruption",
+    "description": "System fails to boot with boot configuration data corrupted error. Requires factory reset.",
+    "domain": "Boot and System",
+    "text": "Boot configuration data corruption System fails to boot with boot configuration data corrupted error. Requires factory reset.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3080",
+    "summary": "Init process spawning too many threads",
+    "description": "Boot system monitor shows init process spawning excessive threads causing boot slowdown.",
+    "domain": "Boot and System",
+    "text": "Init process spawning too many threads Boot system monitor shows init process spawning excessive threads causing boot slowdown.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3081",
+    "summary": "Audio mix causes distortion at maximum volume",
+    "description": "When multiple audio sources overlap (navigation + media) distortion occurs at high volume levels.",
+    "domain": "Audio System",
+    "text": "Audio mix causes distortion at maximum volume When multiple audio sources overlap (navigation + media) distortion occurs at high volume levels.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3082",
+    "summary": "Subwoofer output not working",
+    "description": "Subwoofer produces no output in any audio mode. All other speakers functioning normally.",
+    "domain": "Audio System",
+    "text": "Subwoofer output not working Subwoofer produces no output in any audio mode. All other speakers functioning normally.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3083",
+    "summary": "Audio sync issue between video and audio",
+    "description": "When playing video files audio is out of sync lagging approximately 200ms behind video.",
+    "domain": "Audio System",
+    "text": "Audio sync issue between video and audio When playing video files audio is out of sync lagging approximately 200ms behind video.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3084",
+    "summary": "Speed-dependent volume control not working",
+    "description": "Automatic volume adjustment based on vehicle speed not functioning. Volume remains constant.",
+    "domain": "Audio System",
+    "text": "Speed-dependent volume control not working Automatic volume adjustment based on vehicle speed not functioning. Volume remains constant.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3085",
+    "summary": "Persistent audio artifacts after loud noise",
+    "description": "After loud noise event (door slam horn) audio has clicking artifacts that persist for minutes.",
+    "domain": "Audio System",
+    "text": "Persistent audio artifacts after loud noise After loud noise event (door slam horn) audio has clicking artifacts that persist for minutes.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3086",
+    "summary": "Memory usage spikes during screen transitions",
+    "description": "Navigation to settings menu transition causes 200MB memory spike. Memory not released.",
+    "domain": "Stability/memory",
+    "text": "Memory usage spikes during screen transitions Navigation to settings menu transition causes 200MB memory spike. Memory not released.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3087",
+    "summary": "Zombie processes accumulating over time",
+    "description": "Process table shows increasing number of zombie processes over days of operation.",
+    "domain": "Stability/memory",
+    "text": "Zombie processes accumulating over time Process table shows increasing number of zombie processes over days of operation.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3088",
+    "summary": "tmpfs filesystem growing unbounded",
+    "description": "Temporary filesystem (/tmp) consuming increasing storage eventually filling partition.",
+    "domain": "Stability/memory",
+    "text": "tmpfs filesystem growing unbounded Temporary filesystem (/tmp) consuming increasing storage eventually filling partition.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3089",
+    "summary": "System becomes unresponsive when storage full",
+    "description": "When storage reaches 100% full system becomes completely unresponsive and crashes.",
+    "domain": "Stability/memory",
+    "text": "System becomes unresponsive when storage full When storage reaches 100% full system becomes completely unresponsive and crashes.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3090",
+    "summary": "Shared memory leak in IPC communication",
+    "description": "Inter-process communication leaving shared memory segments allocated after processes exit.",
+    "domain": "Stability/memory",
+    "text": "Shared memory leak in IPC communication Inter-process communication leaving shared memory segments allocated after processes exit.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3091",
+    "summary": "Bluetooth reconnection fails after phone reboot",
+    "description": "After phone reboots vehicle doesn't reconnect to it automatically even though paired.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth reconnection fails after phone reboot After phone reboots vehicle doesn't reconnect to it automatically even though paired.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3092",
+    "summary": "Bluetooth hands-free and media not working simultaneously",
+    "description": "Either HFP or A2DP works but not both at same time. Switching between them fails.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth hands-free and media not working simultaneously Either HFP or A2DP works but not both at same time. Switching between them fails.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3093",
+    "summary": "Bluetooth device list shows duplicates",
+    "description": "Same phone appears multiple times in paired device list with different addresses.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth device list shows duplicates Same phone appears multiple times in paired device list with different addresses.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3094",
+    "summary": "Bluetooth connection latency very high",
+    "description": "Touch play on phone takes 5+ seconds before audio starts on vehicle speakers.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth connection latency very high Touch play on phone takes 5+ seconds before audio starts on vehicle speakers.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3095",
+    "summary": "Bluetooth SSP pairing always fails",
+    "description": "Simple Secure Pairing (SSP) always fails falling back to legacy PIN pairing.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth SSP pairing always fails Simple Secure Pairing (SSP) always fails falling back to legacy PIN pairing.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3096",
+    "summary": "System won't boot in extreme cold temperature",
+    "description": "In temperatures below -20\u00b0C system fails to boot. Screen remains black.",
+    "domain": "Boot and System",
+    "text": "System won't boot in extreme cold temperature In temperatures below -20\u00b0C system fails to boot. Screen remains black.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3097",
+    "summary": "Boot filesystem mounted read-only",
+    "description": "System boots but root filesystem is mounted read-only. Cannot save any settings.",
+    "domain": "Boot and System",
+    "text": "Boot filesystem mounted read-only System boots but root filesystem is mounted read-only. Cannot save any settings.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3098",
+    "summary": "Bootloader version mismatch error",
+    "description": "Boot fails with bootloader version mismatch error after software update.",
+    "domain": "Boot and System",
+    "text": "Bootloader version mismatch error Boot fails with bootloader version mismatch error after software update.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3099",
+    "summary": "Boot services timing out on slow storage",
+    "description": "On vehicles with older/slower storage media boot services timeout causing failures.",
+    "domain": "Boot and System",
+    "text": "Boot services timing out on slow storage On vehicles with older/slower storage media boot services timeout causing failures.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3100",
+    "summary": "Secondary processor boot synchronization fails",
+    "description": "Main SoC boots but secondary processor fails to synchronize causing partial functionality.",
+    "domain": "Boot and System",
+    "text": "Secondary processor boot synchronization fails Main SoC boots but secondary processor fails to synchronize causing partial functionality.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3101",
+    "summary": "Audio fade in/out not smooth",
+    "description": "Volume fade when receiving navigation prompts is abrupt and jarring not smooth.",
+    "domain": "Audio System",
+    "text": "Audio fade in/out not smooth Volume fade when receiving navigation prompts is abrupt and jarring not smooth.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3102",
+    "summary": "Surround sound imaging incorrect",
+    "description": "5.1 surround sound positioning inaccurate. Sounds appear from wrong direction.",
+    "domain": "Audio System",
+    "text": "Surround sound imaging incorrect 5.1 surround sound positioning inaccurate. Sounds appear from wrong direction.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3103",
+    "summary": "Audio noise gate causing cutoff",
+    "description": "Soft audio passages get cut off completely by aggressive noise gate.",
+    "domain": "Audio System",
+    "text": "Audio noise gate causing cutoff Soft audio passages get cut off completely by aggressive noise gate.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3104",
+    "summary": "System performance degradation over weeks",
+    "description": "System becomes slower over weeks of continuous operation even after reboots.",
+    "domain": "Stability/memory",
+    "text": "System performance degradation over weeks System becomes slower over weeks of continuous operation even after reboots.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3105",
+    "summary": "Graphics memory not released after video playback",
+    "description": "After watching videos GPU memory usage remains high and doesn't return to baseline.",
+    "domain": "Stability/memory",
+    "text": "Graphics memory not released after video playback After watching videos GPU memory usage remains high and doesn't return to baseline.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3106",
+    "summary": "Bluetooth audio metadata not updating",
+    "description": "Song title and artist information doesn't update during Bluetooth music playback.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth audio metadata not updating Song title and artist information doesn't update during Bluetooth music playback.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3107",
+    "summary": "Bluetooth device firmware update fails",
+    "description": "Attempting to update Bluetooth module firmware fails leaving module inoperable.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth device firmware update fails Attempting to update Bluetooth module firmware fails leaving module inoperable.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3108",
+    "summary": "Boot partition A/B switching logic broken",
+    "description": "Dual boot partition fallback not working. Failed boot doesn't switch to backup partition.",
+    "domain": "Boot and System",
+    "text": "Boot partition A/B switching logic broken Dual boot partition fallback not working. Failed boot doesn't switch to backup partition.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3109",
+    "summary": "Post-boot initialization scripts not running",
+    "description": "Scripts configured to run after boot completion are not executing.",
+    "domain": "Boot and System",
+    "text": "Post-boot initialization scripts not running Scripts configured to run after boot completion are not executing.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-3110",
+    "summary": "Audio voice recognition accuracy poor",
+    "description": "Voice commands for audio control often misunderstood or not recognized.",
+    "domain": "Audio System",
+    "text": "Audio voice recognition accuracy poor Voice commands for audio control often misunderstood or not recognized.",
+    "source": "synthesized_structured"
+  },
+  {
+    "id": "SAM1-4001",
+    "summary": "FM Radio frequency drift during temperature change",
+    "description": "FM Radio gradually drifts off station as cabin temperature increases. Auto-tuning doesn't compensate properly.",
+    "domain": "Audio System",
+    "text": "FM Radio frequency drift during temperature change FM Radio gradually drifts off station as cabin temperature increases. Auto-tuning doesn't compensate properly.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4002",
+    "summary": "Audio amplifier thermal shutdown",
+    "description": "After 30 minutes of high volume playback audio completely stops. Resumes after 10 minute cool-down period.",
+    "domain": "Audio System",
+    "text": "Audio amplifier thermal shutdown After 30 minutes of high volume playback audio completely stops. Resumes after 10 minute cool-down period.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4003",
+    "summary": "DAB Radio station list not updating",
+    "description": "Digital Radio station list becomes stale. New stations in area not discovered during scan.",
+    "domain": "Audio System",
+    "text": "DAB Radio station list not updating Digital Radio station list becomes stale. New stations in area not discovered during scan.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4004",
+    "summary": "Audio routing switches randomly between speakers",
+    "description": "Audio output randomly jumps between front and rear speakers without user input.",
+    "domain": "Audio System",
+    "text": "Audio routing switches randomly between speakers Audio output randomly jumps between front and rear speakers without user input.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4005",
+    "summary": "Sirius XM channel guide not loading",
+    "description": "Satellite radio channel guide shows loading indefinitely. Channels playable but no metadata.",
+    "domain": "Audio System",
+    "text": "Sirius XM channel guide not loading Satellite radio channel guide shows loading indefinitely. Channels playable but no metadata.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4006",
+    "summary": "Audio focus not released after navigation prompt",
+    "description": "After navigation announcement media doesn't resume playing automatically. Must manually press play.",
+    "domain": "Audio System",
+    "text": "Audio focus not released after navigation prompt After navigation announcement media doesn't resume playing automatically. Must manually press play.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4007",
+    "summary": "USB audio file tags showing corrupted text",
+    "description": "ID3 tags for USB audio files display garbled characters for artist and album names.",
+    "domain": "Audio System",
+    "text": "USB audio file tags showing corrupted text ID3 tags for USB audio files display garbled characters for artist and album names.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4008",
+    "summary": "Audio keeps playing during reverse camera activation",
+    "description": "When shifting to reverse audio continues playing should mute for parking sensor tones.",
+    "domain": "Audio System",
+    "text": "Audio keeps playing during reverse camera activation When shifting to reverse audio continues playing should mute for parking sensor tones.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4009",
+    "summary": "Bluetooth aptX codec not working",
+    "description": "High quality aptX Bluetooth audio codec available but always falls back to SBC.",
+    "domain": "Audio System",
+    "text": "Bluetooth aptX codec not working High quality aptX Bluetooth audio codec available but always falls back to SBC.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4010",
+    "summary": "Audio volume inconsistent between sources",
+    "description": "FM Radio plays much louder than Bluetooth at same volume level setting. Inconsistent loudness.",
+    "domain": "Audio System",
+    "text": "Audio volume inconsistent between sources FM Radio plays much louder than Bluetooth at same volume level setting. Inconsistent loudness.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4011",
+    "summary": "System runs out of memory during long trip",
+    "description": "On drives longer than 4 hours system becomes sluggish and eventually crashes with OOM.",
+    "domain": "Stability/memory",
+    "text": "System runs out of memory during long trip On drives longer than 4 hours system becomes sluggish and eventually crashes with OOM.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4012",
+    "summary": "Kernel module causing memory leak",
+    "description": "Kernel memory continuously decreasing even when no applications running. System unstable after 48 hours uptime.",
+    "domain": "Stability/memory",
+    "text": "Kernel module causing memory leak Kernel memory continuously decreasing even when no applications running. System unstable after 48 hours uptime.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4013",
+    "summary": "Weather widget causing memory corruption",
+    "description": "Enabling weather widget on home screen causes random crashes in unrelated applications.",
+    "domain": "Stability/memory",
+    "text": "Weather widget causing memory corruption Enabling weather widget on home screen causes random crashes in unrelated applications.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4014",
+    "summary": "System freeze during garbage collection",
+    "description": "UI freezes for 5-10 seconds periodically. Logs show garbage collector running during freeze.",
+    "domain": "Stability/memory",
+    "text": "System freeze during garbage collection UI freezes for 5-10 seconds periodically. Logs show garbage collector running during freeze.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4015",
+    "summary": "Shared library memory not released",
+    "description": "Applications closed but memory usage doesn't decrease. Shared libraries remaining loaded.",
+    "domain": "Stability/memory",
+    "text": "Shared library memory not released Applications closed but memory usage doesn't decrease. Shared libraries remaining loaded.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4016",
+    "summary": "Database cache growing without limit",
+    "description": "SQLite database cache consuming 500MB+ memory. Queries become slower over time.",
+    "domain": "Stability/memory",
+    "text": "Database cache growing without limit SQLite database cache consuming 500MB+ memory. Queries become slower over time.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4017",
+    "summary": "Message queue overflow causing crashes",
+    "description": "IPC message queue fills up causing message loss and application crashes.",
+    "domain": "Stability/memory",
+    "text": "Message queue overflow causing crashes IPC message queue fills up causing message loss and application crashes.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4018",
+    "summary": "Graphics compositor memory leak",
+    "description": "Display memory usage increases 5MB per hour. After 20 hours system becomes unstable.",
+    "domain": "Stability/memory",
+    "text": "Graphics compositor memory leak Display memory usage increases 5MB per hour. After 20 hours system becomes unstable.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4019",
+    "summary": "Stack size too small for media processing",
+    "description": "Video playback crashes with stack overflow in decoder thread.",
+    "domain": "Stability/memory",
+    "text": "Stack size too small for media processing Video playback crashes with stack overflow in decoder thread.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4020",
+    "summary": "Multiple browser tabs causing OOM",
+    "description": "Opening more than 5 browser tabs causes out of memory crash.",
+    "domain": "Stability/memory",
+    "text": "Multiple browser tabs causing OOM Opening more than 5 browser tabs causes out of memory crash.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4021",
+    "summary": "Image cache not clearing old entries",
+    "description": "Photo viewer cache grows to fill all available storage over time.",
+    "domain": "Stability/memory",
+    "text": "Image cache not clearing old entries Photo viewer cache grows to fill all available storage over time.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4022",
+    "summary": "Memory fragmentation causing allocation failures",
+    "description": "Long running system starts failing memory allocations despite showing available memory.",
+    "domain": "Stability/memory",
+    "text": "Memory fragmentation causing allocation failures Long running system starts failing memory allocations despite showing available memory.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4023",
+    "summary": "Resource leak in camera service",
+    "description": "Camera preview causes memory leak. Memory usage increases while camera active.",
+    "domain": "Stability/memory",
+    "text": "Resource leak in camera service Camera preview causes memory leak. Memory usage increases while camera active.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4024",
+    "summary": "Network buffer pool exhausted",
+    "description": "Network operations fail after system runs for several days. Connection attempts rejected.",
+    "domain": "Stability/memory",
+    "text": "Network buffer pool exhausted Network operations fail after system runs for several days. Connection attempts rejected.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4025",
+    "summary": "Thread pool threads not terminating",
+    "description": "Background worker thread count continuously increases. Thread creation eventually fails.",
+    "domain": "Stability/memory",
+    "text": "Thread pool threads not terminating Background worker thread count continuously increases. Thread creation eventually fails.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4026",
+    "summary": "Bluetooth pairing PIN code not displaying",
+    "description": "When pairing new device PIN code popup doesn't appear. Pairing fails with timeout.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth pairing PIN code not displaying When pairing new device PIN code popup doesn't appear. Pairing fails with timeout.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4027",
+    "summary": "Bluetooth Audio Sink (A2DP) initialization fails",
+    "description": "Phone connects but audio won't stream to vehicle. A2DP profile connection fails.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth Audio Sink (A2DP) initialization fails Phone connects but audio won't stream to vehicle. A2DP profile connection fails.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4028",
+    "summary": "Bluetooth keeps scanning continuously",
+    "description": "Bluetooth scan never stops draining phone battery. Scan indicator always visible.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth keeps scanning continuously Bluetooth scan never stops draining phone battery. Scan indicator always visible.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4029",
+    "summary": "Phone book access blocked by permissions",
+    "description": "Cannot download contacts from phone via Bluetooth PBAP.",
+    "domain": "Bluetooth connectivity",
+    "text": "Phone book access blocked by permissions Cannot download contacts from phone via Bluetooth PBAP.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4030",
+    "summary": "Bluetooth MAC address changing causing issues",
+    "description": "Same phone appears as different device after each pairing. Previous pairing lost.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth MAC address changing causing issues Same phone appears as different device after each pairing. Previous pairing lost.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4031",
+    "summary": "Bluetooth LE and Classic interference",
+    "description": "When BLE devices connected classic Bluetooth audio has stuttering and dropouts.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth LE and Classic interference When BLE devices connected classic Bluetooth audio has stuttering and dropouts.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4032",
+    "summary": "Bluetooth hands-free volume very low",
+    "description": "Caller audio volume during hands-free calls extremely quiet even at maximum setting.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth hands-free volume very low Caller audio volume during hands-free calls extremely quiet even at maximum setting.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4033",
+    "summary": "Bluetooth connection lost when WiFi enabled",
+    "description": "Enabling WiFi causes Bluetooth connection to drop. Both can't work simultaneously.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth connection lost when WiFi enabled Enabling WiFi causes Bluetooth connection to drop. Both can't work simultaneously.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4034",
+    "summary": "Bluetooth profile switching causes disconnection",
+    "description": "Switching from music to call causes Bluetooth to disconnect completely and reconnect.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth profile switching causes disconnection Switching from music to call causes Bluetooth to disconnect completely and reconnect.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4035",
+    "summary": "Bluetooth device priority not working",
+    "description": "Multiple paired phones all auto-connect causing conflicts. Priority order not respected.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth device priority not working Multiple paired phones all auto-connect causing conflicts. Priority order not respected.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4036",
+    "summary": "Bluetooth message access profile not working",
+    "description": "Cannot read SMS messages via Bluetooth MAP.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth message access profile not working Cannot read SMS messages via Bluetooth MAP.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4037",
+    "summary": "Bluetooth audio video sync when casting",
+    "description": "Video cast from phone to display out of sync with Bluetooth audio by 500ms.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth audio video sync when casting Video cast from phone to display out of sync with Bluetooth audio by 500ms.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4038",
+    "summary": "Bluetooth connection drops when multiple BLE devices active",
+    "description": "With 3+ BLE sensors connected classic Bluetooth phone connection unstable.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth connection drops when multiple BLE devices active With 3+ BLE sensors connected classic Bluetooth phone connection unstable.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4039",
+    "summary": "Bluetooth secure connections pairing always fails",
+    "description": "Pairing with devices requiring Secure Connections (BT 4.2+) fails.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth secure connections pairing always fails Pairing with devices requiring Secure Connections (BT 4.2+) fails.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4040",
+    "summary": "Bluetooth disconnects during phone software update",
+    "description": "When phone receives software update Bluetooth disconnects and won't reconnect until reboot.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth disconnects during phone software update When phone receives software update Bluetooth disconnects and won't reconnect until reboot.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4041",
+    "summary": "Boot splash screen shows artifacts",
+    "description": "During boot animation strange visual glitches and artifacts appear on screen.",
+    "domain": "Boot and System",
+    "text": "Boot splash screen shows artifacts During boot animation strange visual glitches and artifacts appear on screen.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4042",
+    "summary": "Boot time regression after software update",
+    "description": "After OTA update boot time increased from 45 seconds to 78 seconds.",
+    "domain": "Boot and System",
+    "text": "Boot time regression after software update After OTA update boot time increased from 45 seconds to 78 seconds.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4043",
+    "summary": "Secure element initialization timeout at boot",
+    "description": "Boot hangs for 30 seconds waiting for secure element hardware to respond.",
+    "domain": "Boot and System",
+    "text": "Secure element initialization timeout at boot Boot hangs for 30 seconds waiting for secure element hardware to respond.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4044",
+    "summary": "Boot partition verification very slow",
+    "description": "Verified boot process takes 15 seconds to verify boot image signature.",
+    "domain": "Boot and System",
+    "text": "Boot partition verification very slow Verified boot process takes 15 seconds to verify boot image signature.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4045",
+    "summary": "Boot fails after battery disconnect",
+    "description": "After battery replacement or disconnect system fails to boot showing initialization error.",
+    "domain": "Boot and System",
+    "text": "Boot fails after battery disconnect After battery replacement or disconnect system fails to boot showing initialization error.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4046",
+    "summary": "Cold boot much slower than warm boot",
+    "description": "First boot after long power off takes 90 seconds. Warm reboots take normal 45 seconds.",
+    "domain": "Boot and System",
+    "text": "Cold boot much slower than warm boot First boot after long power off takes 90 seconds. Warm reboots take normal 45 seconds.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4047",
+    "summary": "Boot process creates excessive log messages",
+    "description": "Boot logs consuming 50MB of storage per boot. Log partition fills quickly.",
+    "domain": "Boot and System",
+    "text": "Boot process creates excessive log messages Boot logs consuming 50MB of storage per boot. Log partition fills quickly.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4048",
+    "summary": "Boot fails with TPM initialization error",
+    "description": "Trusted Platform Module init fails causing boot to halt with security error.",
+    "domain": "Boot and System",
+    "text": "Boot fails with TPM initialization error Trusted Platform Module init fails causing boot to halt with security error.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4049",
+    "summary": "Dual display initialization fails during boot",
+    "description": "Secondary display remains black after boot while primary display works fine.",
+    "domain": "Boot and System",
+    "text": "Dual display initialization fails during boot Secondary display remains black after boot while primary display works fine.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4050",
+    "summary": "Boot interrupted by watchdog reset",
+    "description": "System watchdog resets system during boot before initialization complete.",
+    "domain": "Boot and System",
+    "text": "Boot interrupted by watchdog reset System watchdog resets system during boot before initialization complete.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4051",
+    "summary": "System property initialization race at boot",
+    "description": "Random boot failures with uninitialized property access errors.",
+    "domain": "Boot and System",
+    "text": "System property initialization race at boot Random boot failures with uninitialized property access errors.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4052",
+    "summary": "Boot network interface not coming up",
+    "description": "Ethernet interface doesn't activate during boot. Network unavailable until manual ifup command.",
+    "domain": "Boot and System",
+    "text": "Boot network interface not coming up Ethernet interface doesn't activate during boot. Network unavailable until manual ifup command.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4053",
+    "summary": "Boot from SD card slower than eMMC",
+    "description": "When booting from SD card boot time is 2x slower than internal eMMC storage.",
+    "domain": "Boot and System",
+    "text": "Boot from SD card slower than eMMC When booting from SD card boot time is 2x slower than internal eMMC storage.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4054",
+    "summary": "Boot fails with device tree parsing error",
+    "description": "Kernel fails to boot with device tree blob parsing error in boot logs.",
+    "domain": "Boot and System",
+    "text": "Boot fails with device tree parsing error Kernel fails to boot with device tree blob parsing error in boot logs.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4055",
+    "summary": "Boot console output missing on serial port",
+    "description": "Serial console shows no boot messages. Screen blank until boot complete.",
+    "domain": "Boot and System",
+    "text": "Boot console output missing on serial port Serial console shows no boot messages. Screen blank until boot complete.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4056",
+    "summary": "Voice command audio feedback very quiet",
+    "description": "System beep and voice responses to voice commands barely audible.",
+    "domain": "Audio System",
+    "text": "Voice command audio feedback very quiet System beep and voice responses to voice commands barely audible.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4057",
+    "summary": "Audio clicks when adjusting volume",
+    "description": "Every volume adjustment produces clicking sound through speakers.",
+    "domain": "Audio System",
+    "text": "Audio clicks when adjusting volume Every volume adjustment produces clicking sound through speakers.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4058",
+    "summary": "Surround sound only works in parking mode",
+    "description": "5.1 audio mode disabled when vehicle speed above 0. Only stereo available while driving.",
+    "domain": "Audio System",
+    "text": "Surround sound only works in parking mode 5.1 audio mode disabled when vehicle speed above 0. Only stereo available while driving.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4059",
+    "summary": "Audio sample rate conversion causing artifacts",
+    "description": "When playing 48kHz audio digital artifacts and aliasing audible.",
+    "domain": "Audio System",
+    "text": "Audio sample rate conversion causing artifacts When playing 48kHz audio digital artifacts and aliasing audible.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4060",
+    "summary": "Text-to-speech audio distorted",
+    "description": "Navigation voice guidance and TTS announcements sound robotic and distorted.",
+    "domain": "Audio System",
+    "text": "Text-to-speech audio distorted Navigation voice guidance and TTS announcements sound robotic and distorted.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4061",
+    "summary": "System log daemon consuming excessive CPU",
+    "description": "log daemon process using 45% CPU constantly degrading overall system performance.",
+    "domain": "Stability/memory",
+    "text": "System log daemon consuming excessive CPU log daemon process using 45% CPU constantly degrading overall system performance.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4062",
+    "summary": "Virtual memory system thrashing",
+    "description": "System extremely slow with constant disk activity. Memory subsystem thrashing.",
+    "domain": "Stability/memory",
+    "text": "Virtual memory system thrashing System extremely slow with constant disk activity. Memory subsystem thrashing.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4063",
+    "summary": "File descriptor leak in telemetry service",
+    "description": "Telemetry service accumulating open file descriptors eventually hitting process limit.",
+    "domain": "Stability/memory",
+    "text": "File descriptor leak in telemetry service Telemetry service accumulating open file descriptors eventually hitting process limit.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4064",
+    "summary": "System running out of PIDs",
+    "description": "Cannot fork new processes - process ID space exhausted.",
+    "domain": "Stability/memory",
+    "text": "System running out of PIDs Cannot fork new processes - process ID space exhausted.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4065",
+    "summary": "Journald logs filling root partition",
+    "description": "System logs consuming 10GB+ causing root partition to fill completely.",
+    "domain": "Stability/memory",
+    "text": "Journald logs filling root partition System logs consuming 10GB+ causing root partition to fill completely.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4066",
+    "summary": "Bluetooth EDR throughput very low",
+    "description": "Bluetooth file transfer speeds only reaching 100KB/s should be 2-3MB/s.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth EDR throughput very low Bluetooth file transfer speeds only reaching 100KB/s should be 2-3MB/s.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4067",
+    "summary": "Bluetooth inquiry scan response delayed",
+    "description": "Other devices take long time to discover this vehicle during Bluetooth scan.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth inquiry scan response delayed Other devices take long time to discover this vehicle during Bluetooth scan.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4068",
+    "summary": "Bluetooth power consumption high in standby",
+    "description": "Vehicle battery drains faster with Bluetooth enabled even when no devices connected.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth power consumption high in standby Vehicle battery drains faster with Bluetooth enabled even when no devices connected.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4069",
+    "summary": "Bluetooth role switch failing",
+    "description": "Cannot switch from master to slave role causing connection issues with certain devices.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth role switch failing Cannot switch from master to slave role causing connection issues with certain devices.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4070",
+    "summary": "Boot kernel panics with MMC read error",
+    "description": "Intermittent kernel panic during boot with eMMC read timeout error.",
+    "domain": "Boot and System",
+    "text": "Boot kernel panics with MMC read error Intermittent kernel panic during boot with eMMC read timeout error.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4071",
+    "summary": "Audio format detection incorrect for AAC files",
+    "description": "AAC audio files misidentified as MP3 causing playback failure.",
+    "domain": "Audio System",
+    "text": "Audio format detection incorrect for AAC files AAC audio files misidentified as MP3 causing playback failure.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4072",
+    "summary": "Memory leak in notification manager",
+    "description": "Notification service memory usage growing 1MB per hour of operation.",
+    "domain": "Stability/memory",
+    "text": "Memory leak in notification manager Notification service memory usage growing 1MB per hour of operation.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4073",
+    "summary": "Bluetooth headset button controls not working",
+    "description": "Play/pause button on Bluetooth headset has no effect. Only works for phone calls.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth headset button controls not working Play/pause button on Bluetooth headset has no effect. Only works for phone calls.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4074",
+    "summary": "Boot ramdisk image too large",
+    "description": "Boot fails with ramdisk too large error on systems with limited memory.",
+    "domain": "Boot and System",
+    "text": "Boot ramdisk image too large Boot fails with ramdisk too large error on systems with limited memory.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4075",
+    "summary": "Auxiliary audio input has poor quality",
+    "description": "3.5mm AUX input audio quality noticeably worse than other sources.",
+    "domain": "Audio System",
+    "text": "Auxiliary audio input has poor quality 3.5mm AUX input audio quality noticeably worse than other sources.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4076",
+    "summary": "System panics when removing USB device during access",
+    "description": "Unplugging USB drive while accessing files causes kernel panic and crash.",
+    "domain": "Stability/memory",
+    "text": "System panics when removing USB device during access Unplugging USB drive while accessing files causes kernel panic and crash.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4077",
+    "summary": "Bluetooth refuses connection when battery low",
+    "description": "When vehicle battery below 11V Bluetooth won't accept connections.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth refuses connection when battery low When vehicle battery below 11V Bluetooth won't accept connections.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4078",
+    "summary": "Boot takes longer with many USB devices connected",
+    "description": "Each USB device connected adds 3-5 seconds to boot time.",
+    "domain": "Boot and System",
+    "text": "Boot takes longer with many USB devices connected Each USB device connected adds 3-5 seconds to boot time.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4079",
+    "summary": "Audio ducking too aggressive during alerts",
+    "description": "Alert sounds completely mute music instead of reducing volume.",
+    "domain": "Audio System",
+    "text": "Audio ducking too aggressive during alerts Alert sounds completely mute music instead of reducing volume.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4080",
+    "summary": "Memory allocator causing heap corruption",
+    "description": "Random crashes with heap corruption detected error in various applications.",
+    "domain": "Stability/memory",
+    "text": "Memory allocator causing heap corruption Random crashes with heap corruption detected error in various applications.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4081",
+    "summary": "HDMI audio output not working",
+    "description": "External display connected via HDMI shows video but no audio output.",
+    "domain": "Audio System",
+    "text": "HDMI audio output not working External display connected via HDMI shows video but no audio output.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4082",
+    "summary": "Process memory limits not enforced",
+    "description": "Applications able to allocate unlimited memory causing OOM killer to activate.",
+    "domain": "Stability/memory",
+    "text": "Process memory limits not enforced Applications able to allocate unlimited memory causing OOM killer to activate.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4083",
+    "summary": "Bluetooth SSP numeric comparison timeout",
+    "description": "Pairing fails because numeric comparison dialog dismissed too quickly.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth SSP numeric comparison timeout Pairing fails because numeric comparison dialog dismissed too quickly.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4084",
+    "summary": "Boot fails after failed software update",
+    "description": "Partial OTA update leaves system unbootable. No rollback occurred.",
+    "domain": "Boot and System",
+    "text": "Boot fails after failed software update Partial OTA update leaves system unbootable. No rollback occurred.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4085",
+    "summary": "Audio crossfade between tracks not working",
+    "description": "Gapless playback works but crossfade feature doesn't overlap tracks.",
+    "domain": "Audio System",
+    "text": "Audio crossfade between tracks not working Gapless playback works but crossfade feature doesn't overlap tracks.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4086",
+    "summary": "Zoned memory allocation causing fragmentation",
+    "description": "DMA zones depleted while normal zones have free memory causing allocation failures.",
+    "domain": "Stability/memory",
+    "text": "Zoned memory allocation causing fragmentation DMA zones depleted while normal zones have free memory causing allocation failures.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4087",
+    "summary": "Bluetooth multipoint switching slow",
+    "description": "Switching active connection between two paired phones takes 5+ seconds.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth multipoint switching slow Switching active connection between two paired phones takes 5+ seconds.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4088",
+    "summary": "Boot script timeout too short",
+    "description": "Boot scripts timing out before completion on slower hardware variants.",
+    "domain": "Boot and System",
+    "text": "Boot script timeout too short Boot scripts timing out before completion on slower hardware variants.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4089",
+    "summary": "Audio spectrum analyzer causing CPU spike",
+    "description": "Enabling audio visualizer causes UI lag and high CPU usage.",
+    "domain": "Audio System",
+    "text": "Audio spectrum analyzer causing CPU spike Enabling audio visualizer causes UI lag and high CPU usage.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4090",
+    "summary": "Kernel memory leak in netfilter",
+    "description": "Network firewall rules causing kernel memory leak over time.",
+    "domain": "Stability/memory",
+    "text": "Kernel memory leak in netfilter Network firewall rules causing kernel memory leak over time.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4091",
+    "summary": "Bluetooth audio buffer underruns",
+    "description": "Bluetooth audio has periodic stuttering every 30-60 seconds.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth audio buffer underruns Bluetooth audio has periodic stuttering every 30-60 seconds.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4092",
+    "summary": "Init process respawning failed services",
+    "description": "Boot logs show services restarting repeatedly in crash loop.",
+    "domain": "Boot and System",
+    "text": "Init process respawning failed services Boot logs show services restarting repeatedly in crash loop.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4093",
+    "summary": "Audio normalization causing pumping effect",
+    "description": "Automatic volume leveling creates unnatural pumping breathing effect in audio.",
+    "domain": "Audio System",
+    "text": "Audio normalization causing pumping effect Automatic volume leveling creates unnatural pumping breathing effect in audio.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4094",
+    "summary": "OOM killer terminating wrong processes",
+    "description": "When low memory occurs OOM killer terminates critical system services instead of apps.",
+    "domain": "Stability/memory",
+    "text": "OOM killer terminating wrong processes When low memory occurs OOM killer terminates critical system services instead of apps.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4095",
+    "summary": "Bluetooth legacy pairing PIN fixed",
+    "description": "Can pair with any device using fixed PIN 0000 security vulnerability.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth legacy pairing PIN fixed Can pair with any device using fixed PIN 0000 security vulnerability.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4096",
+    "summary": "Early boot console switching fails",
+    "description": "Boot messages disappear when switching from serial to framebuffer console.",
+    "domain": "Boot and System",
+    "text": "Early boot console switching fails Boot messages disappear when switching from serial to framebuffer console.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4097",
+    "summary": "ALSA buffer configuration causing latency",
+    "description": "Audio playback has 500ms latency between command and sound output.",
+    "domain": "Audio System",
+    "text": "ALSA buffer configuration causing latency Audio playback has 500ms latency between command and sound output.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4098",
+    "summary": "Slab memory not being reclaimed",
+    "description": "Kernel slab allocator caches consuming increasing memory not released under pressure.",
+    "domain": "Stability/memory",
+    "text": "Slab memory not being reclaimed Kernel slab allocator caches consuming increasing memory not released under pressure.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4099",
+    "summary": "Bluetooth LE advertising data truncated",
+    "description": "BLE advertisement payload missing data. Only first 10 bytes transmitted.",
+    "domain": "Bluetooth connectivity",
+    "text": "Bluetooth LE advertising data truncated BLE advertisement payload missing data. Only first 10 bytes transmitted.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-4100",
+    "summary": "Init ramdisk running out of space",
+    "description": "Early boot fails with ramdisk full error during initialization.",
+    "domain": "Boot and System",
+    "text": "Init ramdisk running out of space Early boot fails with ramdisk full error during initialization.",
+    "source": "synthesized_extended"
+  },
+  {
+    "id": "SAM1-5001",
+    "summary": "Audio source switch latency exceeds KPI threshold",
+    "description": "**Problem Description:**\r\nWhen switching between audio sources (FM Radio to USB, Bluetooth to AUX, etc.), the time from source selection to audio playback exceeds the 200ms KPI requirement, typically measuring 500-800ms.\r\n\r\n**Steps to Reproduce:**\r\n1. Start with FM Radio playing\r\n2. Select USB audio source from media menu\r\n3. Measure time from button press to first audio output\r\n4. Observe delay of 500+ milliseconds\r\n\r\n**Expected Result:**\r\nAudio should begin playing within 200ms of source selection per STR (Source-To-Response) KPI requirement\r\n\r\n**Actual Result:**\r\nAudio takes 500-800ms to start, with noticeable user-perceived lag. DLT logs show AudioMixer buffer flush taking 120+ms due to oversized buffer.\r\n\r\n**Root Cause Analysis:**\r\nAudio buffer size constant set to 2048 samples instead of required 512 samples. During source switch, flushBuffers() must drain entire buffer before attaching new stream, resulting in 4x longer flush time.\r\n\r\n**Affected Component:** AudioMixer.cpp, line 15-17\r\n**Fix:** Change BUFFER_SIZE from 2048 to 512 samples",
+    "domain": "audio_system_domain",
+    "text": "Audio source switch latency exceeds KPI threshold **Problem Description:**\r\nWhen switching between audio sources (FM Radio to USB, Bluetooth to AUX, etc.), the time from source selection to audio playback exceeds the 200ms KPI requirement, typically measuring 500-800ms.\r\n\r\n**Steps to Reproduce:**\r\n1. Start with FM Radio playing\r\n2. Select USB audio source from media menu\r\n3. Measure time from button press to first audio output\r\n4. Observe delay of 500+ milliseconds\r\n\r\n**Expected Result:**\r\nAudio should begin playing within 200ms of source selection per STR (Source-To-Response) KPI requirement\r\n\r\n**Actual Result:**\r\nAudio takes 500-800ms to start, with noticeable user-perceived lag. DLT logs show AudioMixer buffer flush taking 120+ms due to oversized buffer.\r\n\r\n**Root Cause Analysis:**\r\nAudio buffer size constant set to 2048 samples instead of required 512 samples. During source switch, flushBuffers() must drain entire buffer before attaching new stream, resulting in 4x longer flush time.\r\n\r\n**Affected Component:** AudioMixer.cpp, line 15-17\r\n**Fix:** Change BUFFER_SIZE from 2048 to 512 samples",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5002",
+    "summary": "Bluetooth HFP call drops after 10-15 minutes",
+    "description": "**Problem Description:**\r\nDuring hands-free phone calls via Bluetooth HFP profile, calls disconnect unexpectedly after 10-15 minutes of conversation. Audio switches to phone speaker and Bluetooth remains connected for media but not calls.\r\n\r\n**Environment:**\r\n- Multiple phone models affected (iPhone 13, Samsung Galaxy S21, Pixel 6)\r\n- Occurs in all signal strength conditions\r\n- Always reproducible on calls exceeding 10 minutes\r\n\r\n**Steps to Reproduce:**\r\n1. Pair phone via Bluetooth\r\n2. Initiate or receive phone call\r\n3. Continue hands-free conversation for 10+ minutes\r\n4. Observe call disconnection\r\n\r\n**Expected Result:**\r\nCall should remain connected via Bluetooth HFP for entire call duration\r\n\r\n**Actual Result:**\r\nCall disconnects at approximately 10-15 minute mark. Bluetooth connection remains for A2DP but HFP profile disconnects.\r\n\r\n**DLT Log Evidence:**\r\n[BLUETOOTH] HFP keep-alive timeout - no response for 600 seconds\r\n[BLUETOOTH] SCO audio link supervision timeout\r\n\r\n**Root Cause:**\r\nBluetooth HFP keep-alive timer set to 10 minutes (600 seconds) causing connection timeout. Timer should be 30 minutes or disabled for active calls.",
+    "domain": "bluetooth_connectivity_domain",
+    "text": "Bluetooth HFP call drops after 10-15 minutes **Problem Description:**\r\nDuring hands-free phone calls via Bluetooth HFP profile, calls disconnect unexpectedly after 10-15 minutes of conversation. Audio switches to phone speaker and Bluetooth remains connected for media but not calls.\r\n\r\n**Environment:**\r\n- Multiple phone models affected (iPhone 13, Samsung Galaxy S21, Pixel 6)\r\n- Occurs in all signal strength conditions\r\n- Always reproducible on calls exceeding 10 minutes\r\n\r\n**Steps to Reproduce:**\r\n1. Pair phone via Bluetooth\r\n2. Initiate or receive phone call\r\n3. Continue hands-free conversation for 10+ minutes\r\n4. Observe call disconnection\r\n\r\n**Expected Result:**\r\nCall should remain connected via Bluetooth HFP for entire call duration\r\n\r\n**Actual Result:**\r\nCall disconnects at approximately 10-15 minute mark. Bluetooth connection remains for A2DP but HFP profile disconnects.\r\n\r\n**DLT Log Evidence:**\r\n[BLUETOOTH] HFP keep-alive timeout - no response for 600 seconds\r\n[BLUETOOTH] SCO audio link supervision timeout\r\n\r\n**Root Cause:**\r\nBluetooth HFP keep-alive timer set to 10 minutes (600 seconds) causing connection timeout. Timer should be 30 minutes or disabled for active calls.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5003",
+    "summary": "System freeze and yellow screen after STR cycle",
+    "description": "**Problem Description:**\r\nAfter Suspend-to-RAM (STR) sleep/wake cycle, system displays yellow error screen and becomes completely unresponsive. System enters continuous reboot loop requiring battery disconnect to recover.\r\n\r\n**Frequency:** Occurs approximately 15% of STR cycles\r\n**Severity:** Critical - requires service intervention\r\n\r\n**Preconditions:**\r\n- System running for 2+ hours before STR\r\n- Multiple applications open (Navigation, Media, Climate)\r\n- STR triggered by ignition off\r\n\r\n**Steps to Reproduce:**\r\n1. Run system with nav and media active for 2+ hours\r\n2. Turn ignition off to trigger STR\r\n3. Wait 5 minutes\r\n4. Turn ignition on to wake from STR\r\n5. Observe yellow screen and reboot loop\r\n\r\n**Expected Result:**\r\nSystem should resume normally within 3-5 seconds of wake\r\n\r\n**Actual Result:**\r\nYellow error screen displayed, followed by automatic reboot. Cycle repeats indefinitely.\r\n\r\n**Log Analysis:**\r\nCoreManager service crashes during resume. Memory corruption detected in shared memory segment. Indicates use-after-free bug in power management.\r\n\r\n**Root Cause:**\r\nRace condition during STR resume. Power management service accesses deallocated memory from suspended processes before proper reinitialization.",
+    "domain": "stability_memory_domain",
+    "text": "System freeze and yellow screen after STR cycle **Problem Description:**\r\nAfter Suspend-to-RAM (STR) sleep/wake cycle, system displays yellow error screen and becomes completely unresponsive. System enters continuous reboot loop requiring battery disconnect to recover.\r\n\r\n**Frequency:** Occurs approximately 15% of STR cycles\r\n**Severity:** Critical - requires service intervention\r\n\r\n**Preconditions:**\r\n- System running for 2+ hours before STR\r\n- Multiple applications open (Navigation, Media, Climate)\r\n- STR triggered by ignition off\r\n\r\n**Steps to Reproduce:**\r\n1. Run system with nav and media active for 2+ hours\r\n2. Turn ignition off to trigger STR\r\n3. Wait 5 minutes\r\n4. Turn ignition on to wake from STR\r\n5. Observe yellow screen and reboot loop\r\n\r\n**Expected Result:**\r\nSystem should resume normally within 3-5 seconds of wake\r\n\r\n**Actual Result:**\r\nYellow error screen displayed, followed by automatic reboot. Cycle repeats indefinitely.\r\n\r\n**Log Analysis:**\r\nCoreManager service crashes during resume. Memory corruption detected in shared memory segment. Indicates use-after-free bug in power management.\r\n\r\n**Root Cause:**\r\nRace condition during STR resume. Power management service accesses deallocated memory from suspended processes before proper reinitialization.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5004",
+    "summary": "Boot time exceeds 60 seconds on cold start",
+    "description": "**Problem Description:**\r\nSystem boot time from power-on to fully functional home screen exceeds 60 seconds on cold boot (ambient temperature < 5\u00b0C). Warm boots complete in normal 40-45 seconds. Fails KPI requirement of <45 seconds.\r\n\r\n**Temperature Dependency:**\r\n- Below 0\u00b0C: 75-90 seconds\r\n- 0-10\u00b0C: 60-70 seconds  \r\n- Above 10\u00b0C: 40-45 seconds (normal)\r\n\r\n**Steps to Reproduce:**\r\n1. Ensure vehicle parked overnight in cold environment\r\n2. Measure ambient temperature <5\u00b0C\r\n3. Power on system\r\n4. Measure time to home screen\r\n5. Observe 60+ second boot time\r\n\r\n**Expected Result:**\r\nBoot should complete within 45 seconds regardless of temperature\r\n\r\n**Actual Result:**\r\nCold boot takes 60-90 seconds. Boot logs show eMMC initialization taking 25+ seconds at low temperature.\r\n\r\n**Root Cause Analysis:**\r\neMMC storage controller using conservative timing at cold temperatures. Initialization timeout set too high (30s). Hardware training sequences not optimized for cold operation.\r\n\r\n**Proposed Fix:**\r\nReduce eMMC init timeout to 10s, implement parallel initialization of non-storage-dependent services.",
+    "domain": "boot_and_system_domain",
+    "text": "Boot time exceeds 60 seconds on cold start **Problem Description:**\r\nSystem boot time from power-on to fully functional home screen exceeds 60 seconds on cold boot (ambient temperature < 5\u00b0C). Warm boots complete in normal 40-45 seconds. Fails KPI requirement of <45 seconds.\r\n\r\n**Temperature Dependency:**\r\n- Below 0\u00b0C: 75-90 seconds\r\n- 0-10\u00b0C: 60-70 seconds  \r\n- Above 10\u00b0C: 40-45 seconds (normal)\r\n\r\n**Steps to Reproduce:**\r\n1. Ensure vehicle parked overnight in cold environment\r\n2. Measure ambient temperature <5\u00b0C\r\n3. Power on system\r\n4. Measure time to home screen\r\n5. Observe 60+ second boot time\r\n\r\n**Expected Result:**\r\nBoot should complete within 45 seconds regardless of temperature\r\n\r\n**Actual Result:**\r\nCold boot takes 60-90 seconds. Boot logs show eMMC initialization taking 25+ seconds at low temperature.\r\n\r\n**Root Cause Analysis:**\r\neMMC storage controller using conservative timing at cold temperatures. Initialization timeout set too high (30s). Hardware training sequences not optimized for cold operation.\r\n\r\n**Proposed Fix:**\r\nReduce eMMC init timeout to 10s, implement parallel initialization of non-storage-dependent services.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5005",
+    "summary": "Memory leak in navigation service during route calculation",
+    "description": "**Problem Description:**\r\nNavigation background service exhibits continuous memory leak during active route guidance. Memory consumption increases by approximately 15MB per hour. After 4-6 hours, system performance degrades significantly, and applications crash with OOM errors.\r\n\r\n**Environment:**\r\n- Occurs on all navigation routes\r\n- More severe on longer routes (>200km)\r\n- Memory never released even after navigation stopped\r\n\r\n**Steps to Reproduce:**\r\n1. Start navigation with long route (300+ km)\r\n2. Monitor system memory usage\r\n3. Observe steady memory increase over time\r\n4. After 4-6 hours, system becomes sluggish\r\n5. Applications crash with out-of-memory errors\r\n\r\n**Expected Result:**\r\nMemory usage should remain stable during navigation\r\n\r\n**Actual Result:**\r\nMemory usage increases 15MB/hour continuously. Memory not released after navigation ends.\r\n\r\n**Analysis:**\r\n- Route history waypoints accumulating in memory\r\n- Turn-by-turn instruction objects not freed\r\n- Map tile cache not implementing LRU eviction\r\n\r\n**Root Cause:**\r\nNavigationService maintains unbounded history log in memory. Route waypoints and maneuver instructions added to vector but never removed or moved to persistent storage. Vector grows indefinitely causing heap exhaustion.",
+    "domain": "stability_memory_domain",
+    "text": "Memory leak in navigation service during route calculation **Problem Description:**\r\nNavigation background service exhibits continuous memory leak during active route guidance. Memory consumption increases by approximately 15MB per hour. After 4-6 hours, system performance degrades significantly, and applications crash with OOM errors.\r\n\r\n**Environment:**\r\n- Occurs on all navigation routes\r\n- More severe on longer routes (>200km)\r\n- Memory never released even after navigation stopped\r\n\r\n**Steps to Reproduce:**\r\n1. Start navigation with long route (300+ km)\r\n2. Monitor system memory usage\r\n3. Observe steady memory increase over time\r\n4. After 4-6 hours, system becomes sluggish\r\n5. Applications crash with out-of-memory errors\r\n\r\n**Expected Result:**\r\nMemory usage should remain stable during navigation\r\n\r\n**Actual Result:**\r\nMemory usage increases 15MB/hour continuously. Memory not released after navigation ends.\r\n\r\n**Analysis:**\r\n- Route history waypoints accumulating in memory\r\n- Turn-by-turn instruction objects not freed\r\n- Map tile cache not implementing LRU eviction\r\n\r\n**Root Cause:**\r\nNavigationService maintains unbounded history log in memory. Route waypoints and maneuver instructions added to vector but never removed or moved to persistent storage. Vector grows indefinitely causing heap exhaustion.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5006",
+    "summary": "FM Radio audio has constant background hissing noise",
+    "description": "**Problem Description:**\r\nFM Radio source exhibits constant background static/hissing noise even with strong signal strength (RSSI >60dB\u03bcV). Noise particularly noticeable during quiet passages in music. Other audio sources (USB, BT, AUX) do not have this issue.\r\n\r\n**Affected Frequency:** All FM frequencies\r\n**Signal Strength:** Even with strong signals\r\n\r\n**Steps to Reproduce:**\r\n1. Tune to local FM station with strong signal\r\n2. Verify signal strength indicator shows excellent\r\n3. Listen to audio during quiet moments\r\n4. Observe constant background hissing\r\n\r\n**Expected Result:**\r\nFM Radio audio should be clear without background noise when signal strength is good\r\n\r\n**Actual Result:**\r\nConstant low-level hissing/static present regardless of signal strength. SNR approximately 45dB instead of expected 60dB.\r\n\r\n**Technical Analysis:**\r\nAudio output shows elevated noise floor at -80dBFS instead of expected -100dBFS. Spectrum analysis shows wideband noise across all frequencies.\r\n\r\n**Root Cause:**\r\nRF frontend tuner amplifier has insufficient filtering for AM/FM interference rejection. Power supply noise coupling into audio path. Tuner reference oscillator phase noise too high.",
+    "domain": "audio_system_domain",
+    "text": "FM Radio audio has constant background hissing noise **Problem Description:**\r\nFM Radio source exhibits constant background static/hissing noise even with strong signal strength (RSSI >60dB\u03bcV). Noise particularly noticeable during quiet passages in music. Other audio sources (USB, BT, AUX) do not have this issue.\r\n\r\n**Affected Frequency:** All FM frequencies\r\n**Signal Strength:** Even with strong signals\r\n\r\n**Steps to Reproduce:**\r\n1. Tune to local FM station with strong signal\r\n2. Verify signal strength indicator shows excellent\r\n3. Listen to audio during quiet moments\r\n4. Observe constant background hissing\r\n\r\n**Expected Result:**\r\nFM Radio audio should be clear without background noise when signal strength is good\r\n\r\n**Actual Result:**\r\nConstant low-level hissing/static present regardless of signal strength. SNR approximately 45dB instead of expected 60dB.\r\n\r\n**Technical Analysis:**\r\nAudio output shows elevated noise floor at -80dBFS instead of expected -100dBFS. Spectrum analysis shows wideband noise across all frequencies.\r\n\r\n**Root Cause:**\r\nRF frontend tuner amplifier has insufficient filtering for AM/FM interference rejection. Power supply noise coupling into audio path. Tuner reference oscillator phase noise too high.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5007",
+    "summary": "Bluetooth device pairing requires multiple attempts",
+    "description": "**Problem Description:**\r\nNew Bluetooth device pairing process fails on first 3-4 attempts with authentication timeout error. Eventually succeeds after multiple retries. Affects both iOS and Android devices.\r\n\r\n**Failure Rate:** ~80% on first attempt\r\n**Success Rate:** Usually succeeds by 4th attempt\r\n\r\n**Steps to Reproduce:**\r\n1. Enter Bluetooth pairing mode\r\n2. Initiate pairing from phone\r\n3. Observe pairing request on vehicle screen\r\n4. Confirm pairing\r\n5. First attempt fails with timeout\r\n6. Retry multiple times until success\r\n\r\n**Expected Result:**\r\nPairing should succeed on first attempt within 10 seconds\r\n\r\n**Actual Result:**\r\nFirst 2-3 pairing attempts fail with authentication timeout. 4th or 5th attempt usually succeeds.\r\n\r\n**Log Evidence:**\r\n[BT] Pairing request received\r\n[BT] Waiting for PIN confirmation\r\n[BT] PIN confirmation timeout after 8 seconds\r\n[BT] Pairing failed - authentication timeout\r\n\r\n**Root Cause:**\r\nBluetooth PIN code exchange timing window set to 8 seconds. Modern smartphones may take 10-12 seconds to display confirmation dialog to user. Window should be extended to 30 seconds to accommodate slower phones.",
+    "domain": "bluetooth_connectivity_domain",
+    "text": "Bluetooth device pairing requires multiple attempts **Problem Description:**\r\nNew Bluetooth device pairing process fails on first 3-4 attempts with authentication timeout error. Eventually succeeds after multiple retries. Affects both iOS and Android devices.\r\n\r\n**Failure Rate:** ~80% on first attempt\r\n**Success Rate:** Usually succeeds by 4th attempt\r\n\r\n**Steps to Reproduce:**\r\n1. Enter Bluetooth pairing mode\r\n2. Initiate pairing from phone\r\n3. Observe pairing request on vehicle screen\r\n4. Confirm pairing\r\n5. First attempt fails with timeout\r\n6. Retry multiple times until success\r\n\r\n**Expected Result:**\r\nPairing should succeed on first attempt within 10 seconds\r\n\r\n**Actual Result:**\r\nFirst 2-3 pairing attempts fail with authentication timeout. 4th or 5th attempt usually succeeds.\r\n\r\n**Log Evidence:**\r\n[BT] Pairing request received\r\n[BT] Waiting for PIN confirmation\r\n[BT] PIN confirmation timeout after 8 seconds\r\n[BT] Pairing failed - authentication timeout\r\n\r\n**Root Cause:**\r\nBluetooth PIN code exchange timing window set to 8 seconds. Modern smartphones may take 10-12 seconds to display confirmation dialog to user. Window should be extended to 30 seconds to accommodate slower phones.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5008",
+    "summary": "Kernel panic during boot on 1-in-20 startups",
+    "description": "**Problem Description:**\r\nSystem experiences random kernel panics during boot sequence occurring approximately 1 in every 20 boot attempts. When panic occurs, boot process halts requiring power cycle. No specific pattern or trigger identified.\r\n\r\n**Frequency:** ~5% of boots\r\n**Reproducibility:** Random, not consistently reproducible\r\n\r\n**Symptoms:**\r\n- Boot progress stops at various points\r\n- Screen may freeze or go black\r\n- Kernel panic message in serial console\r\n- Requires hard reboot to recover\r\n\r\n**Kernel Panic Message:**\r\n'Unable to handle kernel NULL pointer dereference at virtual address 00000000'\r\n'PC is at can_driver_init+0x48/0x120'\r\n\r\n**Analysis:**\r\nStack trace indicates crash in CAN bus driver initialization. Appears to be race condition where driver attempts to access hardware before clock/power initialization complete.\r\n\r\n**Root Cause:**\r\nCAN bus driver module initialization has race condition with platform device tree parsing. Driver probe function called before device fully initialized. Null pointer dereference when accessing device resources that aren't ready yet.\r\n\r\n**Fix Required:**\r\nAdd proper device ready checks in CAN driver probe function before accessing hardware resources. Implement timeout and retry logic.",
+    "domain": "boot_and_system_domain",
+    "text": "Kernel panic during boot on 1-in-20 startups **Problem Description:**\r\nSystem experiences random kernel panics during boot sequence occurring approximately 1 in every 20 boot attempts. When panic occurs, boot process halts requiring power cycle. No specific pattern or trigger identified.\r\n\r\n**Frequency:** ~5% of boots\r\n**Reproducibility:** Random, not consistently reproducible\r\n\r\n**Symptoms:**\r\n- Boot progress stops at various points\r\n- Screen may freeze or go black\r\n- Kernel panic message in serial console\r\n- Requires hard reboot to recover\r\n\r\n**Kernel Panic Message:**\r\n'Unable to handle kernel NULL pointer dereference at virtual address 00000000'\r\n'PC is at can_driver_init+0x48/0x120'\r\n\r\n**Analysis:**\r\nStack trace indicates crash in CAN bus driver initialization. Appears to be race condition where driver attempts to access hardware before clock/power initialization complete.\r\n\r\n**Root Cause:**\r\nCAN bus driver module initialization has race condition with platform device tree parsing. Driver probe function called before device fully initialized. Null pointer dereference when accessing device resources that aren't ready yet.\r\n\r\n**Fix Required:**\r\nAdd proper device ready checks in CAN driver probe function before accessing hardware resources. Implement timeout and retry logic.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5009",
+    "summary": "Audio ducking doesn't restore playback after navigation prompt",
+    "description": "**Problem Description:**\r\nWhen navigation voice guidance interrupts music playback, music volume correctly ducks to 20% during announcement but fails to restore to original volume after announcement completes. Music remains at ducked 20% volume requiring manual volume adjustment.\r\n\r\n**Affected:** All audio sources (USB, BT, FM, AUX)\r\n**Frequency:** Always reproducible\r\n\r\n**Steps to Reproduce:**\r\n1. Play music at 70% volume\r\n2. Start navigation with active guidance  \r\n3. Wait for navigation announcement\r\n4. Observe music ducks to 20% during announcement\r\n5. After announcement, music stays at 20%\r\n\r\n**Expected Result:**\r\nMusic should return to original 70% volume after navigation announcement\r\n\r\n**Actual Result:**\r\nMusic remains at ducked 20% volume. Original volume not restored.\r\n\r\n**Log Analysis:**\r\n[AUDIO] AudioFocusManager: Navigation requested AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK\r\n[AUDIO] Ducking MediaPlayer volume to 20%\r\n[AUDIO] Navigation released audio focus\r\n[AUDIO] WARNING: Previous volume state not found in cache\r\n\r\n**Root Cause:**\r\nAudio focus manager stores previous volume state in HashMap but retrieves with wrong key type causing lookup failure. Volume restoration code fails silently and doesn't restore original volume. Key type mismatch (Integer vs String).",
+    "domain": "audio_system_domain",
+    "text": "Audio ducking doesn't restore playback after navigation prompt **Problem Description:**\r\nWhen navigation voice guidance interrupts music playback, music volume correctly ducks to 20% during announcement but fails to restore to original volume after announcement completes. Music remains at ducked 20% volume requiring manual volume adjustment.\r\n\r\n**Affected:** All audio sources (USB, BT, FM, AUX)\r\n**Frequency:** Always reproducible\r\n\r\n**Steps to Reproduce:**\r\n1. Play music at 70% volume\r\n2. Start navigation with active guidance  \r\n3. Wait for navigation announcement\r\n4. Observe music ducks to 20% during announcement\r\n5. After announcement, music stays at 20%\r\n\r\n**Expected Result:**\r\nMusic should return to original 70% volume after navigation announcement\r\n\r\n**Actual Result:**\r\nMusic remains at ducked 20% volume. Original volume not restored.\r\n\r\n**Log Analysis:**\r\n[AUDIO] AudioFocusManager: Navigation requested AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK\r\n[AUDIO] Ducking MediaPlayer volume to 20%\r\n[AUDIO] Navigation released audio focus\r\n[AUDIO] WARNING: Previous volume state not found in cache\r\n\r\n**Root Cause:**\r\nAudio focus manager stores previous volume state in HashMap but retrieves with wrong key type causing lookup failure. Volume restoration code fails silently and doesn't restore original volume. Key type mismatch (Integer vs String).",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5010",
+    "summary": "Gradual system performance degradation over 24+ hours",
+    "description": "**Problem Description:**\r\nSystem exhibits progressive performance degradation over extended uptime. After 24+ hours of continuous operation, UI becomes sluggish, touch response delays increase, animations stutter, and application launch times increase from 2s to 10+s.\r\n\r\n**Symptoms:**\r\n- Hour 0-8: Normal performance  \r\n- Hour 8-16: Slight slowdown noticeable\r\n- Hour 16-24: Significant lag in UI\r\n- Hour 24+: Nearly unusable, 5-10s delays\r\n\r\n**Steps to Reproduce:**\r\n1. Leave system running continuously for 24+ hours\r\n2. Periodically test UI responsiveness\r\n3. Monitor touch-to-response latency\r\n4. Observe progressive degradation\r\n\r\n**Expected Result:**\r\nSystem performance should remain consistent regardless of uptime\r\n\r\n**Actual Result:**\r\nPerformance degrades significantly over time. Reboot temporarily fixes issue.\r\n\r\n**Analysis:**\r\n- Memory usage increases from 2GB to 6GB over 24 hours\r\n- CPU usage increases from 15% to 60% idle\r\n- Graphics memory consumption grows continuously\r\n- Disk I/O increasing over time\r\n\r\n**Root Cause:**\r\nMultiple memory leaks in graphics rendering pipeline. Wayland compositor surface buffers not destroyed when applications close. Texture buffers accumulating in GPU memory. Database query result sets not being freed. Log files growing without rotation consuming I/O bandwidth.",
+    "domain": "stability_memory_domain",
+    "text": "Gradual system performance degradation over 24+ hours **Problem Description:**\r\nSystem exhibits progressive performance degradation over extended uptime. After 24+ hours of continuous operation, UI becomes sluggish, touch response delays increase, animations stutter, and application launch times increase from 2s to 10+s.\r\n\r\n**Symptoms:**\r\n- Hour 0-8: Normal performance  \r\n- Hour 8-16: Slight slowdown noticeable\r\n- Hour 16-24: Significant lag in UI\r\n- Hour 24+: Nearly unusable, 5-10s delays\r\n\r\n**Steps to Reproduce:**\r\n1. Leave system running continuously for 24+ hours\r\n2. Periodically test UI responsiveness\r\n3. Monitor touch-to-response latency\r\n4. Observe progressive degradation\r\n\r\n**Expected Result:**\r\nSystem performance should remain consistent regardless of uptime\r\n\r\n**Actual Result:**\r\nPerformance degrades significantly over time. Reboot temporarily fixes issue.\r\n\r\n**Analysis:**\r\n- Memory usage increases from 2GB to 6GB over 24 hours\r\n- CPU usage increases from 15% to 60% idle\r\n- Graphics memory consumption grows continuously\r\n- Disk I/O increasing over time\r\n\r\n**Root Cause:**\r\nMultiple memory leaks in graphics rendering pipeline. Wayland compositor surface buffers not destroyed when applications close. Texture buffers accumulating in GPU memory. Database query result sets not being freed. Log files growing without rotation consuming I/O bandwidth.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5011",
+    "summary": "Bluetooth audio has 500ms lip-sync delay with video",
+    "description": "**Problem Description:**\r\nWhen streaming video from phone to vehicle display with audio via Bluetooth A2DP, audio lags video by approximately 500ms creating noticeable lip-sync mismatch. Makes video watching unpleasant.\r\n\r\n**Use Case:** YouTube, Netflix, video streaming from phone\r\n**A/V Sync Error:** 400-600ms audio delay\r\n\r\n**Steps to Reproduce:**\r\n1. Connect phone via Bluetooth\r\n2. Cast video to vehicle display via wireless protocol  \r\n3. Audio routes through Bluetooth A2DP\r\n4. Observe audio lagging behind video\r\n\r\n**Expected Result:**\r\nAudio and video should be synchronized within 50ms\r\n\r\n**Actual Result:**\r\nAudio consistently lags video by ~500ms. Lip movements don't match speech.\r\n\r\n**Technical Details:**\r\n- Video latency: ~50ms\r\n- Bluetooth A2DP latency: ~200ms\r\n- Additional processing delay: ~250ms\r\n- Total A/V skew: ~500ms\r\n\r\n**Root Cause:**\r\nNo A/V synchronization mechanism between different protocols. Video stream delivered via WiFi Miracast with 50ms latency. Audio delivered via Bluetooth A2DP with 200ms inherent latency plus audio processing adds 250ms. System doesn't delay video to match audio latency. Need to implement PTS (Presentation Time Stamp) based sync.",
+    "domain": "bluetooth_connectivity_domain",
+    "text": "Bluetooth audio has 500ms lip-sync delay with video **Problem Description:**\r\nWhen streaming video from phone to vehicle display with audio via Bluetooth A2DP, audio lags video by approximately 500ms creating noticeable lip-sync mismatch. Makes video watching unpleasant.\r\n\r\n**Use Case:** YouTube, Netflix, video streaming from phone\r\n**A/V Sync Error:** 400-600ms audio delay\r\n\r\n**Steps to Reproduce:**\r\n1. Connect phone via Bluetooth\r\n2. Cast video to vehicle display via wireless protocol  \r\n3. Audio routes through Bluetooth A2DP\r\n4. Observe audio lagging behind video\r\n\r\n**Expected Result:**\r\nAudio and video should be synchronized within 50ms\r\n\r\n**Actual Result:**\r\nAudio consistently lags video by ~500ms. Lip movements don't match speech.\r\n\r\n**Technical Details:**\r\n- Video latency: ~50ms\r\n- Bluetooth A2DP latency: ~200ms\r\n- Additional processing delay: ~250ms\r\n- Total A/V skew: ~500ms\r\n\r\n**Root Cause:**\r\nNo A/V synchronization mechanism between different protocols. Video stream delivered via WiFi Miracast with 50ms latency. Audio delivered via Bluetooth A2DP with 200ms inherent latency plus audio processing adds 250ms. System doesn't delay video to match audio latency. Need to implement PTS (Presentation Time Stamp) based sync.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5012",
+    "summary": "Boot fails with filesystem check errors after sudden power loss",
+    "description": "**Problem Description:**\r\nIf vehicle battery disconnected or sudden power loss occurs during system operation, subsequent boot attempts fail with filesystem check (fsck) errors. System unable to mount root partition. Requires service mode recovery and fsck manual intervention.\r\n\r\n**Trigger:** Unclean shutdown due to power loss\r\n**Frequency:** 100% after unclean shutdown\r\n**Recovery:** Requires manual fsck in recovery mode\r\n\r\n**Error Message:**\r\n'fsck failed with error code 4'\r\n'Cannot mount /dev/mmcblk0p2 - filesystem has errors'\r\n'Entering emergency mode'\r\n\r\n**Steps to Reproduce:**\r\n1. Run system normally with active applications\r\n2. Disconnect battery while system running\r\n3. Reconnect battery and attempt boot\r\n4. Observe boot failure with fsck errors\r\n\r\n**Expected Result:**\r\nSystem should recover gracefully from unclean shutdown. Filesystem should auto-repair minor issues.\r\n\r\n**Actual Result:**\r\nBoot fails completely. Manual intervention required to run fsck and repair filesystem.\r\n\r\n**Analysis:**\r\next4 filesystem mount option missing 'errors=remount-ro' flag. Dirty journal from improper shutdown not automatically replayed. Metadata corruption due to write caching without proper barriers.\r\n\r\n**Root Cause:**\r\neMMC write caching enabled without proper flush commands on shutdown. Critical filesystem metadata buffered in write cache lost on sudden power loss. Journal not properly configured for crash recovery. Need to disable write cache or ensure proper sync on shutdown path.",
+    "domain": "boot_and_system_domain",
+    "text": "Boot fails with filesystem check errors after sudden power loss **Problem Description:**\r\nIf vehicle battery disconnected or sudden power loss occurs during system operation, subsequent boot attempts fail with filesystem check (fsck) errors. System unable to mount root partition. Requires service mode recovery and fsck manual intervention.\r\n\r\n**Trigger:** Unclean shutdown due to power loss\r\n**Frequency:** 100% after unclean shutdown\r\n**Recovery:** Requires manual fsck in recovery mode\r\n\r\n**Error Message:**\r\n'fsck failed with error code 4'\r\n'Cannot mount /dev/mmcblk0p2 - filesystem has errors'\r\n'Entering emergency mode'\r\n\r\n**Steps to Reproduce:**\r\n1. Run system normally with active applications\r\n2. Disconnect battery while system running\r\n3. Reconnect battery and attempt boot\r\n4. Observe boot failure with fsck errors\r\n\r\n**Expected Result:**\r\nSystem should recover gracefully from unclean shutdown. Filesystem should auto-repair minor issues.\r\n\r\n**Actual Result:**\r\nBoot fails completely. Manual intervention required to run fsck and repair filesystem.\r\n\r\n**Analysis:**\r\next4 filesystem mount option missing 'errors=remount-ro' flag. Dirty journal from improper shutdown not automatically replayed. Metadata corruption due to write caching without proper barriers.\r\n\r\n**Root Cause:**\r\neMMC write caching enabled without proper flush commands on shutdown. Critical filesystem metadata buffered in write cache lost on sudden power loss. Journal not properly configured for crash recovery. Need to disable write cache or ensure proper sync on shutdown path.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5013",
+    "summary": "Microphone echo during Bluetooth hands-free calls",
+    "description": "**Problem Description:**\r\nDuring Bluetooth hands-free calls, remote caller reports hearing their own voice echo with 300-500ms delay. Echo particularly noticeable in quiet environments. Makes phone conversations difficult and unprofessional.\r\n\r\n**Reported By:** Call recipients, not vehicle user\r\n**Environment:** All cabin configurations\r\n\r\n**Steps to Reproduce:**\r\n1. Connect phone via Bluetooth HFP\r\n2. Make phone call using hands-free\r\n3. Caller reports hearing echo of their voice\r\n4. Echo delay approximately 300-500ms\r\n\r\n**Expected Result:**\r\nCaller should not hear any echo. Clean two-way conversation.\r\n\r\n**Actual Result:**\r\nCaller hears echo of their own voice making conversation difficult. Echo cancellation not working.\r\n\r\n**Technical Details:**\r\nMicrophone picks up speaker output even at moderate volume. Acoustic echo cancellation (AEC) algorithm not properly tuned for vehicle cabin acoustics. Echo return loss only 10dB instead of required 40dB+.\r\n\r\n**Root Cause:**\r\nAcoustic Echo Cancellation (AEC) algorithm using default generic parameters not tuned for vehicle cabin environment. AEC filter tap length too short (128 taps) for 300-500ms echo delay path. Requires 512+ taps for vehicle acoustics. Speaker-to-microphone coupling not compensated. Need cabin-specific AEC calibration and longer filter length.",
+    "domain": "audio_system_domain",
+    "text": "Microphone echo during Bluetooth hands-free calls **Problem Description:**\r\nDuring Bluetooth hands-free calls, remote caller reports hearing their own voice echo with 300-500ms delay. Echo particularly noticeable in quiet environments. Makes phone conversations difficult and unprofessional.\r\n\r\n**Reported By:** Call recipients, not vehicle user\r\n**Environment:** All cabin configurations\r\n\r\n**Steps to Reproduce:**\r\n1. Connect phone via Bluetooth HFP\r\n2. Make phone call using hands-free\r\n3. Caller reports hearing echo of their voice\r\n4. Echo delay approximately 300-500ms\r\n\r\n**Expected Result:**\r\nCaller should not hear any echo. Clean two-way conversation.\r\n\r\n**Actual Result:**\r\nCaller hears echo of their own voice making conversation difficult. Echo cancellation not working.\r\n\r\n**Technical Details:**\r\nMicrophone picks up speaker output even at moderate volume. Acoustic echo cancellation (AEC) algorithm not properly tuned for vehicle cabin acoustics. Echo return loss only 10dB instead of required 40dB+.\r\n\r\n**Root Cause:**\r\nAcoustic Echo Cancellation (AEC) algorithm using default generic parameters not tuned for vehicle cabin environment. AEC filter tap length too short (128 taps) for 300-500ms echo delay path. Requires 512+ taps for vehicle acoustics. Speaker-to-microphone coupling not compensated. Need cabin-specific AEC calibration and longer filter length.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5014",
+    "summary": "Out of memory error during cold boot",
+    "description": "**Problem Description:**\r\nOn cold boot (first start after extended power-off), system fails to complete boot sequence displaying out-of-memory error. Memory allocation failure occurs during service initialization. Warm reboots succeed normally.\r\n\r\n**Frequency:** ~30% of cold boots\r\n**Temperature:** More common below 10\u00b0C\r\n\r\n**Error Message:**\r\n'systemd: Failed to fork: Cannot allocate memory'\r\n'kernel: Out of memory: Kill process systemd-journal (PID 142)'\r\n\r\n**Steps to Reproduce:**\r\n1. Disconnect battery for 1+ hour (full power-down)\r\n2. Reconnect and initiate cold boot  \r\n3. Monitor boot sequence\r\n4. Observe OOM error during service startup\r\n5. Boot fails to complete\r\n\r\n**Expected Result:**\r\nSystem should boot successfully with available 4GB RAM\r\n\r\n**Actual Result:**\r\nOOM killer activates during boot killing critical services like journald. Boot fails.\r\n\r\n**Analysis:**\r\n- Total RAM: 4GB\r\n- Kernel reserved: 512MB\r\n- Boot service allocation: 3.8GB (exceeds available!)\r\n- Available for userspace: ~200MB (insufficient)\r\n\r\n**Root Cause:**\r\nBoot services allocating excessive heap memory during initialization without releasing after use. Several services allocate large buffers (256MB+) simultaneously during parallel init. Peak memory usage during boot (3.8GB) exceeds available RAM (3.5GB after kernel reservation). Services not releasing initialization buffers, expecting to reuse them. Need to implement lazy allocation and release unused memory after init.",
+    "domain": "stability_memory_domain",
+    "text": "Out of memory error during cold boot **Problem Description:**\r\nOn cold boot (first start after extended power-off), system fails to complete boot sequence displaying out-of-memory error. Memory allocation failure occurs during service initialization. Warm reboots succeed normally.\r\n\r\n**Frequency:** ~30% of cold boots\r\n**Temperature:** More common below 10\u00b0C\r\n\r\n**Error Message:**\r\n'systemd: Failed to fork: Cannot allocate memory'\r\n'kernel: Out of memory: Kill process systemd-journal (PID 142)'\r\n\r\n**Steps to Reproduce:**\r\n1. Disconnect battery for 1+ hour (full power-down)\r\n2. Reconnect and initiate cold boot  \r\n3. Monitor boot sequence\r\n4. Observe OOM error during service startup\r\n5. Boot fails to complete\r\n\r\n**Expected Result:**\r\nSystem should boot successfully with available 4GB RAM\r\n\r\n**Actual Result:**\r\nOOM killer activates during boot killing critical services like journald. Boot fails.\r\n\r\n**Analysis:**\r\n- Total RAM: 4GB\r\n- Kernel reserved: 512MB\r\n- Boot service allocation: 3.8GB (exceeds available!)\r\n- Available for userspace: ~200MB (insufficient)\r\n\r\n**Root Cause:**\r\nBoot services allocating excessive heap memory during initialization without releasing after use. Several services allocate large buffers (256MB+) simultaneously during parallel init. Peak memory usage during boot (3.8GB) exceeds available RAM (3.5GB after kernel reservation). Services not releasing initialization buffers, expecting to reuse them. Need to implement lazy allocation and release unused memory after init.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5015",
+    "summary": "USB audio playback has intermittent stuttering",
+    "description": "**Problem Description:**\r\nWhen playing audio from USB mass storage device, playback has intermittent stuttering and brief dropouts occurring every 30-60 seconds. Particularly noticeable during track changes and when browsing file system while playing.\r\n\r\n**Frequency:** Every 30-60 seconds\r\n**Duration:** 100-300ms dropout\r\n\r\n**Steps to Reproduce:**\r\n1. Connect USB drive with MP3/FLAC files\r\n2. Begin audio playback\r\n3. Observe periodic audio stuttering\r\n4. Browse USB folders during playback (increases frequency)\r\n\r\n**Expected Result:**\r\nContinuous smooth audio playback without interruptions\r\n\r\n**Actual Result:**\r\nPeriodic audio dropouts and stuttering. More frequent during file system access.\r\n\r\n**Log Evidence:**\r\n[AUDIO] AudioPlayer: Buffer underrun detected - 0 frames available\r\n[USB] MassStorage: Read latency spike 250ms  \r\n[AUDIO] AudioPlayer: Recovering from underrun\r\n\r\n**Root Cause:**\r\nAudio buffer management issue. USB file system reads block audio playback thread causing buffer underruns. Audio decoder thread priority lower than USB I/O thread. When USB FS performs directory scan or metadata reads, audio thread starved. Need to increase audio buffer size from current 1024 samples to 4096 samples and raise audio thread priority above USB I/O thread.",
+    "domain": "audio_system_domain",
+    "text": "USB audio playback has intermittent stuttering **Problem Description:**\r\nWhen playing audio from USB mass storage device, playback has intermittent stuttering and brief dropouts occurring every 30-60 seconds. Particularly noticeable during track changes and when browsing file system while playing.\r\n\r\n**Frequency:** Every 30-60 seconds\r\n**Duration:** 100-300ms dropout\r\n\r\n**Steps to Reproduce:**\r\n1. Connect USB drive with MP3/FLAC files\r\n2. Begin audio playback\r\n3. Observe periodic audio stuttering\r\n4. Browse USB folders during playback (increases frequency)\r\n\r\n**Expected Result:**\r\nContinuous smooth audio playback without interruptions\r\n\r\n**Actual Result:**\r\nPeriodic audio dropouts and stuttering. More frequent during file system access.\r\n\r\n**Log Evidence:**\r\n[AUDIO] AudioPlayer: Buffer underrun detected - 0 frames available\r\n[USB] MassStorage: Read latency spike 250ms  \r\n[AUDIO] AudioPlayer: Recovering from underrun\r\n\r\n**Root Cause:**\r\nAudio buffer management issue. USB file system reads block audio playback thread causing buffer underruns. Audio decoder thread priority lower than USB I/O thread. When USB FS performs directory scan or metadata reads, audio thread starved. Need to increase audio buffer size from current 1024 samples to 4096 samples and raise audio thread priority above USB I/O thread.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5016",
+    "summary": "Random application crashes with segmentation fault",
+    "description": "**Problem Description:**\r\nRandom applications crash with segmentation fault errors. No specific application or trigger pattern. Crashes occur across different apps (Settings, Navigation, Media Player, Browser). Average 2-3 crashes per hour of operation.\r\n\r\n**Affected Apps:** Random, all applications\r\n**Frequency:** 2-3 per hour  \r\n**Pattern:** No clear pattern\r\n\r\n**Crash Reports:**\r\n'segfault at 0 ip 00007f8a4b2c1234 sp 00007ffc8e9d0e20 error 4 in libc.so'\r\n'segfault at deadbeef ip 00007f3c2a1b5678 sp 00007ffed2c40ab0 error 6 in app.so'\r\n\r\n**Common Elements:**\r\n- Crashes often show null pointer or invalid address\r\n- Stack traces vary widely\r\n- No single library or function common to all\r\n- Memory corruption indicators (deadbeef, 0xdeadbeef patterns)\r\n\r\n**Analysis:**\r\nHeap corruption detection enabled shows frequent corruption warnings before crashes. Random memory locations being overwritten. Suggests buffer overflow or use-after-free in common component.\r\n\r\n**Root Cause:**\r\nBuffer overflow in telemetry data collection service. Telemetry service running in background writes beyond allocated buffer when collecting metrics. Heap corruption propagates to other applications sharing heap space. Corrupted heap metadata causes random crashes when applications allocate/free memory. Need to add bounds checking in telemetry buffer write operations and increase buffer size from 1KB to 4KB for burst metrics.",
+    "domain": "stability_memory_domain",
+    "text": "Random application crashes with segmentation fault **Problem Description:**\r\nRandom applications crash with segmentation fault errors. No specific application or trigger pattern. Crashes occur across different apps (Settings, Navigation, Media Player, Browser). Average 2-3 crashes per hour of operation.\r\n\r\n**Affected Apps:** Random, all applications\r\n**Frequency:** 2-3 per hour  \r\n**Pattern:** No clear pattern\r\n\r\n**Crash Reports:**\r\n'segfault at 0 ip 00007f8a4b2c1234 sp 00007ffc8e9d0e20 error 4 in libc.so'\r\n'segfault at deadbeef ip 00007f3c2a1b5678 sp 00007ffed2c40ab0 error 6 in app.so'\r\n\r\n**Common Elements:**\r\n- Crashes often show null pointer or invalid address\r\n- Stack traces vary widely\r\n- No single library or function common to all\r\n- Memory corruption indicators (deadbeef, 0xdeadbeef patterns)\r\n\r\n**Analysis:**\r\nHeap corruption detection enabled shows frequent corruption warnings before crashes. Random memory locations being overwritten. Suggests buffer overflow or use-after-free in common component.\r\n\r\n**Root Cause:**\r\nBuffer overflow in telemetry data collection service. Telemetry service running in background writes beyond allocated buffer when collecting metrics. Heap corruption propagates to other applications sharing heap space. Corrupted heap metadata causes random crashes when applications allocate/free memory. Need to add bounds checking in telemetry buffer write operations and increase buffer size from 1KB to 4KB for burst metrics.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5017",
+    "summary": "Bluetooth connection drops when engine started",
+    "description": "**Problem Description:**\r\nBluetooth phone connection disconnects immediately when engine is started, then automatically reconnects after 3-5 seconds. Interrupts active phone calls and music playback. User experience is poor with repeated daily occurrence.\r\n\r\n**Trigger:** Engine start event  \r\n**Frequency:** 100% reproducible\r\n**Recovery:** Auto-reconnects after 3-5s\r\n\r\n**Steps to Reproduce:**\r\n1. Pair phone and establish Bluetooth connection\r\n2. Play music or make phone call\r\n3. Start vehicle engine\r\n4. Observe immediate Bluetooth disconnect\r\n5. Connection restores after few seconds\r\n\r\n**Expected Result:**\r\nBluetooth connection should remain stable during engine start\r\n\r\n**Actual Result:**\r\nConnection drops for 3-5 seconds then recovers. Interrupts calls and music.\r\n\r\n**Electrical Analysis:**\r\nVoltage drop during engine crank: 11.2V (from 12.8V)\r\nBluetooth module minimum voltage: 11.5V\r\nBluetooth module resets during voltage drop\r\n\r\n**Root Cause:**\r\nEngine starter motor creates electrical noise and voltage sag on 12V bus. Bluetooth RF module lacks adequate power supply filtering and brown-out protection. Voltage drops below Bluetooth controller minimum operating voltage causing module reset. Need to add 1000\u03bcF capacitor on Bluetooth module power rail and improve DC-DC converter regulation to maintain voltage during crank.",
+    "domain": "bluetooth_connectivity_domain",
+    "text": "Bluetooth connection drops when engine started **Problem Description:**\r\nBluetooth phone connection disconnects immediately when engine is started, then automatically reconnects after 3-5 seconds. Interrupts active phone calls and music playback. User experience is poor with repeated daily occurrence.\r\n\r\n**Trigger:** Engine start event  \r\n**Frequency:** 100% reproducible\r\n**Recovery:** Auto-reconnects after 3-5s\r\n\r\n**Steps to Reproduce:**\r\n1. Pair phone and establish Bluetooth connection\r\n2. Play music or make phone call\r\n3. Start vehicle engine\r\n4. Observe immediate Bluetooth disconnect\r\n5. Connection restores after few seconds\r\n\r\n**Expected Result:**\r\nBluetooth connection should remain stable during engine start\r\n\r\n**Actual Result:**\r\nConnection drops for 3-5 seconds then recovers. Interrupts calls and music.\r\n\r\n**Electrical Analysis:**\r\nVoltage drop during engine crank: 11.2V (from 12.8V)\r\nBluetooth module minimum voltage: 11.5V\r\nBluetooth module resets during voltage drop\r\n\r\n**Root Cause:**\r\nEngine starter motor creates electrical noise and voltage sag on 12V bus. Bluetooth RF module lacks adequate power supply filtering and brown-out protection. Voltage drops below Bluetooth controller minimum operating voltage causing module reset. Need to add 1000\u03bcF capacitor on Bluetooth module power rail and improve DC-DC converter regulation to maintain voltage during crank.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5018",
+    "summary": "Boot hangs at 67% progress indefinitely",
+    "description": "**Problem Description:**\r\nDuring boot sequence, progress bar reaches 67% and system hangs indefinitely. No further progress or timeout. Screen remains frozen showing boot logo and 67% progress. Requires hard power cycle to recover. Occurs on approximately 10% of boot attempts.\r\n\r\n**Frequency:** ~10% of boots\r\n**Hang Point:** Consistently at 67% progress\r\n**Timeout:** None - hangs forever\r\n\r\n**Steps to Reproduce:**\r\n1. Initiate system boot\r\n2. Observe boot progress bar\r\n3. Progress reaches 67% and stops\r\n4. Wait 5+ minutes - no further progress\r\n5. Requires power cycle to recover\r\n\r\n**Expected Result:**\r\nBoot should complete to 100% within 45 seconds or timeout and retry\r\n\r\n**Actual Result:**\r\nBoot hangs at 67% indefinitely. No watchdog timeout or recovery mechanism activates.\r\n\r\n**Analysis:**\r\nBoot progress 67% corresponds to network service initialization. Service waiting on DHCP lease acquisition from non-existent DHCP server on Ethernet interface. No timeout configured - waits forever.\r\n\r\n**Root Cause:**\r\nNetwork service initialization runs synchronously in boot sequence. DHCP client configured with infinite timeout waiting for DHCP offer. When no DHCP server present on network (vehicle not connected to diagnostic LAN), DHCP client blocks indefinitely. Boot progress halts waiting for network init to complete. Need to configure DHCP timeout (10 seconds) or make network init asynchronous to not block boot.",
+    "domain": "boot_and_system_domain",
+    "text": "Boot hangs at 67% progress indefinitely **Problem Description:**\r\nDuring boot sequence, progress bar reaches 67% and system hangs indefinitely. No further progress or timeout. Screen remains frozen showing boot logo and 67% progress. Requires hard power cycle to recover. Occurs on approximately 10% of boot attempts.\r\n\r\n**Frequency:** ~10% of boots\r\n**Hang Point:** Consistently at 67% progress\r\n**Timeout:** None - hangs forever\r\n\r\n**Steps to Reproduce:**\r\n1. Initiate system boot\r\n2. Observe boot progress bar\r\n3. Progress reaches 67% and stops\r\n4. Wait 5+ minutes - no further progress\r\n5. Requires power cycle to recover\r\n\r\n**Expected Result:**\r\nBoot should complete to 100% within 45 seconds or timeout and retry\r\n\r\n**Actual Result:**\r\nBoot hangs at 67% indefinitely. No watchdog timeout or recovery mechanism activates.\r\n\r\n**Analysis:**\r\nBoot progress 67% corresponds to network service initialization. Service waiting on DHCP lease acquisition from non-existent DHCP server on Ethernet interface. No timeout configured - waits forever.\r\n\r\n**Root Cause:**\r\nNetwork service initialization runs synchronously in boot sequence. DHCP client configured with infinite timeout waiting for DHCP offer. When no DHCP server present on network (vehicle not connected to diagnostic LAN), DHCP client blocks indefinitely. Boot progress halts waiting for network init to complete. Need to configure DHCP timeout (10 seconds) or make network init asynchronous to not block boot.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5019",
+    "summary": "Audio balance control has no effect on output",
+    "description": "**Problem Description:**\r\nLeft/Right audio balance control in settings has no effect on speaker output. Moving balance slider between full left and full right produces no change in audio distribution. All speakers play at same level regardless of balance setting.\r\n\r\n**Affected:** All audio sources  \r\n**Control:** Balance slider (L/R)\r\n\r\n**Steps to Reproduce:**\r\n1. Play audio from any source\r\n2. Open audio settings\r\n3. Adjust Left/Right balance slider to full left\r\n4. No change in audio output - all speakers still active\r\n5. Move to full right - same result\r\n\r\n**Expected Result:**\r\nBalance left should output primarily to left speakers. Balance right should output to right speakers.\r\n\r\n**Actual Result:**\r\nBalance control has zero effect. Audio output identical regardless of balance position.\r\n\r\n**Code Analysis:**\r\n```cpp\r\nvoid AudioMixer::setBalance(float balance) {\r\n    mBalance = balance;  // Stored but never used!\r\n    // Missing: actual channel gain calculation and application\r\n}\r\n```\r\n\r\n**Root Cause:**\r\nBalance control value stored in member variable but never applied to audio mixer output channels. Gain multiplier calculation for left/right channels missing. Balance parameter not connected to audio routing logic. Function stores value but no code applies balance to actual audio streams. Need to implement channel gain calculation: leftGain = (1.0 - balance)/2.0, rightGain = (1.0 + balance)/2.0 and apply to respective output channels.",
+    "domain": "audio_system_domain",
+    "text": "Audio balance control has no effect on output **Problem Description:**\r\nLeft/Right audio balance control in settings has no effect on speaker output. Moving balance slider between full left and full right produces no change in audio distribution. All speakers play at same level regardless of balance setting.\r\n\r\n**Affected:** All audio sources  \r\n**Control:** Balance slider (L/R)\r\n\r\n**Steps to Reproduce:**\r\n1. Play audio from any source\r\n2. Open audio settings\r\n3. Adjust Left/Right balance slider to full left\r\n4. No change in audio output - all speakers still active\r\n5. Move to full right - same result\r\n\r\n**Expected Result:**\r\nBalance left should output primarily to left speakers. Balance right should output to right speakers.\r\n\r\n**Actual Result:**\r\nBalance control has zero effect. Audio output identical regardless of balance position.\r\n\r\n**Code Analysis:**\r\n```cpp\r\nvoid AudioMixer::setBalance(float balance) {\r\n    mBalance = balance;  // Stored but never used!\r\n    // Missing: actual channel gain calculation and application\r\n}\r\n```\r\n\r\n**Root Cause:**\r\nBalance control value stored in member variable but never applied to audio mixer output channels. Gain multiplier calculation for left/right channels missing. Balance parameter not connected to audio routing logic. Function stores value but no code applies balance to actual audio streams. Need to implement channel gain calculation: leftGain = (1.0 - balance)/2.0, rightGain = (1.0 + balance)/2.0 and apply to respective output channels.",
+    "source": "synthesized_detailed"
+  },
+  {
+    "id": "SAM1-5020",
+    "summary": "System memory leak in background services",
+    "description": "**Problem Description:**\r\nBackground system services exhibit continuous memory leak. System memory consumption increases approximately 100MB per hour. After 10-12 hours, available memory depleted and system becomes unstable. Applications killed by OOM killer.\r\n\r\n**Leak Rate:** ~100MB/hour\r\n**Impact:** System unstable after 10-12 hours\r\n\r\n**Memory Growth:**\r\n- Hour 0: 1.5GB used, 2.5GB free\r\n- Hour 6: 2.1GB used, 1.9GB free  \r\n- Hour 12: 2.7GB used, 1.3GB free\r\n- Hour 18: 3.5GB used, 0.5GB free (OOM killer active)\r\n\r\n**Steps to Reproduce:**\r\n1. Boot system and note initial memory usage\r\n2. Leave system idle (no user applications)\r\n3. Monitor memory every hour\r\n4. Observe continuous increase even with no user activity\r\n\r\n**Expected Result:**\r\nBackground service memory should remain stable\r\n\r\n**Actual Result:**\r\nMemory continuously leaking even with zero user activity. Only background services running.\r\n\r\n**Analysis:**\r\nValgrind memory leak detection shows leaks in:\r\n- ClimateControlService: 25MB/hour\r\n- LocationService: 35MB/hour  \r\n- TelemetryService: 20MB/hour\r\n- ConnectivityManager: 15MB/hour\r\n\r\n**Root Cause:**\r\nMultiple background services not releasing allocated memory. ClimateControlService: sensor data buffers allocated on each poll but never freed. LocationService: GPS coordinate history unbounded vector. TelemetryService: metric samples accumulated in memory never flushed to disk. ConnectivityManager: network event objects created but never deleted. Each service leaking due to different specific bugs but cumulative effect causes system instability.",
+    "domain": "stability_memory_domain",
+    "text": "System memory leak in background services **Problem Description:**\r\nBackground system services exhibit continuous memory leak. System memory consumption increases approximately 100MB per hour. After 10-12 hours, available memory depleted and system becomes unstable. Applications killed by OOM killer.\r\n\r\n**Leak Rate:** ~100MB/hour\r\n**Impact:** System unstable after 10-12 hours\r\n\r\n**Memory Growth:**\r\n- Hour 0: 1.5GB used, 2.5GB free\r\n- Hour 6: 2.1GB used, 1.9GB free  \r\n- Hour 12: 2.7GB used, 1.3GB free\r\n- Hour 18: 3.5GB used, 0.5GB free (OOM killer active)\r\n\r\n**Steps to Reproduce:**\r\n1. Boot system and note initial memory usage\r\n2. Leave system idle (no user applications)\r\n3. Monitor memory every hour\r\n4. Observe continuous increase even with no user activity\r\n\r\n**Expected Result:**\r\nBackground service memory should remain stable\r\n\r\n**Actual Result:**\r\nMemory continuously leaking even with zero user activity. Only background services running.\r\n\r\n**Analysis:**\r\nValgrind memory leak detection shows leaks in:\r\n- ClimateControlService: 25MB/hour\r\n- LocationService: 35MB/hour  \r\n- TelemetryService: 20MB/hour\r\n- ConnectivityManager: 15MB/hour\r\n\r\n**Root Cause:**\r\nMultiple background services not releasing allocated memory. ClimateControlService: sensor data buffers allocated on each poll but never freed. LocationService: GPS coordinate history unbounded vector. TelemetryService: metric samples accumulated in memory never flushed to disk. ConnectivityManager: network event objects created but never deleted. Each service leaking due to different specific bugs but cumulative effect causes system instability.",
+    "source": "synthesized_detailed"
+  }
+]

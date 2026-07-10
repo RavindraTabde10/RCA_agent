@@ -25,6 +25,23 @@ from .dlt_analyzer import DLTAnalyzer
 from .source_mapper import SourceMapper
 from .historical_matcher import HistoricalMatcher
 from .report_generator import ReportGenerator
+from .html_report_generator import generate_rca_html_report, save_html_report
+
+# Optional dashboard integration for live monitoring
+try:
+    from .dashboard.dashboard_server import RCADashboard
+    DASHBOARD_AVAILABLE = True
+except ImportError:
+    DASHBOARD_AVAILABLE = False
+    RCADashboard = None
+
+# Optional ML-based domain classifier
+try:
+    from .domain_classifier import DomainClassifier, predict_domain_for_defect
+    DOMAIN_CLASSIFIER_AVAILABLE = True
+except ImportError:
+    DOMAIN_CLASSIFIER_AVAILABLE = False
+    DomainClassifier = None
 
 
 class RCAEngine:
@@ -62,6 +79,10 @@ class RCAEngine:
         self.jira_client = None
         self.git_client = None  # Git repository for source code
         
+        # Dashboard for live monitoring (optional)
+        self.dashboard = None
+        self._token_metrics = {}  # Track tokens per analysis
+        
         # Paths
         self.base_path = config.get('paths', {}).get('base_path', '.')
         self.output_dir = config.get('paths', {}).get('output_dir', 'output/reports')
@@ -71,6 +92,18 @@ class RCAEngine:
         
         # Load domain knowledge from MD files
         self.domain_knowledge = self._load_domain_knowledge()
+        
+        # ML-based domain classifier (optional)
+        self.domain_classifier = None
+        if DOMAIN_CLASSIFIER_AVAILABLE:
+            try:
+                self.domain_classifier = DomainClassifier()
+                if self.domain_classifier.is_available():
+                    self.logger.info("Domain classifier loaded successfully")
+                else:
+                    self.logger.warning("Domain classifier model not found - using fallback")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize domain classifier: {e}")
         
         # Ensure output directory exists
         os.makedirs(self.output_dir, exist_ok=True)
@@ -113,6 +146,149 @@ class RCAEngine:
         self.git_client = git_client
         self.logger.info("Git client configured")
     
+    def set_dashboard(self, dashboard):
+        """
+        Set the dashboard for real-time monitoring
+        
+        Args:
+            dashboard: RCADashboard instance for live tracking
+        """
+        self.dashboard = dashboard
+        self.logger.info("Dashboard configured for live monitoring")
+    
+    def _track_tokens(
+        self,
+        defect_id: str,
+        stage: str,
+        input_tokens: int,
+        output_tokens: int,
+        model: str = "claude-sonnet"
+    ):
+        """
+        Track token consumption for a stage
+        
+        Updates both internal metrics and dashboard (if available)
+        
+        Args:
+            defect_id: Defect ID being analyzed
+            stage: Current analysis stage
+            input_tokens: Number of input tokens
+            output_tokens: Number of output tokens
+            model: Model name for cost calculation
+        """
+        total = input_tokens + output_tokens
+        
+        # Model multipliers for cost calculation
+        MODEL_MULTIPLIERS = {
+            'gpt-4o': 0.0, 'gpt-5-mini': 0.0,
+            'claude-haiku': 0.33, 'gemini-flash': 0.33,
+            'claude-sonnet': 1.0, 'gpt-5': 1.0,
+            'claude-opus': 3.0
+        }
+        
+        multiplier = MODEL_MULTIPLIERS.get(model.lower(), 1.0)
+        quota_cost = total * multiplier / 1000
+        cost_eur = quota_cost * 37.0 / 1000  # €37 per 1000 quota units
+        
+        # Update internal metrics
+        if defect_id in self._token_metrics:
+            metrics = self._token_metrics[defect_id]
+            
+            # Initialize stage if not exists
+            if "by_stage" not in metrics:
+                metrics["by_stage"] = {}
+            if stage not in metrics["by_stage"]:
+                metrics["by_stage"][stage] = {"input": 0, "output": 0, "total": 0}
+            
+            # Increment tokens
+            metrics["by_stage"][stage]["input"] += input_tokens
+            metrics["by_stage"][stage]["output"] += output_tokens
+            metrics["by_stage"][stage]["total"] += total
+            
+            metrics["total_input"] = metrics.get("total_input", 0) + input_tokens
+            metrics["total_output"] = metrics.get("total_output", 0) + output_tokens
+            metrics["total_tokens"] = metrics.get("total_tokens", 0) + total
+            metrics["estimated_cost_eur"] = metrics.get("estimated_cost_eur", 0) + cost_eur
+        
+        # Send to dashboard for live update
+        if self.dashboard:
+            self.dashboard.add_tokens(defect_id, stage, input_tokens, output_tokens)
+        
+        self.logger.debug(f"Tracked tokens for {defect_id}/{stage}: +{total} tokens")
+    
+    def _run_llm_analysis_with_tracking(
+        self,
+        defect_id: str,
+        defect_data: Dict[str, Any],
+        dlt_analysis: Dict[str, Any],
+        source_mapping: Dict[str, Any],
+        historical_matches: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Run LLM-powered root cause analysis with token tracking
+        
+        Same as _run_llm_analysis but tracks token consumption incrementally
+        """
+        # Build analysis prompt
+        prompt = self._build_analysis_prompt(
+            defect_data, dlt_analysis, source_mapping, historical_matches
+        )
+        
+        # Estimate input tokens (rough: 4 chars per token)
+        estimated_input_tokens = len(prompt) // 4
+        
+        # If LLM client is configured, use it
+        if self.llm_client:
+            try:
+                # Track prompt tokens before calling LLM
+                self._track_tokens(defect_id, "llm_analysis", estimated_input_tokens, 0)
+                
+                response = self.llm_client.analyze_text(
+                    prompt=prompt,
+                    system_message=self._get_system_prompt()
+                )
+                
+                # Estimate output tokens from response
+                response_text = response if isinstance(response, str) else str(response.get("content", response))
+                estimated_output_tokens = len(response_text) // 4
+                
+                # Track response tokens
+                self._track_tokens(defect_id, "llm_analysis", 0, estimated_output_tokens)
+                
+                # Parse LLM response
+                analysis_result = self._parse_llm_response(response)
+                
+                # Fallback: if no affected files found, use LLM-based discovery from source_repo
+                if not analysis_result.get("affected_files"):
+                    self.logger.warning("No affected files in LLM response, trying LLM-based file discovery")
+                    llm_discovered_files = self._discover_affected_files_with_llm(
+                        defect_data, 
+                        dlt_analysis, 
+                        analysis_result.get("root_cause", "")
+                    )
+                    
+                    if llm_discovered_files:
+                        analysis_result["affected_files"] = llm_discovered_files
+                        self.logger.info(f"LLM discovered {len(llm_discovered_files)} files from source_repo: {llm_discovered_files}")
+                    else:
+                        # Final fallback: use source_mapping
+                        self.logger.warning("LLM discovery returned no files, using source_mapping as final fallback")
+                        analysis_result["affected_files"] = self._extract_files_from_source_mapping(source_mapping)
+                        self.logger.info(f"Extracted {len(analysis_result['affected_files'])} files from source_mapping")
+                
+                return analysis_result
+            except Exception as e:
+                self.logger.error(f"LLM analysis failed: {e}")
+                return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
+        else:
+            # Return mock analysis when LLM not configured
+            self.logger.warning("LLM client not configured, using mock analysis")
+            
+            # Track simulated tokens for mock analysis
+            self._track_tokens(defect_id, "llm_analysis", estimated_input_tokens, 500)
+            
+            return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
+
     # ==========================================
     # DOMAIN KNOWLEDGE METHODS
     # ==========================================
@@ -350,7 +526,24 @@ class RCAEngine:
         Returns:
             Complete RCA result dictionary
         """
+        import time
+        start_time = time.time()
+        
         self.logger.info(f"Starting RCA for defect: {defect_id}")
+        
+        # Initialize token tracking for this analysis
+        self._token_metrics[defect_id] = {
+            "by_stage": {},
+            "total_input": 0,
+            "total_output": 0,
+            "total_tokens": 0,
+            "estimated_cost_eur": 0.0
+        }
+        
+        # Notify dashboard if available
+        if self.dashboard:
+            defect_preview = {"summary": "", "component": "Unknown", "priority": "Medium"}
+            self.dashboard.start_analysis(defect_id, defect_preview)
         
         result = {
             "defect_id": defect_id,
@@ -362,37 +555,102 @@ class RCAEngine:
         try:
             # Stage 1: Load defect data
             self.logger.info("Stage 1: Loading defect data")
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "defect_loading", "running")
+            
             defect_data = self._load_defect(defect_id, from_jira)
             result["stages"]["load_defect"] = {"status": "success", "data": defect_data}
             
+            # Domain Classification (ML-based)
+            domain_prediction = None
+            if self.domain_classifier:
+                self.logger.info("Running ML-based domain classification")
+                domain_prediction = self.domain_classifier.predict_from_defect(defect_data)
+                defect_data["predicted_domain"] = domain_prediction["domain"]
+                defect_data["predicted_domain_display"] = domain_prediction["domain_display"]
+                defect_data["predicted_domain_confidence"] = domain_prediction["confidence"]
+                defect_data["assigned_team"] = domain_prediction["team"]
+                result["stages"]["domain_classification"] = {
+                    "status": "success",
+                    "data": domain_prediction
+                }
+                self.logger.info(f"Domain prediction: {domain_prediction['domain_display']} "
+                               f"(confidence: {domain_prediction['confidence']:.0%})")
+            
+            # Update dashboard with defect info
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "defect_loading", "completed")
+                # Update with actual defect info including predicted domain
+                predicted_domain = domain_prediction["domain_short"] if domain_prediction else "Unknown"
+                self.dashboard.start_analysis(defect_id, {
+                    "summary": defect_data.get("summary", "")[:100],
+                    "component": defect_data.get("component", "Unknown"),
+                    "priority": defect_data.get("priority", "Medium"),
+                    "predicted_domain": predicted_domain
+                })
+            
             # Stage 2: Parse DLT logs
             self.logger.info("Stage 2: Parsing DLT logs")
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "dlt_analysis", "running")
+            
             dlt_analysis = self._analyze_dlt_logs(defect_data)
             result["stages"]["dlt_analysis"] = {"status": "success", "data": dlt_analysis}
             
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "dlt_analysis", "completed")
+            
             # Stage 3: Map to source code
             self.logger.info("Stage 3: Mapping to source code")
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "source_mapping", "running")
+            
             source_mapping = self._map_source_code(dlt_analysis)
             result["stages"]["source_mapping"] = {"status": "success", "data": source_mapping}
             
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "source_mapping", "completed")
+            
             # Stage 4: Search historical defects
             self.logger.info("Stage 4: Searching historical defects")
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "historical_match", "running")
+            
             historical_matches = self._search_historical(defect_data, dlt_analysis)
             result["stages"]["historical_search"] = {"status": "success", "data": historical_matches}
+            
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "historical_match", "completed")
             
             # Check for duplicates
             duplicate_info = self._check_duplicates(historical_matches)
             result["duplicate_info"] = duplicate_info
             
-            # Stage 5: LLM Analysis
+            # Stage 5: LLM Analysis (main token consumer)
             self.logger.info("Stage 5: Running LLM analysis")
-            llm_analysis = self._run_llm_analysis(
-                defect_data, dlt_analysis, source_mapping, historical_matches
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "llm_analysis", "running")
+            
+            llm_analysis = self._run_llm_analysis_with_tracking(
+                defect_id, defect_data, dlt_analysis, source_mapping, historical_matches
             )
             result["stages"]["llm_analysis"] = {"status": "success", "data": llm_analysis}
             
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "llm_analysis", "completed")
+                # Update confidence
+                confidence = llm_analysis.get("confidence", 0)
+                domain = llm_analysis.get("domain", defect_data.get("component", "Unknown"))
+                self.dashboard.update_confidence(defect_id, confidence, domain)
+            
             # Stage 6: Generate Reports (MD + HTML)
             self.logger.info("Stage 6: Generating reports")
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "report_generation", "running")
+            
+            # Add token metrics to llm_analysis for report
+            llm_analysis["token_metrics"] = self._token_metrics.get(defect_id, {})
+            
             reports = self._generate_reports(
                 defect_id, defect_data, dlt_analysis, source_mapping, 
                 historical_matches, llm_analysis, duplicate_info
@@ -400,17 +658,27 @@ class RCAEngine:
             result["stages"]["report_generation"] = {"status": "success", "data": reports}
             result["reports"] = reports
             
+            if self.dashboard:
+                self.dashboard.update_stage(defect_id, "report_generation", "completed")
+            
             # Stage 7: JIRA Integration (if enabled)
             if upload_to_jira and self.jira_client:
                 self.logger.info("Stage 7: Updating JIRA")
                 jira_result = self._update_jira(
-                    defect_id, llm_analysis, reports, duplicate_info, mark_duplicates
+                    defect_id, llm_analysis, reports, duplicate_info, mark_duplicates,
+                    defect_data, dlt_analysis
                 )
                 result["stages"]["jira_update"] = {"status": "success", "data": jira_result}
             
             result["status"] = "completed"
             result["root_cause"] = llm_analysis.get("root_cause", "Unknown")
             result["confidence"] = llm_analysis.get("confidence", 0.0)
+            result["token_metrics"] = self._token_metrics.get(defect_id, {})
+            result["duration_seconds"] = time.time() - start_time
+            
+            # Complete dashboard tracking
+            if self.dashboard:
+                self.dashboard.complete_analysis(defect_id, success=True)
             
             self.logger.info(f"RCA completed for {defect_id}")
             
@@ -418,6 +686,10 @@ class RCAEngine:
             self.logger.error(f"RCA failed: {str(e)}")
             result["status"] = "failed"
             result["error"] = str(e)
+            
+            # Complete dashboard tracking on failure
+            if self.dashboard:
+                self.dashboard.complete_analysis(defect_id, success=False)
         
         return result
     
@@ -458,15 +730,53 @@ class RCAEngine:
         dlt_content = defect_data.get("dlt_content", "")
         dlt_file = defect_data.get("dlt_attachment", "")
         
-        # Try to load from file if content not embedded
-        if not dlt_content and dlt_file:
-            dlt_path = os.path.join(self.dlt_logs_dir, dlt_file)
-            if os.path.exists(dlt_path):
-                # Use analyze_file for automatic binary/text detection
-                return self.dlt_analyzer.analyze_file(dlt_path)
+        # Try to find DLT file from multiple sources
+        dlt_path = None
+        
+        # Source 1: Direct dlt_attachment field
+        if dlt_file:
+            possible_path = os.path.join(self.dlt_logs_dir, dlt_file)
+            if os.path.exists(possible_path):
+                dlt_path = possible_path
+        
+        # Source 2: Check attachments array (from JIRA)
+        if not dlt_path:
+            attachments = defect_data.get("attachments", [])
+            for att in attachments:
+                filename = att.get("filename", "")
+                if filename.lower().endswith(('.dlt', '.log', '.txt')):
+                    possible_path = os.path.join(self.dlt_logs_dir, filename)
+                    if os.path.exists(possible_path):
+                        dlt_path = possible_path
+                        self.logger.info(f"Found DLT file from attachments: {filename}")
+                        break
+        
+        # Source 3: Scan dlt_logs_dir for any DLT files
+        if not dlt_path and os.path.isdir(self.dlt_logs_dir):
+            for f in os.listdir(self.dlt_logs_dir):
+                if f.lower().endswith(('.dlt', '.log', '.txt')):
+                    dlt_path = os.path.join(self.dlt_logs_dir, f)
+                    self.logger.info(f"Found DLT file in workspace: {f}")
+                    break
+        
+        # Analyze the DLT file
+        if dlt_path and os.path.exists(dlt_path):
+            self.logger.info(f"Analyzing DLT file: {dlt_path}")
+            return self.dlt_analyzer.analyze_file(dlt_path)
         
         # If content is provided as string, use text parser
-        return self.dlt_analyzer.analyze(dlt_content)
+        if dlt_content:
+            return self.dlt_analyzer.analyze(dlt_content)
+        
+        # No DLT data found - return empty analysis
+        self.logger.warning("No DLT content or file found for analysis")
+        return {
+            "total_entries": 0,
+            "errors": [],
+            "warnings": [],
+            "components": [],
+            "patterns": []
+        }
     
     def _map_source_code(self, dlt_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -573,11 +883,11 @@ class RCAEngine:
                 return self._parse_llm_response(response)
             except Exception as e:
                 self.logger.error(f"LLM analysis failed: {e}")
-                return self._generate_mock_analysis(defect_data, dlt_analysis)
+                return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
         else:
             # Return mock analysis when LLM not configured
             self.logger.warning("LLM client not configured, using mock analysis")
-            return self._generate_mock_analysis(defect_data, dlt_analysis)
+            return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
     
     def _build_analysis_prompt(
         self,
@@ -700,6 +1010,8 @@ Consider thread safety, resource management, and timing issues common in automot
     
     def _parse_llm_response(self, response: str) -> Dict[str, Any]:
         """Parse LLM response into structured format"""
+        import re
+        
         result = {
             "raw_response": response,
             "root_cause": "",
@@ -721,7 +1033,7 @@ Consider thread safety, resource management, and timing issues common in automot
                 current_section = 'root_cause'
             elif 'evidence' in line_lower:
                 current_section = 'evidence'
-            elif 'affected' in line_lower and ('code' in line_lower or 'file' in line_lower):
+            elif 'affected' in line_lower and ('code' in line_lower or 'file' in line_lower or 'source' in line_lower):
                 current_section = 'affected_files'
             elif 'fix' in line_lower or 'recommendation' in line_lower:
                 current_section = 'fix'
@@ -735,12 +1047,17 @@ Consider thread safety, resource management, and timing issues common in automot
                 elif current_section == 'evidence':
                     result["evidence"].append(line.strip())
                 elif current_section == 'affected_files':
-                    result["affected_files"].append(line.strip())
+                    # Clean up file names: remove bullets, numbers, extra text
+                    cleaned_line = self._extract_file_name(line.strip())
+                    if cleaned_line:
+                        self.logger.debug(f"Extracted file from LLM response: '{cleaned_line}' from line: '{line.strip()}'")
+                        result["affected_files"].append(cleaned_line)
+                    else:
+                        self.logger.debug(f"Skipped invalid file in LLM response: '{line.strip()}'")
                 elif current_section == 'fix':
                     result["fix_recommendation"] += line.strip() + " "
                 elif current_section == 'confidence':
                     # Extract percentage
-                    import re
                     match = re.search(r'(\d+)%?', line)
                     if match:
                         result["confidence"] = int(match.group(1)) / 100
@@ -750,21 +1067,409 @@ Consider thread safety, resource management, and timing issues common in automot
         result["root_cause"] = result["root_cause"].strip()
         result["fix_recommendation"] = result["fix_recommendation"].strip()
         
+        # Log parsing results
+        self.logger.info(f"LLM response parsed: {len(result['affected_files'])} files extracted")
+        if result["affected_files"]:
+            self.logger.info(f"Affected files from LLM: {result['affected_files']}")
+        
         return result
+    
+    def _extract_file_name(self, line: str) -> str:
+        """Extract clean file name from a line of text"""
+        import re
+        
+        # Remove common prefixes (bullets, numbers, dashes)
+        line = re.sub(r'^[-*•\d.)\]]+\s*', '', line)
+        
+        # Look for file patterns with extensions (e.g., path/to/file.cpp, AudioMixer.cpp)
+        # Match patterns like: src/audio/AudioMixer.cpp or AudioMixer.cpp
+        # Common extensions: cpp, h, hpp, c, py, java, js, ts, etc.
+        file_pattern = r'([a-zA-Z0-9_/\\]+\.[a-zA-Z]{1,4})'
+        match = re.search(file_pattern, line)
+        if match:
+            extracted = match.group(1)
+            # Validate it's a real file path (not just "e.g")
+            if self._is_valid_file_path(extracted):
+                return extracted
+        
+        # If no file extension found, try to extract path-like strings with directories
+        # Match patterns like: src/audio/AudioMixer (must have at least one slash)
+        path_pattern = r'([a-zA-Z0-9_]+(?:/[a-zA-Z0-9_]+)+)'
+        match = re.search(path_pattern, line)
+        if match:
+            extracted = match.group(1)
+            if self._is_valid_file_path(extracted):
+                return extracted
+        
+        # No valid file path found
+        return ""
+    
+    def _is_valid_file_path(self, path: str) -> str:
+        """Validate if a string looks like a valid file path"""
+        if not path or len(path) < 3:
+            return False
+        
+        # Reject common false positives
+        invalid_patterns = [
+            'e.g', 'i.e', 'etc', 'Fig', 'Table', 'Media', 'Audio', 'System',
+            'which', 'need', 'should', 'must', 'may', 'the', 'this', 'that',
+            'file', 'code', 'source', 'example'
+        ]
+        
+        # Check if it's just a single word (invalid unless it has extension)
+        path_lower = path.lower()
+        if path_lower in [p.lower() for p in invalid_patterns]:
+            return False
+        
+        # Valid paths should either:
+        # 1. Have a file extension AND alphanumeric name before the dot
+        # 2. Have at least one directory separator (/ or \)
+        has_extension = '.' in path and len(path.split('.')[-1]) <= 4
+        has_directory = '/' in path or '\\' in path
+        
+        if has_extension:
+            # Check that there's a reasonable filename before the extension
+            name_part = path.split('.')[-2].split('/')[-1].split('\\')[-1]
+            # Must be at least 2 chars and start with letter or digit
+            if len(name_part) >= 2 and name_part[0].isalnum():
+                return True
+        
+        if has_directory:
+            # Path with directories - should have reasonable components
+            parts = path.replace('\\', '/').split('/')
+            # All parts should be valid identifiers (letters, numbers, underscores)
+            if all(len(p) >= 1 and p[0].isalnum() for p in parts if p):
+                return True
+        
+        return False
+    
+    # ==========================================
+    # LLM-BASED FILE DISCOVERY FROM SOURCE_REPO
+    # ==========================================
+    # These methods use LLM to intelligently discover affected files
+    # by scanning the actual source_repo directory and analyzing which
+    # files are most likely related to the defect based on:
+    # - Defect summary and description
+    # - DLT error messages and components
+    # - Root cause analysis
+    # - Available source file structure
+    
+    def _scan_source_repo(self, max_files: int = 100) -> Dict[str, List[str]]:
+        """
+        Scan the source_repo directory and return file structure
+        
+        Args:
+            max_files: Maximum number of files to return per directory
+            
+        Returns:
+            Dictionary mapping directories to list of files
+        """
+        # Try multiple possible paths for source_repo
+        possible_paths = [
+            os.path.join(self.base_path, 'data', 'source_repo'),
+            os.path.join('data', 'source_repo'),
+            'data/source_repo',
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'source_repo'))
+        ]
+        
+        source_repo_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                source_repo_path = path
+                self.logger.info(f"Found source_repo at: {source_repo_path}")
+                break
+        
+        if not source_repo_path:
+            self.logger.warning(f"Source repo not found. Tried: {possible_paths}")
+            return {}
+        
+        file_structure = {}
+        file_count = 0
+        
+        # Scan each subdirectory
+        for root, dirs, files in os.walk(source_repo_path):
+            # Skip hidden directories and .git
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            
+            # Get relative path from source_repo
+            rel_path = os.path.relpath(root, source_repo_path)
+            if rel_path == '.':
+                continue  # Skip root level
+            
+            # Filter for source code files
+            source_files = [
+                f for f in files 
+                if f.endswith(('.cpp', '.h', '.hpp', '.c', '.py', '.java', '.js', '.ts'))
+                and not f.startswith('.')
+            ]
+            
+            if source_files:
+                # Normalize path separators
+                dir_key = rel_path.replace('\\', '/')
+                file_structure[dir_key] = source_files[:max_files]
+                file_count += len(file_structure[dir_key])
+        
+        self.logger.info(f"Scanned source_repo: {len(file_structure)} directories, {file_count} source files")
+        return file_structure
+    
+    def _discover_affected_files_with_llm(
+        self,
+        defect_data: Dict[str, Any],
+        dlt_analysis: Dict[str, Any],
+        root_cause: str
+    ) -> List[str]:
+        """
+        Use LLM to discover affected files from source_repo directory
+        
+        Args:
+            defect_data: Defect information
+            dlt_analysis: DLT analysis results
+            root_cause: Identified root cause
+            
+        Returns:
+            List of file paths (e.g., ["audio/AudioMixer.cpp", "common/Buffer.cpp"])
+        """
+        if not self.llm_client:
+            self.logger.warning("LLM client not available for file discovery")
+            return []
+        
+        # Scan source repo to get available files
+        file_structure = self._scan_source_repo()
+        
+        if not file_structure:
+            self.logger.warning("No files found in source_repo directory")
+            return []
+        
+        # Build prompt for LLM
+        prompt = self._build_file_discovery_prompt(defect_data, dlt_analysis, root_cause, file_structure)
+        
+        try:
+            # Ask LLM to identify affected files
+            response = self.llm_client.analyze_text(
+                prompt=prompt,
+                system_message="You are an expert at analyzing automotive infotainment software defects and identifying which source code files are likely affected. Return ONLY a JSON list of file paths, nothing else."
+            )
+            
+            # Parse the response
+            affected_files = self._parse_file_discovery_response(response, file_structure)
+            
+            self.logger.info(f"LLM file discovery found {len(affected_files)} files")
+            return affected_files
+            
+        except Exception as e:
+            self.logger.error(f"LLM file discovery failed: {e}")
+            return []
+    
+    def _build_file_discovery_prompt(
+        self,
+        defect_data: Dict[str, Any],
+        dlt_analysis: Dict[str, Any],
+        root_cause: str,
+        file_structure: Dict[str, List[str]]
+    ) -> str:
+        """Build prompt for LLM file discovery"""
+        
+        prompt_parts = []
+        
+        prompt_parts.append("# TASK: Identify Affected Source Files")
+        prompt_parts.append("")
+        prompt_parts.append("Based on the defect information below, identify which source code files are most likely affected.")
+        prompt_parts.append("")
+        
+        # Defect Info
+        prompt_parts.append("## DEFECT INFORMATION")
+        prompt_parts.append(f"**ID**: {defect_data.get('key', 'Unknown')}")
+        prompt_parts.append(f"**Summary**: {defect_data.get('summary', 'N/A')}")
+        prompt_parts.append(f"**Component**: {defect_data.get('component', 'Unknown')}")
+        if root_cause:
+            prompt_parts.append(f"**Root Cause**: {root_cause}")
+        prompt_parts.append("")
+        
+        # DLT Errors
+        if dlt_analysis.get('errors'):
+            prompt_parts.append("## DLT ERRORS")
+            for error in dlt_analysis['errors'][:5]:
+                prompt_parts.append(f"- {error}")
+            prompt_parts.append("")
+        
+        # Components from DLT
+        if dlt_analysis.get('components'):
+            prompt_parts.append(f"**DLT Components**: {', '.join(dlt_analysis['components'])}")
+            prompt_parts.append("")
+        
+        # Available Files
+        prompt_parts.append("## AVAILABLE SOURCE FILES")
+        prompt_parts.append("")
+        for directory, files in sorted(file_structure.items()):
+            prompt_parts.append(f"### Directory: {directory}/")
+            for file in files[:20]:  # Limit files per directory
+                prompt_parts.append(f"  - {directory}/{file}")
+            if len(files) > 20:
+                prompt_parts.append(f"  ... and {len(files) - 20} more files")
+            prompt_parts.append("")
+        
+        # Instructions
+        prompt_parts.append("## INSTRUCTIONS")
+        prompt_parts.append("")
+        prompt_parts.append("Analyze the defect and identify the 3-5 most likely affected files.")
+        prompt_parts.append("Consider:")
+        prompt_parts.append("- Component names from DLT logs")
+        prompt_parts.append("- Error messages and patterns")
+        prompt_parts.append("- File names that match the defect domain")
+        prompt_parts.append("")
+        prompt_parts.append("Return ONLY a JSON array of file paths (relative to source_repo):")
+        prompt_parts.append('["directory/file1.cpp", "directory/file2.h"]')
+        prompt_parts.append("")
+        prompt_parts.append("Do NOT include explanations, just the JSON array.")
+        
+        return "\n".join(prompt_parts)
+    
+    def _parse_file_discovery_response(
+        self, 
+        response: str, 
+        file_structure: Dict[str, List[str]]
+    ) -> List[str]:
+        """Parse LLM response for file discovery"""
+        import json
+        
+        affected_files = []
+        
+        try:
+            # Try to parse as JSON
+            response_clean = response.strip()
+            
+            # Remove markdown code blocks if present
+            if response_clean.startswith('```'):
+                lines = response_clean.split('\n')
+                # Remove first and last line (```)
+                response_clean = '\n'.join(lines[1:-1])
+                # Remove language identifier if present
+                if response_clean.startswith('json'):
+                    response_clean = response_clean[4:].strip()
+            
+            # Parse JSON
+            files_list = json.loads(response_clean)
+            
+            if isinstance(files_list, list):
+                # Validate each file exists in file_structure
+                for file_path in files_list:
+                    if isinstance(file_path, str):
+                        # Normalize path
+                        normalized = file_path.replace('\\', '/')
+                        
+                        # Check if file exists in our scanned structure
+                        parts = normalized.split('/')
+                        if len(parts) >= 2:
+                            directory = '/'.join(parts[:-1])
+                            filename = parts[-1]
+                            
+                            if directory in file_structure and filename in file_structure[directory]:
+                                affected_files.append(normalized)
+                                self.logger.info(f"Validated file from LLM: {normalized}")
+                            else:
+                                # Try to find in any directory
+                                for dir_key, files in file_structure.items():
+                                    if filename in files:
+                                        corrected_path = f"{dir_key}/{filename}"
+                                        affected_files.append(corrected_path)
+                                        self.logger.info(f"Corrected path: {normalized} -> {corrected_path}")
+                                        break
+                
+        except json.JSONDecodeError as e:
+            self.logger.warning(f"Failed to parse LLM response as JSON: {e}")
+            # Try to extract file paths using regex as fallback
+            affected_files = self._extract_files_from_text(response, file_structure)
+        
+        return affected_files[:5]  # Limit to top 5
+    
+    def _read_file_directly(self, file_path: str) -> Optional[str]:
+        """
+        Directly read file from source_repo as fallback
+        
+        Args:
+            file_path: Relative path like "audio/AudioMixer.cpp"
+            
+        Returns:
+            File content or None
+        """
+        # Try multiple possible paths
+        possible_paths = [
+            os.path.join(self.base_path, 'data', 'source_repo', file_path),
+            os.path.join('data', 'source_repo', file_path),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'source_repo', file_path))
+        ]
+        
+        for full_path in possible_paths:
+            if os.path.exists(full_path):
+                try:
+                    self.logger.debug(f"Reading from: {full_path}")
+                    with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                    self.logger.info(f"Successfully read {len(content)} bytes from {full_path}")
+                    return content
+                except Exception as e:
+                    self.logger.error(f"Error reading {full_path}: {e}")
+        
+        self.logger.warning(f"File not found in any location: {file_path}")
+        return None
+    
+    def _extract_files_from_text(self, text: str, file_structure: Dict[str, List[str]]) -> List[str]:
+        """Extract file paths from text when JSON parsing fails"""
+        import re
+        
+        files = []
+        
+        # Look for file patterns
+        for directory, filenames in file_structure.items():
+            for filename in filenames:
+                pattern = f"{directory}/{filename}"
+                if pattern in text or filename in text:
+                    files.append(f"{directory}/{filename}")
+                    if len(files) >= 5:
+                        return files
+        
+        return files
+    
+    def _extract_files_from_source_mapping(self, source_mapping: Dict[str, Any]) -> List[str]:
+        """Extract file names from source mapping data as fallback"""
+        files = []
+        
+        if not source_mapping:
+            self.logger.warning("_extract_files_from_source_mapping: source_mapping is None or empty")
+            return files
+        
+        mapped_files = source_mapping.get("mapped_files", [])
+        self.logger.info(f"_extract_files_from_source_mapping: source_mapping has {len(mapped_files)} mapped_files")
+        
+        if mapped_files:
+            for file_info in mapped_files[:5]:  # Limit to top 5 files
+                file_name = file_info.get("file")
+                if file_name:
+                    files.append(file_name)
+                    self.logger.debug(f"Added file: {file_name}")
+        
+        self.logger.info(f"Extracted {len(files)} files from source_mapping: {files}")
+        return files
     
     def _generate_mock_analysis(
         self, 
         defect_data: Dict[str, Any], 
-        dlt_analysis: Dict[str, Any]
+        dlt_analysis: Dict[str, Any],
+        source_mapping: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """Generate mock analysis when LLM is not available"""
         component = defect_data.get("component", "Unknown")
         summary = defect_data.get("summary", "")
         
+        # Extract affected files from source_mapping (correct location)
+        affected_files = self._extract_files_from_source_mapping(source_mapping) if source_mapping else []
+        
+        self.logger.info(f"Mock analysis: extracted {len(affected_files)} affected files from source_mapping")
+        
         return {
             "root_cause": f"Based on DLT patterns and component mapping, the issue appears to be in the {component} module. Further LLM analysis is needed for precise root cause.",
             "evidence": dlt_analysis.get("errors", [])[:5],
-            "affected_files": [f.get("file") for f in dlt_analysis.get("mapped_files", [])[:3]],
+            "affected_files": affected_files,
             "fix_recommendation": "Configure LLM API to get specific fix recommendations.",
             "confidence": 0.65,
             "preventive_measures": [
@@ -805,8 +1510,21 @@ Consider thread safety, resource management, and timing issues common in automot
         with open(md_path, 'w', encoding='utf-8') as f:
             f.write(md_content)
         
-        # Generate HTML report
-        html_content = self.report_generator.generate_html(report_data)
+        # Generate HTML report using new professional format
+        # Build RCA result structure for HTML generator
+        rca_result = {
+            "defect_id": defect_id,
+            "status": "completed",
+            "duration_seconds": 0,  # Will be updated by caller
+            "stages": {
+                "dlt_analysis": {"status": "completed", "data": dlt_analysis, "duration": 0},
+                "source_mapping": {"status": "completed", "data": source_mapping, "duration": 0},
+                "historical_match": {"status": "completed", "data": {"matches": historical_matches}, "duration": 0},
+                "llm_analysis": {"status": "completed", "data": llm_analysis, "duration": 0}
+            }
+        }
+        
+        html_content = generate_rca_html_report(rca_result, defect_data)
         html_filename = f"{defect_id}_rca.html"
         html_path = os.path.join(self.output_dir, html_filename)
         with open(html_path, 'w', encoding='utf-8') as f:
@@ -825,7 +1543,9 @@ Consider thread safety, resource management, and timing issues common in automot
         llm_analysis: Dict[str, Any],
         reports: Dict[str, Any],
         duplicate_info: Dict[str, Any],
-        mark_duplicates: bool
+        mark_duplicates: bool,
+        defect_data: Dict[str, Any] = None,
+        dlt_analysis: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """Update JIRA with RCA results"""
         jira_result = {
@@ -839,8 +1559,10 @@ Consider thread safety, resource management, and timing issues common in automot
             return jira_result
         
         try:
-            # Add RCA comment
-            comment = self._format_jira_comment(llm_analysis, duplicate_info)
+            # Add RCA comment using summary.prompt.md format
+            comment = self._format_jira_comment(
+                llm_analysis, duplicate_info, defect_data, dlt_analysis
+            )
             self.jira_client.add_comment(defect_id, comment)
             jira_result["comment_added"] = True
             self.logger.info(f"Added RCA comment to {defect_id}")
@@ -871,56 +1593,368 @@ Consider thread safety, resource management, and timing issues common in automot
     def _format_jira_comment(
         self, 
         llm_analysis: Dict[str, Any], 
-        duplicate_info: Dict[str, Any]
+        duplicate_info: Dict[str, Any],
+        defect_data: Dict[str, Any] = None,
+        dlt_analysis: Dict[str, Any] = None
     ) -> str:
-        """Format RCA results as JIRA comment"""
+        """
+        Format RCA results as JIRA comment using summary.prompt.md format
+        
+        Args:
+            llm_analysis: LLM analysis results
+            duplicate_info: Duplicate detection info
+            defect_data: Original defect data
+            dlt_analysis: DLT log analysis results
+        """
+        defect_data = defect_data or {}
+        dlt_analysis = dlt_analysis or {}
+        
         lines = []
-        lines.append("h2. 🔍 AI Root Cause Analysis")
-        lines.append("")
         
-        # Duplicate warning
-        if duplicate_info.get("is_duplicate"):
-            lines.append("{panel:title=⚠️ POTENTIAL DUPLICATE|borderStyle=dashed|borderColor=#ffcc00|bgColor=#fffae6}")
-            lines.append(f"This defect is {duplicate_info['similarity_score']:.0%} similar to *{duplicate_info['duplicate_of']}*")
-            lines.append("Please review and link as duplicate if confirmed.")
-            lines.append("{panel}")
-            lines.append("")
-        
-        # Root Cause
-        lines.append("h3. Root Cause")
-        lines.append(llm_analysis.get("root_cause", "Unable to determine"))
-        lines.append("")
-        
-        # Confidence
+        # Get values from analysis
+        defect_id = defect_data.get("key", "Unknown")
+        domain = defect_data.get("component", "Not_Assigned")
+        timestamp = dlt_analysis.get("error_timestamp", datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"))
+        root_cause = llm_analysis.get("root_cause", "Unable to determine")
+        effect = llm_analysis.get("effect", "User-visible impact could not be determined from available logs.")
+        fix_recommendation = llm_analysis.get("fix_recommendation", "Further investigation required.")
         confidence = llm_analysis.get("confidence", 0)
-        lines.append(f"*Confidence:* {confidence:.0%}")
+        affected_files = llm_analysis.get("affected_files", [])
+        
+        # ================================================
+        # SUMMARY
+        # ================================================
+        lines.append("*Summary :*")
+        lines.append(f"{domain} Pre-Analysis is done for {defect_id} with Error Timestamp at: {timestamp}.")
+        lines.append("")
+        lines.append("================================================")
         lines.append("")
         
-        # Fix Recommendation
-        lines.append("h3. Fix Recommendation")
-        lines.append(llm_analysis.get("fix_recommendation", "See attached report for details"))
+        # ================================================
+        # ROOT CAUSE / INITIAL FINDINGS
+        # ================================================
+        lines.append("*Rootcause/Initial findings* :")
+        lines.append(root_cause)
         lines.append("")
         
-        # Evidence
-        if llm_analysis.get("evidence"):
-            lines.append("h3. Evidence")
-            lines.append("{code}")
-            for evidence in llm_analysis["evidence"][:5]:
-                lines.append(evidence)
-            lines.append("{code}")
-            lines.append("")
+        # ================================================
+        # EFFECT
+        # ================================================
+        lines.append("*Effect* :")
+        lines.append(effect)
+        lines.append("")
         
-        # Related Defects
+        # ================================================
+        # NEXT STEPS / DOMAIN
+        # ================================================
+        lines.append("*Next Steps/Domain* :")
+        lines.append(f"Suggest assigning to {domain} domain for further investigation. {fix_recommendation}")
+        lines.append("")
+        
+        # ================================================
+        # REMARKS (Similar/Related Tickets)
+        # ================================================
+        lines.append("*Remarks* :")
         if duplicate_info.get("related_defects"):
-            lines.append("h3. Related Defects")
-            for related in duplicate_info["related_defects"][:5]:
-                lines.append(f"* [{related['defect_id']}] - {related.get('similarity_score', 0):.0%} similar")
+            lines.append("|| Rank || Jira_Key || Similarity_score || Remark ||")
+            for idx, related in enumerate(duplicate_info["related_defects"][:5], 1):
+                similarity = related.get('similarity_score', 0)
+                remark = "Potential duplicate" if similarity >= 0.90 else "Related issue"
+                lines.append(f"| {idx} | [{related['defect_id']}] | {similarity:.0%} | {remark} |")
+        else:
+            lines.append("N/A")
+        lines.append("")
+        
+        lines.append("================================================")
+        lines.append("")
+        
+        # ================================================
+        # ISSUE TIMING AND CLASSIFICATION
+        # ================================================
+        lines.append("*Issue Timing and Classification :*")
+        issue_type = defect_data.get("issue_type", "defect")
+        summary = defect_data.get("summary", "").lower()
+        
+        # Detect timing keywords
+        timing = "runtime"
+        if "boot" in summary or "coldboot" in summary:
+            timing = "coldboot"
+        elif "str" in summary:
+            timing = "STR (Suspend-to-RAM)"
+        elif "ota" in summary:
+            timing = "after OTA update"
+        
+        # Detect defect type
+        defect_type = "unknown issue"
+        if "crash" in summary:
+            defect_type = "crash"
+        elif "anr" in summary:
+            defect_type = "ANR"
+        elif "reboot" in summary:
+            defect_type = "unexpected reboot"
+        elif "audio" in summary:
+            defect_type = "audio issue"
+        elif "display" in summary or "screen" in summary:
+            defect_type = "display issue"
+        
+        lines.append(f"Issue is observed during {timing} and is classified as {defect_type}.")
+        lines.append("")
+        
+        # ================================================
+        # LOG FILES REFERRED
+        # ================================================
+        lines.append("*Log Files Referred :*")
+        dlt_file = defect_data.get("dlt_attachment", "")
+        if dlt_file:
+            lines.append(f"- Exported DLTs: [^{dlt_file}]")
+        else:
+            lines.append("N/A")
+        lines.append("")
+        
+        # ================================================
+        # TESTED SOFTWARE VERSION
+        # ================================================
+        lines.append("*Tested software version:*")
+        sw_version = defect_data.get("sw_version", dlt_analysis.get("sw_version", "N/A"))
+        lines.append(sw_version)
+        lines.append("")
+        
+        # ================================================
+        # USED HW DETAILS
+        # ================================================
+        lines.append("*Used HW details :*")
+        lines.append("N/A")
+        lines.append("")
+        
+        lines.append("================================================")
+        lines.append("")
+        
+        # ================================================
+        # PRE-ANALYSIS
+        # ================================================
+        lines.append("*Pre-analysis :*")
+        lines.append("")
+        
+        # DLT/Fishbone findings
+        lines.append("Findings from DLT log analysis:")
+        if dlt_analysis.get("errors"):
+            for error in dlt_analysis["errors"][:5]:
+                if isinstance(error, dict):
+                    lines.append(f"- {error.get('message', str(error))[:100]}")
+                else:
+                    lines.append(f"- {str(error)[:100]}")
+        else:
+            lines.append("- N/A")
+        lines.append("")
+        
+        # Evidence from LLM analysis
+        lines.append("Findings from RCA analysis:")
+        if llm_analysis.get("evidence"):
+            for evidence in llm_analysis["evidence"][:5]:
+                lines.append(f"- {str(evidence)[:100]}")
+        else:
+            lines.append("- N/A")
+        lines.append("")
+        
+        # Affected source files
+        if affected_files:
+            lines.append("Affected source files:")
+            for f in affected_files[:5]:
+                lines.append(f"- {f}")
             lines.append("")
         
-        lines.append("----")
+        # ================================================
+        # CODE FIX PREVIEW (if available)
+        # ================================================
+        code_fixes = llm_analysis.get("code_fixes", [])
+        if code_fixes:
+            lines.append("================================================")
+            lines.append("")
+            lines.append("*Proposed Code Fix :*")
+            lines.append("")
+            
+            for idx, fix in enumerate(code_fixes[:3], 1):
+                file_path = fix.get("file_path", "Unknown file")
+                old_content = fix.get("old_content", "")
+                new_content = fix.get("new_content", "")
+                description = fix.get("description", "Code fix")
+                
+                lines.append(f"*Fix {idx}: {file_path}*")
+                lines.append(f"_{description}_")
+                lines.append("")
+                
+                # Show old code (to be replaced)
+                if old_content:
+                    lines.append("{{color:red}}*BEFORE (Remove):*{{color}}")
+                    lines.append("{code:java}")
+                    # Truncate if too long
+                    old_display = old_content[:500] + "..." if len(old_content) > 500 else old_content
+                    lines.append(old_display)
+                    lines.append("{code}")
+                    lines.append("")
+                
+                # Show new code (replacement)
+                if new_content:
+                    lines.append("{{color:green}}*AFTER (Add):*{{color}}")
+                    lines.append("{code:java}")
+                    # Truncate if too long
+                    new_display = new_content[:500] + "..." if len(new_content) > 500 else new_content
+                    lines.append(new_display)
+                    lines.append("{code}")
+                    lines.append("")
+                
+                lines.append("----")
+                lines.append("")
+        
+        lines.append("================================================")
+        lines.append("")
+        lines.append(f"_This summary was generated with the assistance of AI. (Confidence: {confidence:.0%})_")
         lines.append(f"_Generated by RCA Agent on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_")
+        lines.append("_Generated by RCA Report Tool._")
+        lines.append("")
+        
+        # ================================================
+        # TOKEN CONSUMPTION METRICS (if available)
+        # ================================================
+        token_metrics = llm_analysis.get("token_metrics", {})
+        if token_metrics:
+            lines.append("================================================")
+            lines.append("")
+            lines.append("*Token Consumption Metrics :*")
+            lines.append("")
+            lines.append("|| Stage || Input Tokens || Output Tokens || Total ||")
+            
+            total_input = 0
+            total_output = 0
+            
+            for stage_name, stage_tokens in token_metrics.get("by_stage", {}).items():
+                inp = stage_tokens.get("input", 0)
+                out = stage_tokens.get("output", 0)
+                total = inp + out
+                total_input += inp
+                total_output += out
+                lines.append(f"| {stage_name} | {inp:,} | {out:,} | {total:,} |")
+            
+            lines.append(f"| *TOTAL* | *{total_input:,}* | *{total_output:,}* | *{total_input + total_output:,}* |")
+            lines.append("")
+            
+            # Cost estimate
+            cost_eur = token_metrics.get("estimated_cost_eur", 0)
+            if cost_eur > 0:
+                lines.append(f"_Estimated cost: €{cost_eur:.4f}_")
+            lines.append("")
+        
+        lines.append("================================================")
         
         return "\n".join(lines)
+    
+    def _format_pr_jira_comment(
+        self,
+        defect_id: str,
+        pr_result: Dict[str, Any]
+    ) -> str:
+        """
+        Format PR creation result as JIRA comment
+        
+        Args:
+            defect_id: Defect ID
+            pr_result: Result from apply_fix_and_create_pr()
+        """
+        lines = []
+        
+        lines.append("*Pull Request Created :*")
+        lines.append("")
+        lines.append("================================================")
+        lines.append("")
+        
+        pr_info = pr_result.get("pr", {})
+        pr_url = pr_info.get("url", "N/A")
+        pr_number = pr_info.get("number", "N/A")
+        branch = pr_result.get("branch", "N/A")
+        commit = pr_result.get("commit", "N/A")
+        
+        lines.append(f"*PR Link:* [{pr_url}]")
+        lines.append(f"*PR Number:* #{pr_number}")
+        lines.append(f"*Branch:* {branch}")
+        lines.append(f"*Commit:* {commit[:8] if commit and commit != 'N/A' else 'N/A'}")
+        lines.append("")
+        
+        # Show fixes applied
+        fixes_applied = pr_result.get("fixes_applied", [])
+        if fixes_applied:
+            lines.append("*Files Modified:*")
+            for fix in fixes_applied:
+                file_path = fix.get("file", "Unknown")
+                description = fix.get("description", "Fix applied")
+                lines.append(f"- {file_path}: {description}")
+            lines.append("")
+        
+        # Show code changes
+        lines.append("*Code Changes:*")
+        lines.append("")
+        
+        for idx, fix in enumerate(fixes_applied[:3], 1):
+            file_path = fix.get("file", "Unknown")
+            old_content = fix.get("old_content", "")
+            new_content = fix.get("new_content", "")
+            
+            if old_content or new_content:
+                lines.append(f"*{idx}. {file_path}*")
+                
+                if old_content:
+                    lines.append("{code:title=BEFORE (Removed)|borderStyle=solid|borderColor=#ff0000}")
+                    old_display = old_content[:400] + "\n..." if len(old_content) > 400 else old_content
+                    lines.append(old_display)
+                    lines.append("{code}")
+                
+                if new_content:
+                    lines.append("{code:title=AFTER (Added)|borderStyle=solid|borderColor=#00ff00}")
+                    new_display = new_content[:400] + "\n..." if len(new_content) > 400 else new_content
+                    lines.append(new_display)
+                    lines.append("{code}")
+                
+                lines.append("")
+        
+        lines.append("================================================")
+        lines.append("")
+        lines.append(f"_PR created by RCA Agent on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_")
+        lines.append("_Please review and merge the PR to apply the fix._")
+        lines.append("")
+        lines.append("================================================")
+        
+        return "\n".join(lines)
+    
+    def update_jira_with_pr(
+        self,
+        defect_id: str,
+        pr_result: Dict[str, Any]
+    ) -> bool:
+        """
+        Update JIRA ticket with PR creation details
+        
+        Args:
+            defect_id: Defect ID
+            pr_result: Result from apply_fix_and_create_pr()
+            
+        Returns:
+            Success status
+        """
+        if not self.jira_client:
+            self.logger.warning("JIRA client not configured")
+            return False
+        
+        if not pr_result.get("success") and not pr_result.get("partial_success"):
+            self.logger.warning("PR creation was not successful, skipping JIRA update")
+            return False
+        
+        try:
+            comment = self._format_pr_jira_comment(defect_id, pr_result)
+            self.jira_client.add_comment(defect_id, comment)
+            self.logger.info(f"Added PR details comment to {defect_id}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to update JIRA with PR details: {e}")
+            return False
     
     def list_defects(self) -> List[Dict[str, Any]]:
         """List all available defects"""
@@ -951,3 +1985,589 @@ Consider thread safety, resource management, and timing issues common in automot
             value = item.get(field, "Unknown")
             counts[value] = counts.get(value, 0) + 1
         return counts
+
+    # ==========================================
+    # CODE FIX & PR WORKFLOW
+    # ==========================================
+    
+    def apply_fix_and_create_pr(
+        self,
+        defect_id: str,
+        analysis_result: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        """
+        Apply recommended fix to source code and create a Pull Request
+        
+        This method takes the analysis result (with affected_files and fix_recommendation)
+        and automatically:
+        1. Gets the code fix from LLM based on the recommendation
+        2. Creates a fix branch
+        3. Applies the fix to affected files
+        4. Commits and pushes the changes
+        5. Creates a PR on GitHub (uses GIT_REPO_URL from .env)
+        
+        Args:
+            defect_id: Defect ID (e.g., SAM1-2001)
+            analysis_result: RCA analysis result (will fetch if not provided)
+            
+        Returns:
+            Dict with PR creation result
+        """
+        result = {
+            "success": False,
+            "defect_id": defect_id,
+            "branch": None,
+            "commit": None,
+            "pr": None,
+            "fixes_applied": [],
+            "errors": []
+        }
+        
+        # Validate Git client is configured
+        if not self.git_client:
+            result["errors"].append("Git client not configured. Call set_git_client() first.")
+            self.logger.error(result["errors"][-1])
+            return result
+        
+        if not self.git_client.is_connected():
+            result["errors"].append("Git repository not connected. Check GIT_REPO_URL configuration.")
+            self.logger.error(result["errors"][-1])
+            return result
+        
+        # Get analysis result if not provided
+        if not analysis_result:
+            self.logger.info(f"Running RCA analysis for {defect_id}...")
+            rca_result = self.analyze_defect(defect_id, from_jira=True, upload_to_jira=False)
+            if rca_result.get("status") != "completed":
+                result["errors"].append(f"RCA analysis failed: {rca_result.get('error', 'Unknown error')}")
+                return result
+            analysis_result = rca_result.get("stages", {}).get("llm_analysis", {}).get("data", {})
+        
+        # Extract fix information from analysis
+        affected_files = analysis_result.get("affected_files", [])
+        fix_recommendation = analysis_result.get("fix_recommendation", "")
+        root_cause = analysis_result.get("root_cause", "")
+        
+        # Filter and validate affected files - remove invalid paths
+        valid_files = []
+        for file_path in affected_files:
+            clean_path = file_path.strip().lstrip('- ').strip()
+            if self._is_valid_file_path(clean_path):
+                valid_files.append(clean_path)
+            else:
+                self.logger.warning(f"Filtered out invalid file path from affected_files: {clean_path}")      # Update affected_files with validated list
+        affected_files = valid_files
+        self.logger.info(f"Validated {len(affected_files)} file paths from affected_files: {affected_files}")
+        
+        if not affected_files:
+            # Provide detailed diagnostic information
+            error_msg = "No affected files identified in analysis. "
+            if not analysis_result.get("root_cause"):
+                error_msg += "LLM analysis may have failed or returned incomplete results. "
+            error_msg += "Check that: 1) LLM is configured correctly, 2) source mapping is working, 3) DLT logs contain component information."
+            result["errors"].append(error_msg)
+            self.logger.error(error_msg)
+            self.logger.debug(f"Analysis result keys: {list(analysis_result.keys())}")
+            return result
+        
+        if not fix_recommendation:
+            result["errors"].append("No fix recommendation provided. Cannot apply fix.")
+            return result
+        
+        self.logger.info(f"Applying fix for {defect_id}...")
+        self.logger.info(f"Affected files: {affected_files}")
+        self.logger.info(f"Root cause: {root_cause[:100]}...")
+        self.logger.info(f"Fix recommendation: {fix_recommendation[:100]}...")
+        
+        # Step 1: Generate actual code fix using LLM
+        code_fixes = self._generate_code_fix(
+            defect_id, affected_files, fix_recommendation, root_cause
+        )
+        
+        if not code_fixes:
+            error_msg = "Failed to generate code fixes. "
+            if not self.llm_client:
+                error_msg += "LLM client not configured. "
+            elif not self.git_client:
+                error_msg += "Git client not configured. "
+            else:
+                error_msg += f"Attempted to fix {len(affected_files)} files but all failed. Check logs for details."
+            result["errors"].append(error_msg)
+            self.logger.error(error_msg)
+            return result
+        
+        # Step 2: Create fix branch
+        branch_name = self.git_client.create_fix_branch(defect_id)
+        if not branch_name:
+            result["errors"].append("Failed to create fix branch")
+            return result
+        result["branch"] = branch_name
+        
+        # Step 3: Apply fixes to each affected file
+        files_fixed = []
+        for fix in code_fixes:
+            file_path = fix.get("file_path")
+            old_content = fix.get("old_content")
+            new_content = fix.get("new_content")
+            
+            if not all([file_path, old_content, new_content]):
+                self.logger.warning(f"Skipping incomplete fix for {file_path}")
+                continue
+            
+            if self.git_client.apply_fix(file_path, old_content, new_content):
+                files_fixed.append(file_path)
+                result["fixes_applied"].append({
+                    "file": file_path,
+                    "description": fix.get("description", "Code fix applied"),
+                    "old_content": old_content,
+                    "new_content": new_content
+                })
+                self.logger.info(f"Applied fix to {file_path}")
+            else:
+                self.logger.warning(f"Failed to apply fix to {file_path}")
+        
+        if not files_fixed:
+            result["errors"].append("No fixes could be applied to files")
+            return result
+        
+        # Step 4: Commit changes
+        commit_message = self._generate_commit_message(defect_id, root_cause, files_fixed)
+        commit_hash = self.git_client.commit_fix(defect_id, commit_message, files_fixed)
+        
+        if not commit_hash:
+            result["errors"].append("Failed to commit changes")
+            return result
+        result["commit"] = commit_hash
+        
+        # Step 5: Push branch
+        if not self.git_client.push_branch(branch_name):
+            result["errors"].append("Failed to push branch")
+            return result
+        
+        # Step 6: Create PR on GitHub (auto-detects platform from GIT_REPO_URL)
+        pr_description = self._generate_pr_description(
+            defect_id, root_cause, fix_recommendation, result["fixes_applied"]
+        )
+        
+        pr_info = self.git_client.create_pull_request(
+            defect_id=defect_id,
+            branch_name=branch_name,
+            title=f"fix({defect_id}): {root_cause[:50]}..." if len(root_cause) > 50 else f"fix({defect_id}): {root_cause}",
+            description=pr_description
+        )
+        
+        if pr_info:
+            result["pr"] = pr_info
+            result["success"] = True
+            self.logger.info(f"Successfully created PR for {defect_id}: {pr_info.get('url')}")
+            
+            # Step 7: Update JIRA with PR details and code changes
+            if self.jira_client:
+                self.update_jira_with_pr(defect_id, result)
+        else:
+            result["errors"].append("Failed to create PR (branch pushed successfully)")
+            result["partial_success"] = True
+        
+        return result
+    
+    def _generate_code_fix(
+        self,
+        defect_id: str,
+        affected_files: List[str],
+        fix_recommendation: str,
+        root_cause: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate actual code fix using LLM
+        
+        Args:
+            defect_id: Defect ID
+            affected_files: List of affected file paths
+            fix_recommendation: Recommended fix from analysis
+            root_cause: Identified root cause
+            
+        Returns:
+            List of code fixes with old_content, new_content pairs
+        """
+        code_fixes = []
+        
+        if not self.llm_client:
+            self.logger.error("LLM client not configured. Cannot generate code fixes.")
+            return code_fixes
+        
+        if not self.git_client:
+            self.logger.error("Git client not configured. Cannot read source files.")
+            return code_fixes
+        
+        self.logger.info(f"Generating code fixes for {len(affected_files)} files...")
+        
+        for file_path in affected_files[:3]:  # Limit to 3 files
+            # Clean file path (remove bullet points, etc.)
+            clean_path = file_path.strip().lstrip('- ').strip()
+            
+            # Validate it's a real file path before trying to read
+            if not self._is_valid_file_path(clean_path):
+                self.logger.warning(f"Skipping invalid file path: {clean_path}")
+                continue
+            
+            self.logger.info(f"Attempting to read file: {clean_path}")
+            
+            # Get current file content from Git
+            file_content = self.git_client.get_file_content(clean_path)
+            
+            if not file_content:
+                self.logger.error(f"Could not read file content for: {clean_path}")
+                self.logger.info(f"Trying alternative methods to read {clean_path}...")
+                
+                # Try direct file system access as fallback
+                file_content = self._read_file_directly(clean_path)
+                
+                if not file_content:
+                    self.logger.error(f"All methods failed to read: {clean_path}")
+                    continue
+                else:
+                    self.logger.info(f"Successfully read {clean_path} via direct file access")
+            
+            # Ask LLM to generate the fix
+            prompt = f"""Fix a bug in {clean_path} for defect {defect_id}.
+
+ROOT CAUSE: {root_cause[:200]}
+FIX NEEDED: {fix_recommendation[:200]}
+
+CURRENT FILE CONTENT (first 3000 chars):
+```
+{file_content[:3000]}
+```
+
+YOUR TASK:
+Analyze the code above and provide a fix. Return ONLY a JSON object in this EXACT format:
+
+{{
+    "old_content": "paste exact code from above that needs fixing",
+    "new_content": "paste the corrected version of that code",
+    "description": "1-sentence description of fix"
+}}
+
+EXAMPLE OUTPUT:
+{{
+    "old_content": "int calculate() {{\\n    int x = getValue();\\n    return x;\\n}}",
+    "new_content": "int calculate() {{\\n    int x = getValue();\\n    if (x < 0) return 0;\\n    return x;\\n}}",
+    "description": "Added null/negative check"
+}}
+
+RULES:
+1. Return ONLY the JSON object (no markdown, no explanations)
+2. old_content must EXACTLY match code from above
+3. Include 5-10 lines of context
+4. Keep changes minimal - only fix this specific issue
+
+YOUR JSON OUTPUT:
+"""
+            
+            try:
+                self.logger.info(f"Requesting LLM to generate fix for {clean_path}...")
+                response = self.llm_client.analyze_text(
+                    prompt=prompt,
+                    system_message="You are a code fixing assistant. Your ONLY job is to return a valid JSON object with old_content, new_content, and description fields. Do not explain, do not add commentary, ONLY return the JSON object."
+                )
+                
+                if not response or len(response.strip()) == 0:
+                    self.logger.error(f"LLM returned empty response for {clean_path}")
+                    continue
+                
+                self.logger.info(f"LLM response received for {clean_path} (length: {len(response)} chars)")
+                
+                # Log full response at debug level for troubleshooting
+                self.logger.debug("="*80)
+                self.logger.debug(f"FULL LLM RESPONSE FOR {clean_path}:")
+                self.logger.debug(response)
+                self.logger.debug("="*80)
+                
+                # Parse JSON from response
+                fix_data = self._parse_code_fix_response(response)
+                
+                if fix_data:
+                    fix_data["file_path"] = clean_path
+                    code_fixes.append(fix_data)
+                    self.logger.info(f"✓ Successfully generated fix for {clean_path}")
+                else:
+                    self.logger.warning(f"✗ Failed to parse fix response for {clean_path}")
+                    self.logger.warning(f"Saving failed response to logs/failed_llm_response_{defect_id}_{os.path.basename(clean_path)}.txt")
+                    
+                    # Save the response for manual inspection
+                    try:
+                        os.makedirs("logs", exist_ok=True)
+                        with open(f"logs/failed_llm_response_{defect_id}_{os.path.basename(clean_path)}.txt", 'w', encoding='utf-8') as f:
+                            f.write(f"Defect: {defect_id}\n")
+                            f.write(f"File: {clean_path}\n")
+                            f.write(f"Root Cause: {root_cause}\n")
+                            f.write(f"Fix Recommendation: {fix_recommendation}\n")
+                            f.write("="*80 + "\n")
+                            f.write("LLM RESPONSE:\n")
+                            f.write("="*80 + "\n")
+                            f.write(response)
+                    except Exception as save_error:
+                        self.logger.error(f"Could not save failed response: {save_error}")
+                    
+                    # Try to create a minimal fix as fallback
+                    fallback_fix = self._create_fallback_fix(clean_path, file_content, defect_id, root_cause, fix_recommendation)
+                    if fallback_fix:
+                        code_fixes.append(fallback_fix)
+                        self.logger.info(f"⚠ Using fallback fix for {clean_path}")
+                    
+            except Exception as e:
+                self.logger.error(f"Failed to generate fix for {clean_path}: {e}")
+                import traceback
+                self.logger.debug(traceback.format_exc())
+        
+        self.logger.info(f"Generated {len(code_fixes)} code fixes out of {len(affected_files)} files")
+        return code_fixes
+    
+    def _parse_code_fix_response(self, response: str) -> Optional[Dict[str, Any]]:
+        """Parse LLM response to extract code fix JSON"""
+        import re
+        import json
+        
+        self.logger.debug(f"Parsing code fix response (length: {len(response)})")
+        
+        # Method 1: Try to extract JSON from markdown code blocks
+        json_match = re.search(r'```(?:json)?\s*(.*?)\s*```', response, re.DOTALL)
+        
+        if json_match:
+            try:
+                json_str = json_match.group(1).strip()
+                self.logger.debug(f"Found JSON in code block: {json_str[:200]}...")
+                fix_data = json.loads(json_str)
+                if "old_content" in fix_data and "new_content" in fix_data:
+                    self.logger.info("✓ Successfully parsed code fix from markdown block")
+                    return fix_data
+            except json.JSONDecodeError as e:
+                self.logger.debug(f"Failed to parse JSON from code block: {e}")
+        
+        # Method 2: Find JSON object anywhere in response (more permissive)
+        try:
+            # Look for opening brace and find matching closing brace
+            start = response.find('{')
+            if start != -1:
+                brace_count = 0
+                for i in range(start, len(response)):
+                    if response[i] == '{':
+                        brace_count += 1
+                    elif response[i] == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            json_str = response[start:i+1]
+                            try:
+                                fix_data = json.loads(json_str)
+                                if "old_content" in fix_data and "new_content" in fix_data:
+                                    self.logger.info("✓ Successfully parsed code fix from raw JSON")
+                                    return fix_data
+                            except json.JSONDecodeError:
+                                continue
+        except Exception as e:
+            self.logger.debug(f"Failed to extract JSON object: {e}")
+        
+        # Method 3: Try to parse entire response as JSON
+        try:
+            fix_data = json.loads(response.strip())
+            if "old_content" in fix_data and "new_content" in fix_data:
+                self.logger.info("✓ Successfully parsed entire response as JSON")
+                return fix_data
+        except json.JSONDecodeError:
+            pass
+        
+        # If all parsing failed, log a sample of the response
+        self.logger.warning("Could not parse code fix from LLM response")
+        self.logger.warning(f"Response sample (first 500 chars): {response[:500]}")
+        return None
+    
+    def _create_fallback_fix(
+        self,
+        file_path: str,
+        file_content: str,
+        defect_id: str,
+        root_cause: str,
+        fix_recommendation: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Create a fallback fix when LLM fails to generate proper code changes.
+        This adds a TODO comment block near the top of the file as a minimal change.
+        
+        Args:
+            file_path: Path to the file
+            file_content: Current file content
+            defect_id: Defect ID
+            root_cause: Root cause description
+            fix_recommendation: Fix recommendation
+            
+        Returns:
+            Fix dictionary or None
+        """
+        try:
+            self.logger.info(f"Creating fallback fix for {file_path}")
+            
+            lines = file_content.split('\n')
+            
+            # Find a good place to insert comment (after first 5 lines or after includes)
+            insert_idx = min(5, len(lines))
+            for i in range(min(20, len(lines))):
+                line = lines[i].strip()
+                if line and not line.startswith('#') and not line.startswith('//') and not line.startswith('/*'):
+                    insert_idx = i
+                    break
+            
+            # Create TODO comment block
+            todo_lines = [
+                f"// TODO ({defect_id}): Fix needed",
+                f"// Root cause: {root_cause[:80]}",
+                f"// Recommendation: {fix_recommendation[:80]}",
+                ""
+            ]
+            
+            # Get old content (lines before insertion point)
+            old_lines = lines[:insert_idx]
+            old_content = '\n'.join(old_lines)
+            
+            # Create new content (with TODO inserted)
+            new_lines = old_lines + todo_lines
+            new_content = '\n'.join(new_lines)
+            
+            self.logger.info(f"Fallback fix: inserting TODO at line {insert_idx}")
+            
+            return {
+                "file_path": file_path,
+                "old_content": old_content,
+                "new_content": new_content,
+                "description": f"Added TODO comment for {defect_id} - LLM fix generation failed, manual review needed"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Failed to create fallback fix: {e}")
+            import traceback
+            self.logger.debug(traceback.format_exc())
+            return None
+    
+    def _generate_commit_message(
+        self, 
+        defect_id: str, 
+        root_cause: str, 
+        files_fixed: List[str]
+    ) -> str:
+        """Generate a descriptive commit message"""
+        files_list = ", ".join([os.path.basename(f) for f in files_fixed[:3]])
+        
+        return f"""fix({defect_id}): {root_cause[:60]}
+
+Root Cause: {root_cause}
+
+Files Modified:
+- {chr(10).join(['- ' + f for f in files_fixed])}
+
+Automated fix generated by RCA Agent.
+"""
+    
+    def _generate_pr_description(
+        self,
+        defect_id: str,
+        root_cause: str,
+        fix_recommendation: str,
+        fixes_applied: List[Dict[str, Any]]
+    ) -> str:
+        """Generate PR description with analysis details"""
+        files_section = "\n".join([
+            f"- `{fix['file']}`: {fix.get('description', 'Fix applied')}"
+            for fix in fixes_applied
+        ])
+        
+        return f"""## Summary
+Automated fix for defect **{defect_id}** generated by RCA Agent.
+
+## Root Cause Analysis
+{root_cause}
+
+## Fix Recommendation
+{fix_recommendation}
+
+## Changes Made
+{files_section}
+
+## Related
+- Defect: {defect_id}
+- Generated by: RCA Agent
+
+## Testing Checklist
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+- [ ] Code review completed
+
+---
+*This PR was automatically generated by the RCA Agent based on root cause analysis.*
+"""
+    
+    def analyze_and_fix(
+        self,
+        defect_id: str,
+        from_jira: bool = True,
+        upload_to_jira: bool = True,
+        create_pr: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Complete workflow: Analyze defect → Generate fix → Create PR
+        
+        This is the main entry point for end-to-end automated RCA and fix.
+        Uses the GitHub repo configured in GIT_REPO_URL for PR creation.
+        
+        Args:
+            defect_id: Defect ID (e.g., SAM1-2001)
+            from_jira: If True, fetch defect from JIRA
+            upload_to_jira: If True, upload reports to JIRA
+            create_pr: If True, create PR with fix
+            
+        Returns:
+            Complete result with analysis and PR info
+        """
+        result = {
+            "defect_id": defect_id,
+            "analysis": None,
+            "pr_result": None,
+            "success": False,
+            "errors": []
+        }
+        
+        # Step 1: Run RCA analysis
+        self.logger.info(f"Step 1: Running RCA analysis for {defect_id}...")
+        rca_result = self.analyze_defect(
+            defect_id, 
+            from_jira=from_jira, 
+            upload_to_jira=upload_to_jira
+        )
+        result["analysis"] = rca_result
+        
+        if rca_result.get("status") != "completed":
+            result["errors"].append(f"RCA analysis failed: {rca_result.get('error', 'Unknown')}")
+            return result
+        
+        # Step 2: Create PR with fix (if enabled)
+        if create_pr:
+            self.logger.info(f"Step 2: Creating PR with fix for {defect_id}...")
+            analysis_data = rca_result.get("stages", {}).get("llm_analysis", {}).get("data", {})
+            
+            pr_result = self.apply_fix_and_create_pr(
+                defect_id=defect_id,
+                analysis_result=analysis_data
+            )
+            result["pr_result"] = pr_result
+            
+            if pr_result.get("success"):
+                result["success"] = True
+                self.logger.info(f"Complete workflow finished for {defect_id}")
+                self.logger.info(f"PR URL: {pr_result.get('pr', {}).get('url', 'N/A')}")
+            else:
+                result["errors"].extend(pr_result.get("errors", []))
+                if pr_result.get("partial_success"):
+                    result["partial_success"] = True
+        else:
+            result["success"] = True
+        
+        return result

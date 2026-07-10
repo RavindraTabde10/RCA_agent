@@ -1,0 +1,531 @@
+Unnamed: 0,ticket_id,summary,description,manual_label
+0,SAM1-5001,Audio source switch latency exceeds KPI threshold,"**Problem Description:**
+When switching between audio sources (FM Radio to USB, Bluetooth to AUX, etc.), the time from source selection to audio playback exceeds the 200ms KPI requirement, typically measuring 500-800ms.
+
+**Steps to Reproduce:**
+1. Start with FM Radio playing
+2. Select USB audio source from media menu
+3. Measure time from button press to first audio output
+4. Observe delay of 500+ milliseconds
+
+**Expected Result:**
+Audio should begin playing within 200ms of source selection per STR (Source-To-Response) KPI requirement
+
+**Actual Result:**
+Audio takes 500-800ms to start, with noticeable user-perceived lag. DLT logs show AudioMixer buffer flush taking 120+ms due to oversized buffer.
+
+**Root Cause Analysis:**
+Audio buffer size constant set to 2048 samples instead of required 512 samples. During source switch, flushBuffers() must drain entire buffer before attaching new stream, resulting in 4x longer flush time.
+
+**Affected Component:** AudioMixer.cpp, line 15-17
+**Fix:** Change BUFFER_SIZE from 2048 to 512 samples",audio_system_domain
+17,SAM1-5018,Boot hangs at 67% progress indefinitely,"**Problem Description:**
+During boot sequence, progress bar reaches 67% and system hangs indefinitely. No further progress or timeout. Screen remains frozen showing boot logo and 67% progress. Requires hard power cycle to recover. Occurs on approximately 10% of boot attempts.
+
+**Frequency:** ~10% of boots
+**Hang Point:** Consistently at 67% progress
+**Timeout:** None - hangs forever
+
+**Steps to Reproduce:**
+1. Initiate system boot
+2. Observe boot progress bar
+3. Progress reaches 67% and stops
+4. Wait 5+ minutes - no further progress
+5. Requires power cycle to recover
+
+**Expected Result:**
+Boot should complete to 100% within 45 seconds or timeout and retry
+
+**Actual Result:**
+Boot hangs at 67% indefinitely. No watchdog timeout or recovery mechanism activates.
+
+**Analysis:**
+Boot progress 67% corresponds to network service initialization. Service waiting on DHCP lease acquisition from non-existent DHCP server on Ethernet interface. No timeout configured - waits forever.
+
+**Root Cause:**
+Network service initialization runs synchronously in boot sequence. DHCP client configured with infinite timeout waiting for DHCP offer. When no DHCP server present on network (vehicle not connected to diagnostic LAN), DHCP client blocks indefinitely. Boot progress halts waiting for network init to complete. Need to configure DHCP timeout (10 seconds) or make network init asynchronous to not block boot.",boot_and_system_domain
+15,SAM1-5016,Random application crashes with segmentation fault,"**Problem Description:**
+Random applications crash with segmentation fault errors. No specific application or trigger pattern. Crashes occur across different apps (Settings, Navigation, Media Player, Browser). Average 2-3 crashes per hour of operation.
+
+**Affected Apps:** Random, all applications
+**Frequency:** 2-3 per hour  
+**Pattern:** No clear pattern
+
+**Crash Reports:**
+'segfault at 0 ip 00007f8a4b2c1234 sp 00007ffc8e9d0e20 error 4 in libc.so'
+'segfault at deadbeef ip 00007f3c2a1b5678 sp 00007ffed2c40ab0 error 6 in app.so'
+
+**Common Elements:**
+- Crashes often show null pointer or invalid address
+- Stack traces vary widely
+- No single library or function common to all
+- Memory corruption indicators (deadbeef, 0xdeadbeef patterns)
+
+**Analysis:**
+Heap corruption detection enabled shows frequent corruption warnings before crashes. Random memory locations being overwritten. Suggests buffer overflow or use-after-free in common component.
+
+**Root Cause:**
+Buffer overflow in telemetry data collection service. Telemetry service running in background writes beyond allocated buffer when collecting metrics. Heap corruption propagates to other applications sharing heap space. Corrupted heap metadata causes random crashes when applications allocate/free memory. Need to add bounds checking in telemetry buffer write operations and increase buffer size from 1KB to 4KB for burst metrics.",stability_memory_domain
+1,SAM1-5002,Bluetooth HFP call drops after 10-15 minutes,"**Problem Description:**
+During hands-free phone calls via Bluetooth HFP profile, calls disconnect unexpectedly after 10-15 minutes of conversation. Audio switches to phone speaker and Bluetooth remains connected for media but not calls.
+
+**Environment:**
+- Multiple phone models affected (iPhone 13, Samsung Galaxy S21, Pixel 6)
+- Occurs in all signal strength conditions
+- Always reproducible on calls exceeding 10 minutes
+
+**Steps to Reproduce:**
+1. Pair phone via Bluetooth
+2. Initiate or receive phone call
+3. Continue hands-free conversation for 10+ minutes
+4. Observe call disconnection
+
+**Expected Result:**
+Call should remain connected via Bluetooth HFP for entire call duration
+
+**Actual Result:**
+Call disconnects at approximately 10-15 minute mark. Bluetooth connection remains for A2DP but HFP profile disconnects.
+
+**DLT Log Evidence:**
+[BLUETOOTH] HFP keep-alive timeout - no response for 600 seconds
+[BLUETOOTH] SCO audio link supervision timeout
+
+**Root Cause:**
+Bluetooth HFP keep-alive timer set to 10 minutes (600 seconds) causing connection timeout. Timer should be 30 minutes or disabled for active calls.",bluetooth_connectivity_domain
+8,SAM1-5009,Audio ducking doesn't restore playback after navigation prompt,"**Problem Description:**
+When navigation voice guidance interrupts music playback, music volume correctly ducks to 20% during announcement but fails to restore to original volume after announcement completes. Music remains at ducked 20% volume requiring manual volume adjustment.
+
+**Affected:** All audio sources (USB, BT, FM, AUX)
+**Frequency:** Always reproducible
+
+**Steps to Reproduce:**
+1. Play music at 70% volume
+2. Start navigation with active guidance  
+3. Wait for navigation announcement
+4. Observe music ducks to 20% during announcement
+5. After announcement, music stays at 20%
+
+**Expected Result:**
+Music should return to original 70% volume after navigation announcement
+
+**Actual Result:**
+Music remains at ducked 20% volume. Original volume not restored.
+
+**Log Analysis:**
+[AUDIO] AudioFocusManager: Navigation requested AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+[AUDIO] Ducking MediaPlayer volume to 20%
+[AUDIO] Navigation released audio focus
+[AUDIO] WARNING: Previous volume state not found in cache
+
+**Root Cause:**
+Audio focus manager stores previous volume state in HashMap but retrieves with wrong key type causing lookup failure. Volume restoration code fails silently and doesn't restore original volume. Key type mismatch (Integer vs String).",audio_system_domain
+5,SAM1-5006,FM Radio audio has constant background hissing noise,"**Problem Description:**
+FM Radio source exhibits constant background static/hissing noise even with strong signal strength (RSSI >60dBμV). Noise particularly noticeable during quiet passages in music. Other audio sources (USB, BT, AUX) do not have this issue.
+
+**Affected Frequency:** All FM frequencies
+**Signal Strength:** Even with strong signals
+
+**Steps to Reproduce:**
+1. Tune to local FM station with strong signal
+2. Verify signal strength indicator shows excellent
+3. Listen to audio during quiet moments
+4. Observe constant background hissing
+
+**Expected Result:**
+FM Radio audio should be clear without background noise when signal strength is good
+
+**Actual Result:**
+Constant low-level hissing/static present regardless of signal strength. SNR approximately 45dB instead of expected 60dB.
+
+**Technical Analysis:**
+Audio output shows elevated noise floor at -80dBFS instead of expected -100dBFS. Spectrum analysis shows wideband noise across all frequencies.
+
+**Root Cause:**
+RF frontend tuner amplifier has insufficient filtering for AM/FM interference rejection. Power supply noise coupling into audio path. Tuner reference oscillator phase noise too high.",audio_system_domain
+11,SAM1-5012,Boot fails with filesystem check errors after sudden power loss,"**Problem Description:**
+If vehicle battery disconnected or sudden power loss occurs during system operation, subsequent boot attempts fail with filesystem check (fsck) errors. System unable to mount root partition. Requires service mode recovery and fsck manual intervention.
+
+**Trigger:** Unclean shutdown due to power loss
+**Frequency:** 100% after unclean shutdown
+**Recovery:** Requires manual fsck in recovery mode
+
+**Error Message:**
+'fsck failed with error code 4'
+'Cannot mount /dev/mmcblk0p2 - filesystem has errors'
+'Entering emergency mode'
+
+**Steps to Reproduce:**
+1. Run system normally with active applications
+2. Disconnect battery while system running
+3. Reconnect battery and attempt boot
+4. Observe boot failure with fsck errors
+
+**Expected Result:**
+System should recover gracefully from unclean shutdown. Filesystem should auto-repair minor issues.
+
+**Actual Result:**
+Boot fails completely. Manual intervention required to run fsck and repair filesystem.
+
+**Analysis:**
+ext4 filesystem mount option missing 'errors=remount-ro' flag. Dirty journal from improper shutdown not automatically replayed. Metadata corruption due to write caching without proper barriers.
+
+**Root Cause:**
+eMMC write caching enabled without proper flush commands on shutdown. Critical filesystem metadata buffered in write cache lost on sudden power loss. Journal not properly configured for crash recovery. Need to disable write cache or ensure proper sync on shutdown path.",boot_and_system_domain
+3,SAM1-5004,Boot time exceeds 60 seconds on cold start,"**Problem Description:**
+System boot time from power-on to fully functional home screen exceeds 60 seconds on cold boot (ambient temperature < 5°C). Warm boots complete in normal 40-45 seconds. Fails KPI requirement of <45 seconds.
+
+**Temperature Dependency:**
+- Below 0°C: 75-90 seconds
+- 0-10°C: 60-70 seconds  
+- Above 10°C: 40-45 seconds (normal)
+
+**Steps to Reproduce:**
+1. Ensure vehicle parked overnight in cold environment
+2. Measure ambient temperature <5°C
+3. Power on system
+4. Measure time to home screen
+5. Observe 60+ second boot time
+
+**Expected Result:**
+Boot should complete within 45 seconds regardless of temperature
+
+**Actual Result:**
+Cold boot takes 60-90 seconds. Boot logs show eMMC initialization taking 25+ seconds at low temperature.
+
+**Root Cause Analysis:**
+eMMC storage controller using conservative timing at cold temperatures. Initialization timeout set too high (30s). Hardware training sequences not optimized for cold operation.
+
+**Proposed Fix:**
+Reduce eMMC init timeout to 10s, implement parallel initialization of non-storage-dependent services.",boot_and_system_domain
+18,SAM1-5019,Audio balance control has no effect on output,"**Problem Description:**
+Left/Right audio balance control in settings has no effect on speaker output. Moving balance slider between full left and full right produces no change in audio distribution. All speakers play at same level regardless of balance setting.
+
+**Affected:** All audio sources  
+**Control:** Balance slider (L/R)
+
+**Steps to Reproduce:**
+1. Play audio from any source
+2. Open audio settings
+3. Adjust Left/Right balance slider to full left
+4. No change in audio output - all speakers still active
+5. Move to full right - same result
+
+**Expected Result:**
+Balance left should output primarily to left speakers. Balance right should output to right speakers.
+
+**Actual Result:**
+Balance control has zero effect. Audio output identical regardless of balance position.
+
+**Code Analysis:**
+```cpp
+void AudioMixer::setBalance(float balance) {
+    mBalance = balance;  // Stored but never used!
+    // Missing: actual channel gain calculation and application
+}
+```
+
+**Root Cause:**
+Balance control value stored in member variable but never applied to audio mixer output channels. Gain multiplier calculation for left/right channels missing. Balance parameter not connected to audio routing logic. Function stores value but no code applies balance to actual audio streams. Need to implement channel gain calculation: leftGain = (1.0 - balance)/2.0, rightGain = (1.0 + balance)/2.0 and apply to respective output channels.",audio_system_domain
+16,SAM1-5017,Bluetooth connection drops when engine started,"**Problem Description:**
+Bluetooth phone connection disconnects immediately when engine is started, then automatically reconnects after 3-5 seconds. Interrupts active phone calls and music playback. User experience is poor with repeated daily occurrence.
+
+**Trigger:** Engine start event  
+**Frequency:** 100% reproducible
+**Recovery:** Auto-reconnects after 3-5s
+
+**Steps to Reproduce:**
+1. Pair phone and establish Bluetooth connection
+2. Play music or make phone call
+3. Start vehicle engine
+4. Observe immediate Bluetooth disconnect
+5. Connection restores after few seconds
+
+**Expected Result:**
+Bluetooth connection should remain stable during engine start
+
+**Actual Result:**
+Connection drops for 3-5 seconds then recovers. Interrupts calls and music.
+
+**Electrical Analysis:**
+Voltage drop during engine crank: 11.2V (from 12.8V)
+Bluetooth module minimum voltage: 11.5V
+Bluetooth module resets during voltage drop
+
+**Root Cause:**
+Engine starter motor creates electrical noise and voltage sag on 12V bus. Bluetooth RF module lacks adequate power supply filtering and brown-out protection. Voltage drops below Bluetooth controller minimum operating voltage causing module reset. Need to add 1000μF capacitor on Bluetooth module power rail and improve DC-DC converter regulation to maintain voltage during crank.",bluetooth_connectivity_domain
+13,SAM1-5014,Out of memory error during cold boot,"**Problem Description:**
+On cold boot (first start after extended power-off), system fails to complete boot sequence displaying out-of-memory error. Memory allocation failure occurs during service initialization. Warm reboots succeed normally.
+
+**Frequency:** ~30% of cold boots
+**Temperature:** More common below 10°C
+
+**Error Message:**
+'systemd: Failed to fork: Cannot allocate memory'
+'kernel: Out of memory: Kill process systemd-journal (PID 142)'
+
+**Steps to Reproduce:**
+1. Disconnect battery for 1+ hour (full power-down)
+2. Reconnect and initiate cold boot  
+3. Monitor boot sequence
+4. Observe OOM error during service startup
+5. Boot fails to complete
+
+**Expected Result:**
+System should boot successfully with available 4GB RAM
+
+**Actual Result:**
+OOM killer activates during boot killing critical services like journald. Boot fails.
+
+**Analysis:**
+- Total RAM: 4GB
+- Kernel reserved: 512MB
+- Boot service allocation: 3.8GB (exceeds available!)
+- Available for userspace: ~200MB (insufficient)
+
+**Root Cause:**
+Boot services allocating excessive heap memory during initialization without releasing after use. Several services allocate large buffers (256MB+) simultaneously during parallel init. Peak memory usage during boot (3.8GB) exceeds available RAM (3.5GB after kernel reservation). Services not releasing initialization buffers, expecting to reuse them. Need to implement lazy allocation and release unused memory after init.",stability_memory_domain
+2,SAM1-5003,System freeze and yellow screen after STR cycle,"**Problem Description:**
+After Suspend-to-RAM (STR) sleep/wake cycle, system displays yellow error screen and becomes completely unresponsive. System enters continuous reboot loop requiring battery disconnect to recover.
+
+**Frequency:** Occurs approximately 15% of STR cycles
+**Severity:** Critical - requires service intervention
+
+**Preconditions:**
+- System running for 2+ hours before STR
+- Multiple applications open (Navigation, Media, Climate)
+- STR triggered by ignition off
+
+**Steps to Reproduce:**
+1. Run system with nav and media active for 2+ hours
+2. Turn ignition off to trigger STR
+3. Wait 5 minutes
+4. Turn ignition on to wake from STR
+5. Observe yellow screen and reboot loop
+
+**Expected Result:**
+System should resume normally within 3-5 seconds of wake
+
+**Actual Result:**
+Yellow error screen displayed, followed by automatic reboot. Cycle repeats indefinitely.
+
+**Log Analysis:**
+CoreManager service crashes during resume. Memory corruption detected in shared memory segment. Indicates use-after-free bug in power management.
+
+**Root Cause:**
+Race condition during STR resume. Power management service accesses deallocated memory from suspended processes before proper reinitialization.",stability_memory_domain
+9,SAM1-5010,Gradual system performance degradation over 24+ hours,"**Problem Description:**
+System exhibits progressive performance degradation over extended uptime. After 24+ hours of continuous operation, UI becomes sluggish, touch response delays increase, animations stutter, and application launch times increase from 2s to 10+s.
+
+**Symptoms:**
+- Hour 0-8: Normal performance  
+- Hour 8-16: Slight slowdown noticeable
+- Hour 16-24: Significant lag in UI
+- Hour 24+: Nearly unusable, 5-10s delays
+
+**Steps to Reproduce:**
+1. Leave system running continuously for 24+ hours
+2. Periodically test UI responsiveness
+3. Monitor touch-to-response latency
+4. Observe progressive degradation
+
+**Expected Result:**
+System performance should remain consistent regardless of uptime
+
+**Actual Result:**
+Performance degrades significantly over time. Reboot temporarily fixes issue.
+
+**Analysis:**
+- Memory usage increases from 2GB to 6GB over 24 hours
+- CPU usage increases from 15% to 60% idle
+- Graphics memory consumption grows continuously
+- Disk I/O increasing over time
+
+**Root Cause:**
+Multiple memory leaks in graphics rendering pipeline. Wayland compositor surface buffers not destroyed when applications close. Texture buffers accumulating in GPU memory. Database query result sets not being freed. Log files growing without rotation consuming I/O bandwidth.",stability_memory_domain
+19,SAM1-5020,System memory leak in background services,"**Problem Description:**
+Background system services exhibit continuous memory leak. System memory consumption increases approximately 100MB per hour. After 10-12 hours, available memory depleted and system becomes unstable. Applications killed by OOM killer.
+
+**Leak Rate:** ~100MB/hour
+**Impact:** System unstable after 10-12 hours
+
+**Memory Growth:**
+- Hour 0: 1.5GB used, 2.5GB free
+- Hour 6: 2.1GB used, 1.9GB free  
+- Hour 12: 2.7GB used, 1.3GB free
+- Hour 18: 3.5GB used, 0.5GB free (OOM killer active)
+
+**Steps to Reproduce:**
+1. Boot system and note initial memory usage
+2. Leave system idle (no user applications)
+3. Monitor memory every hour
+4. Observe continuous increase even with no user activity
+
+**Expected Result:**
+Background service memory should remain stable
+
+**Actual Result:**
+Memory continuously leaking even with zero user activity. Only background services running.
+
+**Analysis:**
+Valgrind memory leak detection shows leaks in:
+- ClimateControlService: 25MB/hour
+- LocationService: 35MB/hour  
+- TelemetryService: 20MB/hour
+- ConnectivityManager: 15MB/hour
+
+**Root Cause:**
+Multiple background services not releasing allocated memory. ClimateControlService: sensor data buffers allocated on each poll but never freed. LocationService: GPS coordinate history unbounded vector. TelemetryService: metric samples accumulated in memory never flushed to disk. ConnectivityManager: network event objects created but never deleted. Each service leaking due to different specific bugs but cumulative effect causes system instability.",stability_memory_domain
+4,SAM1-5005,Memory leak in navigation service during route calculation,"**Problem Description:**
+Navigation background service exhibits continuous memory leak during active route guidance. Memory consumption increases by approximately 15MB per hour. After 4-6 hours, system performance degrades significantly, and applications crash with OOM errors.
+
+**Environment:**
+- Occurs on all navigation routes
+- More severe on longer routes (>200km)
+- Memory never released even after navigation stopped
+
+**Steps to Reproduce:**
+1. Start navigation with long route (300+ km)
+2. Monitor system memory usage
+3. Observe steady memory increase over time
+4. After 4-6 hours, system becomes sluggish
+5. Applications crash with out-of-memory errors
+
+**Expected Result:**
+Memory usage should remain stable during navigation
+
+**Actual Result:**
+Memory usage increases 15MB/hour continuously. Memory not released after navigation ends.
+
+**Analysis:**
+- Route history waypoints accumulating in memory
+- Turn-by-turn instruction objects not freed
+- Map tile cache not implementing LRU eviction
+
+**Root Cause:**
+NavigationService maintains unbounded history log in memory. Route waypoints and maneuver instructions added to vector but never removed or moved to persistent storage. Vector grows indefinitely causing heap exhaustion.",stability_memory_domain
+12,SAM1-5013,Microphone echo during Bluetooth hands-free calls,"**Problem Description:**
+During Bluetooth hands-free calls, remote caller reports hearing their own voice echo with 300-500ms delay. Echo particularly noticeable in quiet environments. Makes phone conversations difficult and unprofessional.
+
+**Reported By:** Call recipients, not vehicle user
+**Environment:** All cabin configurations
+
+**Steps to Reproduce:**
+1. Connect phone via Bluetooth HFP
+2. Make phone call using hands-free
+3. Caller reports hearing echo of their voice
+4. Echo delay approximately 300-500ms
+
+**Expected Result:**
+Caller should not hear any echo. Clean two-way conversation.
+
+**Actual Result:**
+Caller hears echo of their own voice making conversation difficult. Echo cancellation not working.
+
+**Technical Details:**
+Microphone picks up speaker output even at moderate volume. Acoustic echo cancellation (AEC) algorithm not properly tuned for vehicle cabin acoustics. Echo return loss only 10dB instead of required 40dB+.
+
+**Root Cause:**
+Acoustic Echo Cancellation (AEC) algorithm using default generic parameters not tuned for vehicle cabin environment. AEC filter tap length too short (128 taps) for 300-500ms echo delay path. Requires 512+ taps for vehicle acoustics. Speaker-to-microphone coupling not compensated. Need cabin-specific AEC calibration and longer filter length.",audio_system_domain
+7,SAM1-5008,Kernel panic during boot on 1-in-20 startups,"**Problem Description:**
+System experiences random kernel panics during boot sequence occurring approximately 1 in every 20 boot attempts. When panic occurs, boot process halts requiring power cycle. No specific pattern or trigger identified.
+
+**Frequency:** ~5% of boots
+**Reproducibility:** Random, not consistently reproducible
+
+**Symptoms:**
+- Boot progress stops at various points
+- Screen may freeze or go black
+- Kernel panic message in serial console
+- Requires hard reboot to recover
+
+**Kernel Panic Message:**
+'Unable to handle kernel NULL pointer dereference at virtual address 00000000'
+'PC is at can_driver_init+0x48/0x120'
+
+**Analysis:**
+Stack trace indicates crash in CAN bus driver initialization. Appears to be race condition where driver attempts to access hardware before clock/power initialization complete.
+
+**Root Cause:**
+CAN bus driver module initialization has race condition with platform device tree parsing. Driver probe function called before device fully initialized. Null pointer dereference when accessing device resources that aren't ready yet.
+
+**Fix Required:**
+Add proper device ready checks in CAN driver probe function before accessing hardware resources. Implement timeout and retry logic.",boot_and_system_domain
+10,SAM1-5011,Bluetooth audio has 500ms lip-sync delay with video,"**Problem Description:**
+When streaming video from phone to vehicle display with audio via Bluetooth A2DP, audio lags video by approximately 500ms creating noticeable lip-sync mismatch. Makes video watching unpleasant.
+
+**Use Case:** YouTube, Netflix, video streaming from phone
+**A/V Sync Error:** 400-600ms audio delay
+
+**Steps to Reproduce:**
+1. Connect phone via Bluetooth
+2. Cast video to vehicle display via wireless protocol  
+3. Audio routes through Bluetooth A2DP
+4. Observe audio lagging behind video
+
+**Expected Result:**
+Audio and video should be synchronized within 50ms
+
+**Actual Result:**
+Audio consistently lags video by ~500ms. Lip movements don't match speech.
+
+**Technical Details:**
+- Video latency: ~50ms
+- Bluetooth A2DP latency: ~200ms
+- Additional processing delay: ~250ms
+- Total A/V skew: ~500ms
+
+**Root Cause:**
+No A/V synchronization mechanism between different protocols. Video stream delivered via WiFi Miracast with 50ms latency. Audio delivered via Bluetooth A2DP with 200ms inherent latency plus audio processing adds 250ms. System doesn't delay video to match audio latency. Need to implement PTS (Presentation Time Stamp) based sync.",bluetooth_connectivity_domain
+14,SAM1-5015,USB audio playback has intermittent stuttering,"**Problem Description:**
+When playing audio from USB mass storage device, playback has intermittent stuttering and brief dropouts occurring every 30-60 seconds. Particularly noticeable during track changes and when browsing file system while playing.
+
+**Frequency:** Every 30-60 seconds
+**Duration:** 100-300ms dropout
+
+**Steps to Reproduce:**
+1. Connect USB drive with MP3/FLAC files
+2. Begin audio playback
+3. Observe periodic audio stuttering
+4. Browse USB folders during playback (increases frequency)
+
+**Expected Result:**
+Continuous smooth audio playback without interruptions
+
+**Actual Result:**
+Periodic audio dropouts and stuttering. More frequent during file system access.
+
+**Log Evidence:**
+[AUDIO] AudioPlayer: Buffer underrun detected - 0 frames available
+[USB] MassStorage: Read latency spike 250ms  
+[AUDIO] AudioPlayer: Recovering from underrun
+
+**Root Cause:**
+Audio buffer management issue. USB file system reads block audio playback thread causing buffer underruns. Audio decoder thread priority lower than USB I/O thread. When USB FS performs directory scan or metadata reads, audio thread starved. Need to increase audio buffer size from current 1024 samples to 4096 samples and raise audio thread priority above USB I/O thread.",audio_system_domain
+6,SAM1-5007,Bluetooth device pairing requires multiple attempts,"**Problem Description:**
+New Bluetooth device pairing process fails on first 3-4 attempts with authentication timeout error. Eventually succeeds after multiple retries. Affects both iOS and Android devices.
+
+**Failure Rate:** ~80% on first attempt
+**Success Rate:** Usually succeeds by 4th attempt
+
+**Steps to Reproduce:**
+1. Enter Bluetooth pairing mode
+2. Initiate pairing from phone
+3. Observe pairing request on vehicle screen
+4. Confirm pairing
+5. First attempt fails with timeout
+6. Retry multiple times until success
+
+**Expected Result:**
+Pairing should succeed on first attempt within 10 seconds
+
+**Actual Result:**
+First 2-3 pairing attempts fail with authentication timeout. 4th or 5th attempt usually succeeds.
+
+**Log Evidence:**
+[BT] Pairing request received
+[BT] Waiting for PIN confirmation
+[BT] PIN confirmation timeout after 8 seconds
+[BT] Pairing failed - authentication timeout
+
+**Root Cause:**
+Bluetooth PIN code exchange timing window set to 8 seconds. Modern smartphones may take 10-12 seconds to display confirmation dialog to user. Window should be extended to 30 seconds to accommodate slower phones.",bluetooth_connectivity_domain
