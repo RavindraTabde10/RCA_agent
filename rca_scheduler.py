@@ -85,6 +85,7 @@ class RCAScheduler:
         'remove_trigger_label': True,                                   # Remove trigger label after RCA
         'upload_to_jira': True,                                         # Upload reports to JIRA
         'mark_duplicates': True,                                        # Link duplicate tickets
+        'auto_create_pr': True,                                         # Automatically create GitHub PR with fix
     }
     
     def __init__(self, config_path: str = "config/config.yaml", dry_run: bool = False, enable_dashboard: bool = False, dashboard_port: int = 5050):
@@ -121,6 +122,7 @@ class RCAScheduler:
         
         logger.info(f"RCA Scheduler initialized (dry_run={dry_run})")
         logger.info(f"Trigger labels: {self.scheduler_config['trigger_labels']}")
+        logger.info(f"Auto-create PR: {self.scheduler_config.get('auto_create_pr', False)}")
     
     def _init_services(self):
         """Initialize all required services"""
@@ -472,18 +474,50 @@ class RCAScheduler:
                 )
             
             # ========================================
-            # STEP 4: Run RCA analysis
+            # STEP 4: Run RCA analysis (with optional PR creation)
             # ========================================
-            rca_result = self.rca_engine.analyze_defect(
-                defect_id=issue_key,
-                from_jira=True,  # Fetch fresh data from JIRA
-                upload_to_jira=self.scheduler_config['upload_to_jira'] and not self.dry_run,
-                mark_duplicates=self.scheduler_config['mark_duplicates']
-            )
+            auto_create_pr = self.scheduler_config.get('auto_create_pr', False)
             
-            result['rca_result'] = rca_result
-            result['root_cause'] = rca_result.get('root_cause', 'Unknown')
-            result['confidence'] = rca_result.get('confidence', 0)
+            if auto_create_pr:
+                # Use analyze_and_fix for complete workflow (analysis + PR)
+                logger.info(f"   Running analysis with automatic PR creation...")
+                workflow_result = self.rca_engine.analyze_and_fix(
+                    defect_id=issue_key,
+                    from_jira=True,  # Fetch fresh data from JIRA
+                    upload_to_jira=self.scheduler_config['upload_to_jira'] and not self.dry_run,
+                    create_pr=True
+                )
+                
+                # Extract analysis result
+                rca_result = workflow_result.get('analysis', {})
+                result['rca_result'] = rca_result
+                result['root_cause'] = rca_result.get('root_cause', 'Unknown')
+                result['confidence'] = rca_result.get('confidence', 0)
+                
+                # Store PR result
+                pr_result = workflow_result.get('pr_result')
+                if pr_result:
+                    result['pr_result'] = pr_result
+                    if pr_result.get('success'):
+                        pr_info = pr_result.get('pr', {})
+                        result['pr_number'] = pr_info.get('number')
+                        result['pr_url'] = pr_info.get('url')
+                        logger.info(f"   ✓ GitHub PR created: {result['pr_url']}")
+                    else:
+                        logger.warning(f"   PR creation check: {pr_result.get('errors', [])}")
+            else:
+                # Standard analysis only (no PR creation)
+                logger.info(f"   Running standard RCA analysis...")
+                rca_result = self.rca_engine.analyze_defect(
+                    defect_id=issue_key,
+                    from_jira=True,  # Fetch fresh data from JIRA
+                    upload_to_jira=self.scheduler_config['upload_to_jira'] and not self.dry_run,
+                    mark_duplicates=self.scheduler_config['mark_duplicates']
+                )
+                
+                result['rca_result'] = rca_result
+                result['root_cause'] = rca_result.get('root_cause', 'Unknown')
+                result['confidence'] = rca_result.get('confidence', 0)
             
             # Check for duplicates
             duplicate_info = rca_result.get('duplicate_info', {})
@@ -518,6 +552,11 @@ class RCAScheduler:
                 logger.info(f"✅ RCA completed for {issue_key}")
                 logger.info(f"   Root Cause: {result['root_cause'][:100]}...")
                 logger.info(f"   Confidence: {result['confidence']:.0%}")
+                
+                # Log PR info if created
+                if result.get('pr_url'):
+                    logger.info(f"   GitHub PR: {result['pr_url']}")
+                    logger.info(f"   PR Number: #{result.get('pr_number', 'N/A')}")
             else:
                 result['status'] = 'failed'
                 result['error'] = rca_result.get('error', 'Unknown error')

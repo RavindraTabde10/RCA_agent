@@ -86,7 +86,7 @@ class DomainClassifier:
     def _load_model(self) -> bool:
         """Load the trained model from disk."""
         if not self.model_file.exists():
-            self.logger.debug(f"Domain classifier model not found at {self.model_file}")
+            self.logger.debug(f"Domain classifier model  {self.model_file}")
             return False
         
         try:

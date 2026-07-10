@@ -255,10 +255,31 @@ class RCAEngine:
                 # Track response tokens
                 self._track_tokens(defect_id, "llm_analysis", 0, estimated_output_tokens)
                 
-                return self._parse_llm_response(response)
+                # Parse LLM response
+                analysis_result = self._parse_llm_response(response)
+                
+                # Fallback: if no affected files found, use LLM-based discovery from source_repo
+                if not analysis_result.get("affected_files"):
+                    self.logger.warning("No affected files in LLM response, trying LLM-based file discovery")
+                    llm_discovered_files = self._discover_affected_files_with_llm(
+                        defect_data, 
+                        dlt_analysis, 
+                        analysis_result.get("root_cause", "")
+                    )
+                    
+                    if llm_discovered_files:
+                        analysis_result["affected_files"] = llm_discovered_files
+                        self.logger.info(f"LLM discovered {len(llm_discovered_files)} files from source_repo: {llm_discovered_files}")
+                    else:
+                        # Final fallback: use source_mapping
+                        self.logger.warning("LLM discovery returned no files, using source_mapping as final fallback")
+                        analysis_result["affected_files"] = self._extract_files_from_source_mapping(source_mapping)
+                        self.logger.info(f"Extracted {len(analysis_result['affected_files'])} files from source_mapping")
+                
+                return analysis_result
             except Exception as e:
                 self.logger.error(f"LLM analysis failed: {e}")
-                return self._generate_mock_analysis(defect_data, dlt_analysis)
+                return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
         else:
             # Return mock analysis when LLM not configured
             self.logger.warning("LLM client not configured, using mock analysis")
@@ -266,7 +287,7 @@ class RCAEngine:
             # Track simulated tokens for mock analysis
             self._track_tokens(defect_id, "llm_analysis", estimated_input_tokens, 500)
             
-            return self._generate_mock_analysis(defect_data, dlt_analysis)
+            return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
 
     # ==========================================
     # DOMAIN KNOWLEDGE METHODS
@@ -862,11 +883,11 @@ class RCAEngine:
                 return self._parse_llm_response(response)
             except Exception as e:
                 self.logger.error(f"LLM analysis failed: {e}")
-                return self._generate_mock_analysis(defect_data, dlt_analysis)
+                return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
         else:
             # Return mock analysis when LLM not configured
             self.logger.warning("LLM client not configured, using mock analysis")
-            return self._generate_mock_analysis(defect_data, dlt_analysis)
+            return self._generate_mock_analysis(defect_data, dlt_analysis, source_mapping)
     
     def _build_analysis_prompt(
         self,
@@ -989,6 +1010,8 @@ Consider thread safety, resource management, and timing issues common in automot
     
     def _parse_llm_response(self, response: str) -> Dict[str, Any]:
         """Parse LLM response into structured format"""
+        import re
+        
         result = {
             "raw_response": response,
             "root_cause": "",
@@ -1010,7 +1033,7 @@ Consider thread safety, resource management, and timing issues common in automot
                 current_section = 'root_cause'
             elif 'evidence' in line_lower:
                 current_section = 'evidence'
-            elif 'affected' in line_lower and ('code' in line_lower or 'file' in line_lower):
+            elif 'affected' in line_lower and ('code' in line_lower or 'file' in line_lower or 'source' in line_lower):
                 current_section = 'affected_files'
             elif 'fix' in line_lower or 'recommendation' in line_lower:
                 current_section = 'fix'
@@ -1024,12 +1047,17 @@ Consider thread safety, resource management, and timing issues common in automot
                 elif current_section == 'evidence':
                     result["evidence"].append(line.strip())
                 elif current_section == 'affected_files':
-                    result["affected_files"].append(line.strip())
+                    # Clean up file names: remove bullets, numbers, extra text
+                    cleaned_line = self._extract_file_name(line.strip())
+                    if cleaned_line:
+                        self.logger.debug(f"Extracted file from LLM response: '{cleaned_line}' from line: '{line.strip()}'")
+                        result["affected_files"].append(cleaned_line)
+                    else:
+                        self.logger.debug(f"Skipped invalid file in LLM response: '{line.strip()}'")
                 elif current_section == 'fix':
                     result["fix_recommendation"] += line.strip() + " "
                 elif current_section == 'confidence':
                     # Extract percentage
-                    import re
                     match = re.search(r'(\d+)%?', line)
                     if match:
                         result["confidence"] = int(match.group(1)) / 100
@@ -1039,21 +1067,409 @@ Consider thread safety, resource management, and timing issues common in automot
         result["root_cause"] = result["root_cause"].strip()
         result["fix_recommendation"] = result["fix_recommendation"].strip()
         
+        # Log parsing results
+        self.logger.info(f"LLM response parsed: {len(result['affected_files'])} files extracted")
+        if result["affected_files"]:
+            self.logger.info(f"Affected files from LLM: {result['affected_files']}")
+        
         return result
+    
+    def _extract_file_name(self, line: str) -> str:
+        """Extract clean file name from a line of text"""
+        import re
+        
+        # Remove common prefixes (bullets, numbers, dashes)
+        line = re.sub(r'^[-*•\d.)\]]+\s*', '', line)
+        
+        # Look for file patterns with extensions (e.g., path/to/file.cpp, AudioMixer.cpp)
+        # Match patterns like: src/audio/AudioMixer.cpp or AudioMixer.cpp
+        # Common extensions: cpp, h, hpp, c, py, java, js, ts, etc.
+        file_pattern = r'([a-zA-Z0-9_/\\]+\.[a-zA-Z]{1,4})'
+        match = re.search(file_pattern, line)
+        if match:
+            extracted = match.group(1)
+            # Validate it's a real file path (not just "e.g")
+            if self._is_valid_file_path(extracted):
+                return extracted
+        
+        # If no file extension found, try to extract path-like strings with directories
+        # Match patterns like: src/audio/AudioMixer (must have at least one slash)
+        path_pattern = r'([a-zA-Z0-9_]+(?:/[a-zA-Z0-9_]+)+)'
+        match = re.search(path_pattern, line)
+        if match:
+            extracted = match.group(1)
+            if self._is_valid_file_path(extracted):
+                return extracted
+        
+        # No valid file path found
+        return ""
+    
+    def _is_valid_file_path(self, path: str) -> str:
+        """Validate if a string looks like a valid file path"""
+        if not path or len(path) < 3:
+            return False
+        
+        # Reject common false positives
+        invalid_patterns = [
+            'e.g', 'i.e', 'etc', 'Fig', 'Table', 'Media', 'Audio', 'System',
+            'which', 'need', 'should', 'must', 'may', 'the', 'this', 'that',
+            'file', 'code', 'source', 'example'
+        ]
+        
+        # Check if it's just a single word (invalid unless it has extension)
+        path_lower = path.lower()
+        if path_lower in [p.lower() for p in invalid_patterns]:
+            return False
+        
+        # Valid paths should either:
+        # 1. Have a file extension AND alphanumeric name before the dot
+        # 2. Have at least one directory separator (/ or \)
+        has_extension = '.' in path and len(path.split('.')[-1]) <= 4
+        has_directory = '/' in path or '\\' in path
+        
+        if has_extension:
+            # Check that there's a reasonable filename before the extension
+            name_part = path.split('.')[-2].split('/')[-1].split('\\')[-1]
+            # Must be at least 2 chars and start with letter or digit
+            if len(name_part) >= 2 and name_part[0].isalnum():
+                return True
+        
+        if has_directory:
+            # Path with directories - should have reasonable components
+            parts = path.replace('\\', '/').split('/')
+            # All parts should be valid identifiers (letters, numbers, underscores)
+            if all(len(p) >= 1 and p[0].isalnum() for p in parts if p):
+                return True
+        
+        return False
+    
+    # ==========================================
+    # LLM-BASED FILE DISCOVERY FROM SOURCE_REPO
+    # ==========================================
+    # These methods use LLM to intelligently discover affected files
+    # by scanning the actual source_repo directory and analyzing which
+    # files are most likely related to the defect based on:
+    # - Defect summary and description
+    # - DLT error messages and components
+    # - Root cause analysis
+    # - Available source file structure
+    
+    def _scan_source_repo(self, max_files: int = 100) -> Dict[str, List[str]]:
+        """
+        Scan the source_repo directory and return file structure
+        
+        Args:
+            max_files: Maximum number of files to return per directory
+            
+        Returns:
+            Dictionary mapping directories to list of files
+        """
+        # Try multiple possible paths for source_repo
+        possible_paths = [
+            os.path.join(self.base_path, 'data', 'source_repo'),
+            os.path.join('data', 'source_repo'),
+            'data/source_repo',
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'source_repo'))
+        ]
+        
+        source_repo_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                source_repo_path = path
+                self.logger.info(f"Found source_repo at: {source_repo_path}")
+                break
+        
+        if not source_repo_path:
+            self.logger.warning(f"Source repo not found. Tried: {possible_paths}")
+            return {}
+        
+        file_structure = {}
+        file_count = 0
+        
+        # Scan each subdirectory
+        for root, dirs, files in os.walk(source_repo_path):
+            # Skip hidden directories and .git
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            
+            # Get relative path from source_repo
+            rel_path = os.path.relpath(root, source_repo_path)
+            if rel_path == '.':
+                continue  # Skip root level
+            
+            # Filter for source code files
+            source_files = [
+                f for f in files 
+                if f.endswith(('.cpp', '.h', '.hpp', '.c', '.py', '.java', '.js', '.ts'))
+                and not f.startswith('.')
+            ]
+            
+            if source_files:
+                # Normalize path separators
+                dir_key = rel_path.replace('\\', '/')
+                file_structure[dir_key] = source_files[:max_files]
+                file_count += len(file_structure[dir_key])
+        
+        self.logger.info(f"Scanned source_repo: {len(file_structure)} directories, {file_count} source files")
+        return file_structure
+    
+    def _discover_affected_files_with_llm(
+        self,
+        defect_data: Dict[str, Any],
+        dlt_analysis: Dict[str, Any],
+        root_cause: str
+    ) -> List[str]:
+        """
+        Use LLM to discover affected files from source_repo directory
+        
+        Args:
+            defect_data: Defect information
+            dlt_analysis: DLT analysis results
+            root_cause: Identified root cause
+            
+        Returns:
+            List of file paths (e.g., ["audio/AudioMixer.cpp", "common/Buffer.cpp"])
+        """
+        if not self.llm_client:
+            self.logger.warning("LLM client not available for file discovery")
+            return []
+        
+        # Scan source repo to get available files
+        file_structure = self._scan_source_repo()
+        
+        if not file_structure:
+            self.logger.warning("No files found in source_repo directory")
+            return []
+        
+        # Build prompt for LLM
+        prompt = self._build_file_discovery_prompt(defect_data, dlt_analysis, root_cause, file_structure)
+        
+        try:
+            # Ask LLM to identify affected files
+            response = self.llm_client.analyze_text(
+                prompt=prompt,
+                system_message="You are an expert at analyzing automotive infotainment software defects and identifying which source code files are likely affected. Return ONLY a JSON list of file paths, nothing else."
+            )
+            
+            # Parse the response
+            affected_files = self._parse_file_discovery_response(response, file_structure)
+            
+            self.logger.info(f"LLM file discovery found {len(affected_files)} files")
+            return affected_files
+            
+        except Exception as e:
+            self.logger.error(f"LLM file discovery failed: {e}")
+            return []
+    
+    def _build_file_discovery_prompt(
+        self,
+        defect_data: Dict[str, Any],
+        dlt_analysis: Dict[str, Any],
+        root_cause: str,
+        file_structure: Dict[str, List[str]]
+    ) -> str:
+        """Build prompt for LLM file discovery"""
+        
+        prompt_parts = []
+        
+        prompt_parts.append("# TASK: Identify Affected Source Files")
+        prompt_parts.append("")
+        prompt_parts.append("Based on the defect information below, identify which source code files are most likely affected.")
+        prompt_parts.append("")
+        
+        # Defect Info
+        prompt_parts.append("## DEFECT INFORMATION")
+        prompt_parts.append(f"**ID**: {defect_data.get('key', 'Unknown')}")
+        prompt_parts.append(f"**Summary**: {defect_data.get('summary', 'N/A')}")
+        prompt_parts.append(f"**Component**: {defect_data.get('component', 'Unknown')}")
+        if root_cause:
+            prompt_parts.append(f"**Root Cause**: {root_cause}")
+        prompt_parts.append("")
+        
+        # DLT Errors
+        if dlt_analysis.get('errors'):
+            prompt_parts.append("## DLT ERRORS")
+            for error in dlt_analysis['errors'][:5]:
+                prompt_parts.append(f"- {error}")
+            prompt_parts.append("")
+        
+        # Components from DLT
+        if dlt_analysis.get('components'):
+            prompt_parts.append(f"**DLT Components**: {', '.join(dlt_analysis['components'])}")
+            prompt_parts.append("")
+        
+        # Available Files
+        prompt_parts.append("## AVAILABLE SOURCE FILES")
+        prompt_parts.append("")
+        for directory, files in sorted(file_structure.items()):
+            prompt_parts.append(f"### Directory: {directory}/")
+            for file in files[:20]:  # Limit files per directory
+                prompt_parts.append(f"  - {directory}/{file}")
+            if len(files) > 20:
+                prompt_parts.append(f"  ... and {len(files) - 20} more files")
+            prompt_parts.append("")
+        
+        # Instructions
+        prompt_parts.append("## INSTRUCTIONS")
+        prompt_parts.append("")
+        prompt_parts.append("Analyze the defect and identify the 3-5 most likely affected files.")
+        prompt_parts.append("Consider:")
+        prompt_parts.append("- Component names from DLT logs")
+        prompt_parts.append("- Error messages and patterns")
+        prompt_parts.append("- File names that match the defect domain")
+        prompt_parts.append("")
+        prompt_parts.append("Return ONLY a JSON array of file paths (relative to source_repo):")
+        prompt_parts.append('["directory/file1.cpp", "directory/file2.h"]')
+        prompt_parts.append("")
+        prompt_parts.append("Do NOT include explanations, just the JSON array.")
+        
+        return "\n".join(prompt_parts)
+    
+    def _parse_file_discovery_response(
+        self, 
+        response: str, 
+        file_structure: Dict[str, List[str]]
+    ) -> List[str]:
+        """Parse LLM response for file discovery"""
+        import json
+        
+        affected_files = []
+        
+        try:
+            # Try to parse as JSON
+            response_clean = response.strip()
+            
+            # Remove markdown code blocks if present
+            if response_clean.startswith('```'):
+                lines = response_clean.split('\n')
+                # Remove first and last line (```)
+                response_clean = '\n'.join(lines[1:-1])
+                # Remove language identifier if present
+                if response_clean.startswith('json'):
+                    response_clean = response_clean[4:].strip()
+            
+            # Parse JSON
+            files_list = json.loads(response_clean)
+            
+            if isinstance(files_list, list):
+                # Validate each file exists in file_structure
+                for file_path in files_list:
+                    if isinstance(file_path, str):
+                        # Normalize path
+                        normalized = file_path.replace('\\', '/')
+                        
+                        # Check if file exists in our scanned structure
+                        parts = normalized.split('/')
+                        if len(parts) >= 2:
+                            directory = '/'.join(parts[:-1])
+                            filename = parts[-1]
+                            
+                            if directory in file_structure and filename in file_structure[directory]:
+                                affected_files.append(normalized)
+                                self.logger.info(f"Validated file from LLM: {normalized}")
+                            else:
+                                # Try to find in any directory
+                                for dir_key, files in file_structure.items():
+                                    if filename in files:
+                                        corrected_path = f"{dir_key}/{filename}"
+                                        affected_files.append(corrected_path)
+                                        self.logger.info(f"Corrected path: {normalized} -> {corrected_path}")
+                                        break
+                
+        except json.JSONDecodeError as e:
+            self.logger.warning(f"Failed to parse LLM response as JSON: {e}")
+            # Try to extract file paths using regex as fallback
+            affected_files = self._extract_files_from_text(response, file_structure)
+        
+        return affected_files[:5]  # Limit to top 5
+    
+    def _read_file_directly(self, file_path: str) -> Optional[str]:
+        """
+        Directly read file from source_repo as fallback
+        
+        Args:
+            file_path: Relative path like "audio/AudioMixer.cpp"
+            
+        Returns:
+            File content or None
+        """
+        # Try multiple possible paths
+        possible_paths = [
+            os.path.join(self.base_path, 'data', 'source_repo', file_path),
+            os.path.join('data', 'source_repo', file_path),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'source_repo', file_path))
+        ]
+        
+        for full_path in possible_paths:
+            if os.path.exists(full_path):
+                try:
+                    self.logger.debug(f"Reading from: {full_path}")
+                    with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                    self.logger.info(f"Successfully read {len(content)} bytes from {full_path}")
+                    return content
+                except Exception as e:
+                    self.logger.error(f"Error reading {full_path}: {e}")
+        
+        self.logger.warning(f"File not found in any location: {file_path}")
+        return None
+    
+    def _extract_files_from_text(self, text: str, file_structure: Dict[str, List[str]]) -> List[str]:
+        """Extract file paths from text when JSON parsing fails"""
+        import re
+        
+        files = []
+        
+        # Look for file patterns
+        for directory, filenames in file_structure.items():
+            for filename in filenames:
+                pattern = f"{directory}/{filename}"
+                if pattern in text or filename in text:
+                    files.append(f"{directory}/{filename}")
+                    if len(files) >= 5:
+                        return files
+        
+        return files
+    
+    def _extract_files_from_source_mapping(self, source_mapping: Dict[str, Any]) -> List[str]:
+        """Extract file names from source mapping data as fallback"""
+        files = []
+        
+        if not source_mapping:
+            self.logger.warning("_extract_files_from_source_mapping: source_mapping is None or empty")
+            return files
+        
+        mapped_files = source_mapping.get("mapped_files", [])
+        self.logger.info(f"_extract_files_from_source_mapping: source_mapping has {len(mapped_files)} mapped_files")
+        
+        if mapped_files:
+            for file_info in mapped_files[:5]:  # Limit to top 5 files
+                file_name = file_info.get("file")
+                if file_name:
+                    files.append(file_name)
+                    self.logger.debug(f"Added file: {file_name}")
+        
+        self.logger.info(f"Extracted {len(files)} files from source_mapping: {files}")
+        return files
     
     def _generate_mock_analysis(
         self, 
         defect_data: Dict[str, Any], 
-        dlt_analysis: Dict[str, Any]
+        dlt_analysis: Dict[str, Any],
+        source_mapping: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """Generate mock analysis when LLM is not available"""
         component = defect_data.get("component", "Unknown")
         summary = defect_data.get("summary", "")
         
+        # Extract affected files from source_mapping (correct location)
+        affected_files = self._extract_files_from_source_mapping(source_mapping) if source_mapping else []
+        
+        self.logger.info(f"Mock analysis: extracted {len(affected_files)} affected files from source_mapping")
+        
         return {
             "root_cause": f"Based on DLT patterns and component mapping, the issue appears to be in the {component} module. Further LLM analysis is needed for precise root cause.",
             "evidence": dlt_analysis.get("errors", [])[:5],
-            "affected_files": [f.get("file") for f in dlt_analysis.get("mapped_files", [])[:3]],
+            "affected_files": affected_files,
             "fix_recommendation": "Configure LLM API to get specific fix recommendations.",
             "confidence": 0.65,
             "preventive_measures": [
@@ -1632,8 +2048,26 @@ Consider thread safety, resource management, and timing issues common in automot
         fix_recommendation = analysis_result.get("fix_recommendation", "")
         root_cause = analysis_result.get("root_cause", "")
         
+        # Filter and validate affected files - remove invalid paths
+        valid_files = []
+        for file_path in affected_files:
+            clean_path = file_path.strip().lstrip('- ').strip()
+            if self._is_valid_file_path(clean_path):
+                valid_files.append(clean_path)
+            else:
+                self.logger.warning(f"Filtered out invalid file path from affected_files: {clean_path}")      # Update affected_files with validated list
+        affected_files = valid_files
+        self.logger.info(f"Validated {len(affected_files)} file paths from affected_files: {affected_files}")
+        
         if not affected_files:
-            result["errors"].append("No affected files identified in analysis. Cannot apply fix.")
+            # Provide detailed diagnostic information
+            error_msg = "No affected files identified in analysis. "
+            if not analysis_result.get("root_cause"):
+                error_msg += "LLM analysis may have failed or returned incomplete results. "
+            error_msg += "Check that: 1) LLM is configured correctly, 2) source mapping is working, 3) DLT logs contain component information."
+            result["errors"].append(error_msg)
+            self.logger.error(error_msg)
+            self.logger.debug(f"Analysis result keys: {list(analysis_result.keys())}")
             return result
         
         if not fix_recommendation:
@@ -1642,6 +2076,8 @@ Consider thread safety, resource management, and timing issues common in automot
         
         self.logger.info(f"Applying fix for {defect_id}...")
         self.logger.info(f"Affected files: {affected_files}")
+        self.logger.info(f"Root cause: {root_cause[:100]}...")
+        self.logger.info(f"Fix recommendation: {fix_recommendation[:100]}...")
         
         # Step 1: Generate actual code fix using LLM
         code_fixes = self._generate_code_fix(
@@ -1649,7 +2085,15 @@ Consider thread safety, resource management, and timing issues common in automot
         )
         
         if not code_fixes:
-            result["errors"].append("Failed to generate code fixes. LLM may not be configured.")
+            error_msg = "Failed to generate code fixes. "
+            if not self.llm_client:
+                error_msg += "LLM client not configured. "
+            elif not self.git_client:
+                error_msg += "Git client not configured. "
+            else:
+                error_msg += f"Attempted to fix {len(affected_files)} files but all failed. Check logs for details."
+            result["errors"].append(error_msg)
+            self.logger.error(error_msg)
             return result
         
         # Step 2: Create fix branch
@@ -1751,56 +2195,93 @@ Consider thread safety, resource management, and timing issues common in automot
             self.logger.error("LLM client not configured. Cannot generate code fixes.")
             return code_fixes
         
+        if not self.git_client:
+            self.logger.error("Git client not configured. Cannot read source files.")
+            return code_fixes
+        
+        self.logger.info(f"Generating code fixes for {len(affected_files)} files...")
+        
         for file_path in affected_files[:3]:  # Limit to 3 files
             # Clean file path (remove bullet points, etc.)
             clean_path = file_path.strip().lstrip('- ').strip()
+            
+            # Validate it's a real file path before trying to read
+            if not self._is_valid_file_path(clean_path):
+                self.logger.warning(f"Skipping invalid file path: {clean_path}")
+                continue
+            
+            self.logger.info(f"Attempting to read file: {clean_path}")
             
             # Get current file content from Git
             file_content = self.git_client.get_file_content(clean_path)
             
             if not file_content:
-                self.logger.warning(f"Could not read file: {clean_path}")
-                continue
+                self.logger.error(f"Could not read file content for: {clean_path}")
+                self.logger.info(f"Trying alternative methods to read {clean_path}...")
+                
+                # Try direct file system access as fallback
+                file_content = self._read_file_directly(clean_path)
+                
+                if not file_content:
+                    self.logger.error(f"All methods failed to read: {clean_path}")
+                    continue
+                else:
+                    self.logger.info(f"Successfully read {clean_path} via direct file access")
             
             # Ask LLM to generate the fix
-            prompt = f"""You are fixing a bug in an automotive infotainment system.
+            prompt = f"""Fix a bug in {clean_path} for defect {defect_id}.
 
-## DEFECT: {defect_id}
-## ROOT CAUSE: {root_cause}
-## FIX RECOMMENDATION: {fix_recommendation}
+ROOT CAUSE: {root_cause[:200]}
+FIX NEEDED: {fix_recommendation[:200]}
 
-## FILE TO FIX: {clean_path}
-
-## CURRENT CODE:
+CURRENT FILE CONTENT (first 3000 chars):
 ```
-{file_content[:3000]}  # First 3000 chars to avoid token limit
+{file_content[:3000]}
 ```
 
-## TASK:
-1. Identify the specific code section that needs to be fixed
-2. Provide the EXACT old code that needs to be replaced (copy exactly from above)
-3. Provide the NEW fixed code
+YOUR TASK:
+Analyze the code above and provide a fix. Return ONLY a JSON object in this EXACT format:
 
-## OUTPUT FORMAT (JSON):
-```json
 {{
-    "old_content": "exact code to replace (multi-line OK)",
-    "new_content": "fixed code (multi-line OK)",
-    "description": "brief description of what was fixed"
+    "old_content": "paste exact code from above that needs fixing",
+    "new_content": "paste the corrected version of that code",
+    "description": "1-sentence description of fix"
 }}
-```
 
-IMPORTANT: 
-- The old_content MUST match exactly what's in the file
-- Include enough context (3-5 lines before/after) for unique identification
-- Only fix what's necessary for this defect
+EXAMPLE OUTPUT:
+{{
+    "old_content": "int calculate() {{\\n    int x = getValue();\\n    return x;\\n}}",
+    "new_content": "int calculate() {{\\n    int x = getValue();\\n    if (x < 0) return 0;\\n    return x;\\n}}",
+    "description": "Added null/negative check"
+}}
+
+RULES:
+1. Return ONLY the JSON object (no markdown, no explanations)
+2. old_content must EXACTLY match code from above
+3. Include 5-10 lines of context
+4. Keep changes minimal - only fix this specific issue
+
+YOUR JSON OUTPUT:
 """
             
             try:
+                self.logger.info(f"Requesting LLM to generate fix for {clean_path}...")
                 response = self.llm_client.analyze_text(
                     prompt=prompt,
-                    system_message="You are an expert automotive software engineer. Generate precise code fixes in the exact JSON format requested."
+                    system_message="You are a code fixing assistant. Your ONLY job is to return a valid JSON object with old_content, new_content, and description fields. Do not explain, do not add commentary, ONLY return the JSON object."
                 )
+                
+                if not response or len(response.strip()) == 0:
+                    self.logger.error(f"LLM returned empty response for {clean_path}")
+                    continue
+                
+                self.logger.info(f"LLM response received for {clean_path} (length: {len(response)} chars)")
+                
+                # Log full response at debug level for troubleshooting
+                self.logger.debug("="*80)
+                self.logger.debug(f"FULL LLM RESPONSE FOR {clean_path}:")
+                self.logger.debug(response)
+                self.logger.debug("="*80)
                 
                 # Parse JSON from response
                 fix_data = self._parse_code_fix_response(response)
@@ -1808,40 +2289,163 @@ IMPORTANT:
                 if fix_data:
                     fix_data["file_path"] = clean_path
                     code_fixes.append(fix_data)
-                    self.logger.info(f"Generated fix for {clean_path}")
+                    self.logger.info(f"✓ Successfully generated fix for {clean_path}")
+                else:
+                    self.logger.warning(f"✗ Failed to parse fix response for {clean_path}")
+                    self.logger.warning(f"Saving failed response to logs/failed_llm_response_{defect_id}_{os.path.basename(clean_path)}.txt")
+                    
+                    # Save the response for manual inspection
+                    try:
+                        os.makedirs("logs", exist_ok=True)
+                        with open(f"logs/failed_llm_response_{defect_id}_{os.path.basename(clean_path)}.txt", 'w', encoding='utf-8') as f:
+                            f.write(f"Defect: {defect_id}\n")
+                            f.write(f"File: {clean_path}\n")
+                            f.write(f"Root Cause: {root_cause}\n")
+                            f.write(f"Fix Recommendation: {fix_recommendation}\n")
+                            f.write("="*80 + "\n")
+                            f.write("LLM RESPONSE:\n")
+                            f.write("="*80 + "\n")
+                            f.write(response)
+                    except Exception as save_error:
+                        self.logger.error(f"Could not save failed response: {save_error}")
+                    
+                    # Try to create a minimal fix as fallback
+                    fallback_fix = self._create_fallback_fix(clean_path, file_content, defect_id, root_cause, fix_recommendation)
+                    if fallback_fix:
+                        code_fixes.append(fallback_fix)
+                        self.logger.info(f"⚠ Using fallback fix for {clean_path}")
                     
             except Exception as e:
                 self.logger.error(f"Failed to generate fix for {clean_path}: {e}")
+                import traceback
+                self.logger.debug(traceback.format_exc())
         
+        self.logger.info(f"Generated {len(code_fixes)} code fixes out of {len(affected_files)} files")
         return code_fixes
     
     def _parse_code_fix_response(self, response: str) -> Optional[Dict[str, Any]]:
         """Parse LLM response to extract code fix JSON"""
         import re
+        import json
         
-        # Try to extract JSON from response
-        json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+        self.logger.debug(f"Parsing code fix response (length: {len(response)})")
+        
+        # Method 1: Try to extract JSON from markdown code blocks
+        json_match = re.search(r'```(?:json)?\s*(.*?)\s*```', response, re.DOTALL)
         
         if json_match:
             try:
-                fix_data = json.loads(json_match.group(1))
+                json_str = json_match.group(1).strip()
+                self.logger.debug(f"Found JSON in code block: {json_str[:200]}...")
+                fix_data = json.loads(json_str)
                 if "old_content" in fix_data and "new_content" in fix_data:
+                    self.logger.info("✓ Successfully parsed code fix from markdown block")
                     return fix_data
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                self.logger.debug(f"Failed to parse JSON from code block: {e}")
         
-        # Try to find JSON without code blocks
+        # Method 2: Find JSON object anywhere in response (more permissive)
         try:
-            # Find JSON-like structure
-            json_match = re.search(r'\{[^{}]*"old_content"[^{}]*"new_content"[^{}]*\}', response, re.DOTALL)
-            if json_match:
-                fix_data = json.loads(json_match.group())
+            # Look for opening brace and find matching closing brace
+            start = response.find('{')
+            if start != -1:
+                brace_count = 0
+                for i in range(start, len(response)):
+                    if response[i] == '{':
+                        brace_count += 1
+                    elif response[i] == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            json_str = response[start:i+1]
+                            try:
+                                fix_data = json.loads(json_str)
+                                if "old_content" in fix_data and "new_content" in fix_data:
+                                    self.logger.info("✓ Successfully parsed code fix from raw JSON")
+                                    return fix_data
+                            except json.JSONDecodeError:
+                                continue
+        except Exception as e:
+            self.logger.debug(f"Failed to extract JSON object: {e}")
+        
+        # Method 3: Try to parse entire response as JSON
+        try:
+            fix_data = json.loads(response.strip())
+            if "old_content" in fix_data and "new_content" in fix_data:
+                self.logger.info("✓ Successfully parsed entire response as JSON")
                 return fix_data
-        except (json.JSONDecodeError, AttributeError):
+        except json.JSONDecodeError:
             pass
         
+        # If all parsing failed, log a sample of the response
         self.logger.warning("Could not parse code fix from LLM response")
+        self.logger.warning(f"Response sample (first 500 chars): {response[:500]}")
         return None
+    
+    def _create_fallback_fix(
+        self,
+        file_path: str,
+        file_content: str,
+        defect_id: str,
+        root_cause: str,
+        fix_recommendation: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Create a fallback fix when LLM fails to generate proper code changes.
+        This adds a TODO comment block near the top of the file as a minimal change.
+        
+        Args:
+            file_path: Path to the file
+            file_content: Current file content
+            defect_id: Defect ID
+            root_cause: Root cause description
+            fix_recommendation: Fix recommendation
+            
+        Returns:
+            Fix dictionary or None
+        """
+        try:
+            self.logger.info(f"Creating fallback fix for {file_path}")
+            
+            lines = file_content.split('\n')
+            
+            # Find a good place to insert comment (after first 5 lines or after includes)
+            insert_idx = min(5, len(lines))
+            for i in range(min(20, len(lines))):
+                line = lines[i].strip()
+                if line and not line.startswith('#') and not line.startswith('//') and not line.startswith('/*'):
+                    insert_idx = i
+                    break
+            
+            # Create TODO comment block
+            todo_lines = [
+                f"// TODO ({defect_id}): Fix needed",
+                f"// Root cause: {root_cause[:80]}",
+                f"// Recommendation: {fix_recommendation[:80]}",
+                ""
+            ]
+            
+            # Get old content (lines before insertion point)
+            old_lines = lines[:insert_idx]
+            old_content = '\n'.join(old_lines)
+            
+            # Create new content (with TODO inserted)
+            new_lines = old_lines + todo_lines
+            new_content = '\n'.join(new_lines)
+            
+            self.logger.info(f"Fallback fix: inserting TODO at line {insert_idx}")
+            
+            return {
+                "file_path": file_path,
+                "old_content": old_content,
+                "new_content": new_content,
+                "description": f"Added TODO comment for {defect_id} - LLM fix generation failed, manual review needed"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Failed to create fallback fix: {e}")
+            import traceback
+            self.logger.debug(traceback.format_exc())
+            return None
     
     def _generate_commit_message(
         self, 

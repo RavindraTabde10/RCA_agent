@@ -1086,11 +1086,11 @@ python test_vector_store.py
 
 ### Overview
 
-The RCA Scheduler automatically fetches and analyzes JIRA tickets based on labels - **no manual intervention required**.
+The RCA Scheduler automatically fetches and analyzes JIRA tickets based on labels - **no manual intervention required**. It can also automatically create GitHub Pull Requests with code fixes for impacted .cpp files.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                       AUTOMATED RCA WORKFLOW                                     │
+│                       AUTOMATED RCA WORKFLOW WITH PR CREATION                    │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
    USER/TESTER                           RCA SCHEDULER (Automated)
@@ -1117,17 +1117,21 @@ The RCA Scheduler automatically fetches and analyzes JIRA tickets based on label
   │  3. Run RCA analysis (DLT → Vector DB → LLM)                                  │
   │  4. Generate MD/HTML reports                                                  │
   │  5. Update JIRA: comment + attachments + duplicate links                     │
-  │  6. Update labels: remove "needs-rca", add "rca-complete"                    │
+  │  6. Create GitHub PR with code fix (if auto_create_pr=true)                 │
+  │  7. Update labels: remove "needs-rca", add "rca-complete"                    │
   └──────────────────────────────────────────────────────────────────────────────┘
        │
        ▼
-  ┌──────────┐
-  │  JIRA    │
-  │ SAM1-2001│
-  │          │
-  │ [rca-    │  ← RCA Comment + Reports attached
-  │ complete]│
-  └──────────┘
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  JIRA    │           GitHub PR Created!                                       │
+  │ SAM1-2001│  ← RCA Comment + Reports attached + Link to PR                    │
+  │          │                                                                     │
+  │ [rca-    │           PR #123: Fix USB source switch delay                     │
+  │ complete]│           Branch: fix/sam1-2001-usb-delay                         │
+  └──────────┘           Files: audio/USBMediaHandler.cpp                        │
+                                                                                  │
+                         URL: https://github.com/org/repo/pull/123                │
+  └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Scheduler Commands
@@ -1197,6 +1201,12 @@ scheduler:
   
   # Max tickets per run
   max_tickets_per_run: 10
+  
+  # Upload reports to JIRA
+  upload_to_jira: true
+  
+  # Automatically create GitHub PR with code fix
+  auto_create_pr: true
   
   # Only process open tickets
   jql_filter: "status != Closed"
